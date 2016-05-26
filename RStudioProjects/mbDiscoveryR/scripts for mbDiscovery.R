@@ -23,8 +23,13 @@ sourceDir("mbMMLCPT/")
 sourceDir("../causal-discovery-experiment-R/source code/")
 
 # mac
-sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
-sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
+# dropbox
+#sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
+#sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
+
+# local repository
+sourceDir("mbMMLCPT/")
+sourceDir("../causal-discovery-experiment-R/source code/")
 
 datasets = list.files("Experiments_mbDiscovery/Datasets/")
 
