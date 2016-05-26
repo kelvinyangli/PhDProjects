@@ -1,6 +1,6 @@
 # scripts for mb discovery
 # 
-libraries = c("bnlearn", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2")
+libraries = c("bnlearn", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz")
 lapply(libraries, require, character.only = TRUE)
 
 sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
@@ -23,8 +23,8 @@ sourceDir("mbMMLCPT/")
 sourceDir("../causal-discovery-experiment-R/source code/")
 
 # mac
-sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
-sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
+#sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
+#sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
 
 datasets = list.files("Experiments_mbDiscovery/Datasets/")
 
