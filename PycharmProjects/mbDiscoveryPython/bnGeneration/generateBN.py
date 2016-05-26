@@ -36,7 +36,8 @@ def generateDag(numNodes, maxNumParents):
 
     return dag
 
-testDag = generateDag(15, 3)
+# let's try creating a bayesian network
+testDag = generateDag(20, 3)
 
 print(testDag)
 
