@@ -14,7 +14,7 @@ mmlCPT.revised = function(nodeIndex, parentsIndecies, indexListPerNodePerValue, 
   nonFixedTerm = 0
   
   # log((|x| - 1)!)
-  #logConstant = log(factorial(arityChild - 1), base = base)
+  logConstant = log(factorial(arityChild - 1), base = base)
   
   for (i in 1:numParentsInstantiations) {
     
@@ -40,8 +40,8 @@ mmlCPT.revised = function(nodeIndex, parentsIndecies, indexListPerNodePerValue, 
       
     } # end if else 
     
-    nonFixedTerm = nonFixedTerm + (arityChild - 1) * log(N_pa_i, base = base) + 
-      logFactorial(N_pa_i, base = base) - cumSum
+    nonFixedTerm = nonFixedTerm + logFactorial(N_pa_i - 1, base = base) - logConstant - 
+      logFactorial(N_pa_i - arityChild, base = base) + logFactorial(N_pa_i, base = base) - cumSum
     
   } # end for i
   
@@ -55,7 +55,8 @@ mmlSingleNode.revised = function(nodeIndex, indexListPerNodePerValue, arities, s
   
   arity = arities[nodeIndex]
   
-  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + (arity - 1) * log(sampleSize, base = base) + 
+  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + logFactorial(sampleSize - 1, base = base) - 
+    log(factorial(arity - 1), base = base) - logFactorial(sampleSize - arity, base = base) + 
     logFactorial(sampleSize, base = base)
   
   cumSum = 0
