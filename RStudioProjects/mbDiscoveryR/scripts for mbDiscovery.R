@@ -22,11 +22,7 @@ sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
 sourceDir("mbMMLCPT/")
 sourceDir("../causal-discovery-experiment-R/source code/")
 
-# mac
-<<<<<<< HEAD
-#sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
-#sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
-=======
+# macs
 # dropbox
 #sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
 #sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
@@ -34,7 +30,7 @@ sourceDir("../causal-discovery-experiment-R/source code/")
 # local repository
 sourceDir("mbMMLCPT/")
 sourceDir("../causal-discovery-experiment-R/source code/")
->>>>>>> master
+
 
 datasets = list.files("Experiments_mbDiscovery/Datasets/")
 
