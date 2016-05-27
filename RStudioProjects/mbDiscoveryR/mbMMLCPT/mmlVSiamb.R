@@ -42,7 +42,7 @@ mmlVSiamb = function(numNodes, maxNumParents, maxNumValues, concentrationParamet
       totalMBSize = totalMBSize + length(mbTrue)
       
       mbLearned1 = mbMMLCPT(data, allNodes[j])  
-      mbLearned2 = mbMMLCPTLookAhead(data, allNodes[j])
+      mbLearned2 = mbMMLCPT.revised(data, allNodes[j])
       mbLearned3 = learn.mb(data, allNodes[j], method = "iamb")
       
       accuracies1 = mbAccuracy(mbTrue, mbLearned1, allNodes[j], allNodes)
