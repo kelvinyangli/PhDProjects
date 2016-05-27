@@ -1,44 +1,56 @@
-import functools
+import pygraphviz as pgv
 import random
-
-import graphviz as gv
 import numpy as np
 
-from bnGeneration.addNodes import addNodes
-from bnGeneration.addEdges import addEdges
 
+def generateDag(numNodes, maxNumParents, draw=False):
 
-def generateDag(numNodes, maxNumParents):
     nodesNumbers = np.arange(1, numNodes + 1)
     string = "V"
     nodes = [string + str(n) for n in nodesNumbers]
 
-    digraph = functools.partial(gv.Digraph, format='svg')
-    dag = digraph()
-    edges = []
+    dag = pgv.AGraph(strict=True, directed=True)
 
+    # add nodes
+    dag.add_nodes_from(nodes)
+
+    # empty edge list
+    edgeList = []
+
+    # sample parents for the current node if the maximum number of parents for the entire structure is non-zero
     if maxNumParents > 0:
 
-        for i in range(1, len(nodes)):  # sample parents for each node
+        # sample parents for each node
+        for i in range(1, len(nodes)):
 
-            upperBound = min(i, maxNumParents)  # minimum b/w the number of preceding nodes and maxNumParents
-            numParents = random.randrange(0, upperBound + 1)  # randomly sample integer from [0, upperBound]
-            parents = random.sample(nodes[:i], numParents)  # randomly sample indices for parents
+            # take the minimum b/w the number of preceding nodes and maxNumParents as the upper bound when sample
+            # the number of parents of the current node
+            upperBound = min(i, maxNumParents)
 
-            if len(parents) > 0:     # if the current node has parents
+            # randomly sample an integer from [0, upperBound]
+            numParents = random.randrange(0, upperBound + 1)
 
-                for j in range(len(parents)):  # add parents to current node iteratively
+            # randomly sample indices for parents
+            parents = random.sample(nodes[:i], numParents)
+
+            # if the current node has parents
+            if len(parents) > 0:
+
+                # add parents to current node iteratively
+                for j in range(len(parents)):
 
                     tup = (nodes[i], parents[j])
-                    edges.append(tup)
 
-        addEdges(addNodes(dag, nodes), edges)
+                    edgeList.append(tup)
+
+        dag.add_edges_from(edgeList)
+
+    if draw:
+
+        dag.layout(prog="dot")
+        dag.draw("C:\PhDProjects\PycharmProjects\mbDiscoveryPython\img\dag.png")
 
     return dag
 
-# let's try creating a bayesian network
-testDag = generateDag(20, 3)
-
-print(testDag)
 
 

@@ -7,6 +7,6 @@ def generateSeed():
     seed *= (10 ** 8)
     return int(seed)
 
-
-
+# pseudoSeed = generateSeed()
+# print(pseudoSeed)
 
