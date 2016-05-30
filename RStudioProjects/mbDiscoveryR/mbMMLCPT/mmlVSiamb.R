@@ -14,6 +14,9 @@ mmlVSiamb = function(numNodes, maxNumParents, maxNumValues, concentrationParamet
   
   for (i in 1:numTests) {
     
+    seed = generateSeed()
+    set.seed(seed)
+    
     dag = generateDag(numNodes, maxNumParents)
     
     cpts = generateCPTs(dag, maxNumValues, concentrationParameter)
@@ -35,6 +38,8 @@ mmlVSiamb = function(numNodes, maxNumParents, maxNumValues, concentrationParamet
     
     totalMBSize = 0 
     
+    if (debug) cat(seed, "\n")
+    
     for (j in 1:numNodes) {
       
       mbTrue = bnlearn::mb(cpts, allNodes[j])
@@ -49,10 +54,13 @@ mmlVSiamb = function(numNodes, maxNumParents, maxNumValues, concentrationParamet
       accuracies2 = mbAccuracy(mbTrue, mbLearned2, allNodes[j], allNodes)
       accuracies3 = mbAccuracy(mbTrue, mbLearned3, allNodes[j], allNodes)
       
-      if (debug) cat("gs+mml:", accuracies1, "\n")
-      if (debug) cat("gsLookAhead+mml:", accuracies2, "\n")
-      if (debug) cat("iamb:", accuracies3, "\n")
-      if (debug) cat("-------------------------- \n")
+      if (debug) {
+        cat(allNodes[j], "\n")
+        cat("gs+mml:", accuracies1, "\n")
+        cat("gsLookAhead+mml:", accuracies2, "\n")
+        cat("iamb:", accuracies3, "\n")
+        cat("-------------------------- \n")
+      }
       
       precision1 = precision1 + accuracies1[5]
       recall1 = recall1 + accuracies1[6]
