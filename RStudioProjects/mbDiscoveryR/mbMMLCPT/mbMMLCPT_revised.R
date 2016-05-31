@@ -15,11 +15,11 @@ mbMMLCPT.revised = function(data, node, base = 2, debug = FALSE) {
   mb = c()
   #mb = rep(0, numNodes - 1)
   #unCheckedNodes = allNodes[allNodes != node] # remove target node
-  unCheckedIndecies = (1:numNodes)[-nodeIndex]
+  unCheckedIndices = (1:numNodes)[-nodeIndex]
   
   ##############################################################
   # get the arity of each node 
-  # get the indecies for each value of each node
+  # get the indices for each value of each node
   # 
   arities = rep(0, numNodes)
   
@@ -51,12 +51,12 @@ mbMMLCPT.revised = function(data, node, base = 2, debug = FALSE) {
   
   repeat {
     
-    # repeat the process of computing mml for remaining unCheckedIndecies
-    # if unCheckedIndecies is empty or all msg len > min msg len then stop
+    # repeat the process of computing mml for remaining unCheckedIndices
+    # if unCheckedIndices is empty or all msg len > min msg len then stop
     
     index = 0 # initialize index to 0
     
-    if (length(unCheckedIndecies) == 0) {
+    if (length(unCheckedIndices) == 0) {
       
       if (debug) cat("BM is full! \n")
       break
@@ -64,13 +64,13 @@ mbMMLCPT.revised = function(data, node, base = 2, debug = FALSE) {
     }
     
     # compute msg len for the target given each unchecked node as its parents
-    for (i in 1:length(unCheckedIndecies)) {
+    for (i in 1:length(unCheckedIndices)) {
       
-      parentsIndecies = c(mb, unCheckedIndecies[i])
+      parentsIndices = c(mb, unCheckedIndices[i])
       
-      msgLenCurrent = mmlCPT.revised(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base = base)
+      msgLenCurrent = mmlCPT.revised(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = base)
       
-      if (debug) cat("parents =", allNodes[c(mb, unCheckedIndecies[i])], ":", msgLenCurrent, "\n")
+      if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       
       # if the current msg len is smaller then replace minMsgLen by the current 
       # and record the current index
@@ -92,15 +92,15 @@ mbMMLCPT.revised = function(data, node, base = 2, debug = FALSE) {
       
     } else {
       
-      if (debug) cat("add", allNodes[unCheckedIndecies[index]], "into mb \n")
+      if (debug) cat("add", allNodes[unCheckedIndices[index]], "into mb \n")
       
-      # add the node index with the minimum msg len into mb and remove it from unCheckedIndecies
-      mb = c(mb, unCheckedIndecies[index])
+      # add the node index with the minimum msg len into mb and remove it from unCheckedIndices
+      mb = c(mb, unCheckedIndices[index])
       
       if (debug) cat("current mb is {", allNodes[mb], "} with msg len", minMsgLen, "\n")
       if (debug) cat("------------------------------- \n")
       
-      unCheckedIndecies = unCheckedIndecies[-index]
+      unCheckedIndices = unCheckedIndices[-index]
       
     } # end else 
     

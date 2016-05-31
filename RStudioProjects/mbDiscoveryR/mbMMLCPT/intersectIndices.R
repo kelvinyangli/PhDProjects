@@ -1,4 +1,4 @@
-intersectIndecies = function(numParents, parentsIndecies, indexListPerNodePerValue, potentialCombination) {
+intersectIndices = function(numParents, parentsIndecies, indexListPerNodePerValue, potentialCombination) {
   
   commonIndecies = indexListPerNodePerValue[[parentsIndecies[1]]][[potentialCombination[1]]]
   

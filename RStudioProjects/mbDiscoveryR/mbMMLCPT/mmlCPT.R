@@ -18,38 +18,38 @@ logFactorial = function(n, base) {
 }
 
 
-getParentsInstantiationIndecies = function(arities, numParents, parentsIndecies, numParentsInstantiations, index) {
+getParentsInstantiationIndices = function(arities, numParents, parentsIndices, numParentsInstantiations, index) {
   
   if (index <= numParentsInstantiations) {
     
-    indecies = rep(0, numParents)
+    indices = rep(0, numParents)
     
-    indecies[1] = ceiling(index / prod(arities[parentsIndecies][2:numParents]))
+    indices[1] = ceiling(index / prod(arities[parentsIndices][2:numParents]))
     
     for (i in 1:(numParents - 1)) {
       
-      indicator = ceiling(index / prod(arities[parentsIndecies][(i + 1):numParents]))
+      indicator = ceiling(index / prod(arities[parentsIndices][(i + 1):numParents]))
       
-      indecies[i] = indicator %% arities[parentsIndecies][i]
+      indices[i] = indicator %% arities[parentsIndices][i]
       
-      if (indecies[i] == 0) indecies[i] = arities[parentsIndecies][i]
+      if (indices[i] == 0) indices[i] = arities[parentsIndices][i]
       
     }
     
     
-    lastIndex = index %% arities[parentsIndecies][numParents] # take modular 
+    lastIndex = index %% arities[parentsIndices][numParents] # take modular 
     
     if (lastIndex == 0) {
       
-      indecies[numParents] = arities[parentsIndecies][numParents]
+      indices[numParents] = arities[parentsIndices][numParents]
       
     } else {
       
-      indecies[numParents] = lastIndex
+      indices[numParents] = lastIndex
       
     }
     
-    return(indecies)
+    return(indices)
     
   } else {
     
@@ -60,13 +60,13 @@ getParentsInstantiationIndecies = function(arities, numParents, parentsIndecies,
 }
 
 
-mmlCPT = function(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base = 2) {
+mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = 2) {
   
   arityChild = arities[nodeIndex]
   
-  numParents = length(parentsIndecies)
+  numParents = length(parentsIndices)
   
-  numParentsInstantiations = prod(arities[parentsIndecies])
+  numParentsInstantiations = prod(arities[parentsIndices])
   
   fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
   
@@ -79,23 +79,23 @@ mmlCPT = function(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities,
     
     if (numParents == 1) { # if single parent then just use index i
       
-      commonParentsIndecies = indexListPerNodePerValue[[parentsIndecies]][[i]]
+      commonParentsIndices = indexListPerNodePerValue[[parentsIndices]][[i]]
       
-      N_pa_i = length(commonParentsIndecies)
+      N_pa_i = length(commonParentsIndices)
       
       # sum_i^arityChild log(N(pa_i, x_i))!
-      cumSum = singleParentComputation(nodeIndex, commonParentsIndecies, arityChild, indexListPerNodePerValue, base = base)
+      cumSum = singleParentComputation(nodeIndex, commonParentsIndices, arityChild, indexListPerNodePerValue, base = base)
       
     } else { # if more than 1 parent, use function to get potential combination
       
       # fix this part
-      potentialCombination = getParentsInstantiationIndecies(arities, numParents, parentsIndecies, numParentsInstantiations, i)
+      potentialCombination = getParentsInstantiationIndices(arities, numParents, parentsIndices, numParentsInstantiations, i)
       
-      commonParentsIndecies = intersectIndecies(numParents, parentsIndecies, indexListPerNodePerValue, potentialCombination)
+      commonParentsIndices = intersectIndices(numParents, parentsIndices, indexListPerNodePerValue, potentialCombination)
       
-      N_pa_i = length(commonParentsIndecies)
+      N_pa_i = length(commonParentsIndices)
       
-      cumSum = multiParentsComputation(nodeIndex, arityChild, indexListPerNodePerValue, commonParentsIndecies, base = base)
+      cumSum = multiParentsComputation(nodeIndex, arityChild, indexListPerNodePerValue, commonParentsIndices, base = base)
       
     } # end if else 
     

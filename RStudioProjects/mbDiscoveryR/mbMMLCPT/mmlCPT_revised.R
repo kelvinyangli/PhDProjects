@@ -1,13 +1,13 @@
 # code is correct
 # sanity check has done
 
-mmlCPT.revised = function(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base = 2) {
+mmlCPT.revised = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = 2) {
   
   arityChild = arities[nodeIndex]
   
-  numParents = length(parentsIndecies)
+  numParents = length(parentsIndices)
   
-  numParentsInstantiations = prod(arities[parentsIndecies])
+  numParentsInstantiations = prod(arities[parentsIndices])
   
   fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
   
@@ -20,23 +20,23 @@ mmlCPT.revised = function(nodeIndex, parentsIndecies, indexListPerNodePerValue, 
     
     if (numParents == 1) { # if single parent then just use index i
       
-      commonParentsIndecies = indexListPerNodePerValue[[parentsIndecies]][[i]]
+      commonParentsIndices = indexListPerNodePerValue[[parentsIndices]][[i]]
       
-      N_pa_i = length(commonParentsIndecies)
+      N_pa_i = length(commonParentsIndices)
       
       # sum_i^arityChild log(N(pa_i, x_i))!
-      cumSum = singleParentComputation(nodeIndex, commonParentsIndecies, arityChild, indexListPerNodePerValue, base = base)
+      cumSum = singleParentComputation(nodeIndex, commonParentsIndices, arityChild, indexListPerNodePerValue, base = base)
       
     } else { # if more than 1 parent, use function to get potential combination
       
       # fix this part
-      potentialCombination = getParentsInstantiationIndecies(arities, numParents, parentsIndecies, numParentsInstantiations, i)
+      potentialCombination = getParentsInstantiationIndices(arities, numParents, parentsIndices, numParentsInstantiations, i)
       
-      commonParentsIndecies = intersectIndecies(numParents, parentsIndecies, indexListPerNodePerValue, potentialCombination)
+      commonParentsIndices = intersectIndices(numParents, parentsIndices, indexListPerNodePerValue, potentialCombination)
       
-      N_pa_i = length(commonParentsIndecies)
+      N_pa_i = length(commonParentsIndices)
       
-      cumSum = multiParentsComputation(nodeIndex, arityChild, indexListPerNodePerValue, commonParentsIndecies, base = base)
+      cumSum = multiParentsComputation(nodeIndex, arityChild, indexListPerNodePerValue, commonParentsIndices, base = base)
       
     } # end if else 
     
