@@ -3,6 +3,7 @@ import random
 import numpy as np
 import pandas as pd
 
+
 def generateDag(numNodes, maxNumParents, draw=False):
 
     nodesNumbers = np.arange(1, numNodes + 1)

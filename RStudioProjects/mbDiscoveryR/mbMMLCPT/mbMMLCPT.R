@@ -29,7 +29,6 @@ mbMMLCPT = function(data, node, base = 2, debug = FALSE) {
     
     arities[i] = nlevels(data[, i])
     
-    
     # get the indecides for each value of node i
     indexListPerValue = list()
     
