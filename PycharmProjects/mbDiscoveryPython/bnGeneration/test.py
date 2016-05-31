@@ -1,56 +1,49 @@
-import pygraphviz as pgv
 import random
 import numpy as np
 
 
-def generateDag(numNodes, maxNumParents, draw=False):
+def generateCPTs(dag, maxNumValues, concentration):
 
-    nodesNumbers = np.arange(1, numNodes + 1)
-    string = "V"
-    nodes = [string + str(n) for n in nodesNumbers]
+    # sample node arity
+    # if maxNumValues is 2 then all nodes are binary
+    # else sample arity for each node between 2 and the maxNumValues
+    if maxNumValues == 2:
+        arities = [2] * dag.number_of_nodes()
 
-    dag = pgv.AGraph(strict=True, directed=True)
+    else:
+        arities = [random.randint(2, maxNumValues) for i in range(0, dag.number_of_nodes())]
 
-    # add nodes
-    dag.add_nodes_from(nodes)
+    # empty list to store cpts values
+    cpts = []
 
-    # empty edge list
-    edgeList = []
+    # iteratively generate cpts values for each node
+    for i in range(0, dag.number_of_nodes()):
 
-    # sample parents for the current node if the maximum number of parents for the entire structure is non-zero
-    if maxNumParents > 0:
+        # get parents of the current node
+        parents = dag.predecessors(dag.nodes()[i])
 
-        # sample parents for each node
-        for i in range(1, len(nodes)):
+        # if current node has no parents then sample a cpt directly for the current node
+        if len(parents) < 1:
+            sampledCPT = np.random.dirichlet([concentration] * arities[i], 1)
 
-            # take the minimum b/w the number of preceding nodes and maxNumParents as the upper bound when sample
-            # the number of parents of the current node
-            upperBound = min(i, maxNumParents)
+        else:
+            # count the number of total parents instantiations from arities of parents nodes
+            numParentsInstants = 1
+            for j in range(0, len(parents)):
+                parentIndex = dag.nodes().index(parents[j])
+                numParentsInstants *= arities[parentIndex]
 
-            # randomly sample an integer from [0, upperBound]
-            numParents = random.randrange(0, upperBound + 1)
+            # sample a cpt for the current node
+            sampledCPT = np.random.dirichlet([concentration] * arities[i], numParentsInstants)
 
-            # randomly sample indices for parents
-            parents = random.sample(nodes[:i], numParents)
+        # add the sampled cpt into a final list called cpts for all nodes
+        cpts.append(sampledCPT)
 
-            # if the current node has parents
-            if len(parents) > 0:
+    # print on screen to 3 decimals
+    np.set_printoptions(precision=3)
 
-                # add parents to current node iteratively
-                for j in range(len(parents)):
+    return cpts
 
-                    tup = (nodes[i], parents[j])
-
-                    edgeList.append(tup)
-
-        dag.add_edges_from(edgeList)
-
-    if draw:
-
-        dag.layout(prog="dot")
-        dag.draw("C:\PhDProjects\PycharmProjects\mbDiscoveryPython\img\dag.png")
-
-    return dag
 
 
 
