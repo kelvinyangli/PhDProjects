@@ -11,7 +11,7 @@
 # OUTPUT is printed
 #
 ################################################################################
-simulatedAnnealing = function(data, node, score, scoreSingleNode, initial, maxIterations, nbStep = 2, step = 0.1, base = 2, 
+mbSimulatedAnnealing = function(data, node, score, initial, maxIterations, nbStep = 2, step = 0.1, base = 2, 
                               debug = FALSE) {
   
   ##############################################################
@@ -58,26 +58,18 @@ simulatedAnnealing = function(data, node, score, scoreSingleNode, initial, maxIt
   
   if (sum(initial) == 0) {
     
-    currentScore = nbScore = bestScore = scoreSingleNode(nodeIndex, indexListPerNodePerValue, 
-                                               arities, sampleSize, base = base)
+    currentScore = nbScore = bestScore = score(nodeIndex, c(), indexListPerNodePerValue, 
+                                               arities, sampleSize, base, noParents = TRUE)
     
   } else {
     
     currentScore = nbScore = bestScore = score(nodeIndex, unCheckedIndices[initial == 1], indexListPerNodePerValue, 
-                                               arities, sampleSize, base = base)
+                                               arities, sampleSize, base, noParents = FALSE)
     
   }
   
   
-  #message("It\tBestSt\tBestVal\tCurrent\tNeigh\tTemp")
-  #message(sprintf("%i\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f", 0L, bestState, bestScore, currentScore, nbScore, 1))
-  
-  if (debug) {
-    
-    cat("Initial state:", allNodes[unCheckedIndices[initial == 1]], "-- score:", currentScore, "-- temp:", 1, "\n")
-    
-  }
-  
+  if (debug) cat("Initial state:", allNodes[unCheckedIndices[initial == 1]], "-- score:", currentScore, "-- temp:", 1, "\n")
   
   for (i in 1:maxIterations) {  
     
@@ -94,11 +86,11 @@ simulatedAnnealing = function(data, node, score, scoreSingleNode, initial, maxIt
     
     if (sum(nbState) == 0) {
       
-      nbScore = scoreSingleNode(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base = base)
+      nbScore = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base, noParents = TRUE)
       
     } else {
       
-      nbScore = score(nodeIndex, unCheckedIndices[nbState == 1], indexListPerNodePerValue, arities, sampleSize, base = base)
+      nbScore = score(nodeIndex, unCheckedIndices[nbState == 1], indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
       
     } # end if else 
     

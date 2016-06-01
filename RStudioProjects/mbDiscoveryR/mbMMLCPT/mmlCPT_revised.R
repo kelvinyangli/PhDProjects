@@ -1,7 +1,7 @@
 # code is correct
 # sanity check has done
 
-mmlCPT.revised = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = 2) {
+msgLenWithParents.revised = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = 2) {
   
   arityChild = arities[nodeIndex]
   
@@ -51,7 +51,7 @@ mmlCPT.revised = function(nodeIndex, parentsIndices, indexListPerNodePerValue, a
 
 
 # message length for a single node with no parents
-mmlSingleNode.revised = function(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base) {
+msgLenWithoutParents.revised = function(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base) {
   
   arity = arities[nodeIndex]
   
@@ -70,6 +70,23 @@ mmlSingleNode.revised = function(nodeIndex, indexListPerNodePerValue, arities, s
   } # end for arity i
   
   return(fixedTerm - cumSum)
+  
+}
+
+
+mmlCPT.revised = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE) {
+  
+  if (noParents) {
+    
+    msgLen = msgLenWithoutParents.revised(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base)
+    
+  } else {
+    
+    msgLen = msgLenWithParents.revised(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base)
+    
+  }
+  
+  return(msgLen)
   
 }
 

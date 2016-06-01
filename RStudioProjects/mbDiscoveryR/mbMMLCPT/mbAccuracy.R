@@ -43,7 +43,7 @@ mbAccuracy = function(mbTrue, mbLearned, target, allNodes) {
   }
   
   accuracy = c(TP, TN, FP, FN, precision, recall)
-  #names(accuracy) = c("tp", "tn", "fp", "fn")
+  names(accuracy) = c("tp", "tn", "fp", "fn", "precision", "recall")
   
   return(accuracy)
 

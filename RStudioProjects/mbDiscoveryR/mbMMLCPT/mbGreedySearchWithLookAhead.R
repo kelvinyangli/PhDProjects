@@ -1,6 +1,6 @@
 # MB discovery using mml + cpt
 # 
-mbMMLCPTLookAhead = function(data, node, base = 2, debug = FALSE) {
+mbGreedySearchWithLookAhead = function(data, node, score, base = 2, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -45,7 +45,7 @@ mbMMLCPTLookAhead = function(data, node, base = 2, debug = FALSE) {
   
   ##############################################################
   # msg len for a single node with no parents
-  minMsgLen = mmlSingleNode(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base = base)
+  minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base, noParents = TRUE)
   
   if (debug) cat("0 parent:", minMsgLen, "\n")
   
@@ -71,7 +71,7 @@ mbMMLCPTLookAhead = function(data, node, base = 2, debug = FALSE) {
       
       parentsIndecies = c(mb, unCheckedIndecies[i])
       
-      msgLenCurrent = mmlCPT(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base = base)
+      msgLenCurrent = score(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
       
       # updating local minimum and node index
       if (msgLenCurrent < localMini) {
@@ -107,65 +107,70 @@ mbMMLCPTLookAhead = function(data, node, base = 2, debug = FALSE) {
       
     } else { # if localMini >= minMsgLen then start look ahead
       
-      ##############################################################
-      # start look ahead
-      if (debug) cat("***Start look ahead*** \n")
-      
-      tempUncheckedIndecies = unCheckedIndecies[-indexLocalMini]
-      tempMB = c(mb, unCheckedIndecies[indexLocalMini])
-      
-      tempLocalMini = Inf
-      tempIndexLocalMini = 0 
-      
-      for (i in 1:length(tempUncheckedIndecies)) {
+      # only start look ahead if there are more than one node remaining
+      if (length(unCheckedIndecies) > 1) {
         
-        tempParentsIndecies = c(tempMB, tempUncheckedIndecies[i])
+        ##############################################################
+        # start look ahead
+        if (debug) cat("***Start look ahead*** \n")
         
-        tempMsgLenCurrent = mmlCPT(nodeIndex, tempParentsIndecies, indexListPerNodePerValue, arities, sampleSize, base = base)
+        tempUncheckedIndecies = unCheckedIndecies[-indexLocalMini]
+        tempMB = c(mb, unCheckedIndecies[indexLocalMini])
         
-        # updating local minimum and node index
-        if (tempMsgLenCurrent < tempLocalMini) {
+        tempLocalMini = Inf
+        tempIndexLocalMini = 0 
+        
+        for (i in 1:length(tempUncheckedIndecies)) {
           
-          tempLocalMini = tempMsgLenCurrent
-          tempIndexLocalMini = i
+          tempParentsIndecies = c(tempMB, tempUncheckedIndecies[i])
           
-        }
+          tempMsgLenCurrent = score(nodeIndex, tempParentsIndecies, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
+          
+          # updating local minimum and node index
+          if (tempMsgLenCurrent < tempLocalMini) {
+            
+            tempLocalMini = tempMsgLenCurrent
+            tempIndexLocalMini = i
+            
+          }
+          
+          if (debug) cat("parents =", allNodes[c(tempMB, tempUncheckedIndecies[i])], ":", tempMsgLenCurrent, "\n")
+          
+        } # end for i 
         
-        if (debug) cat("parents =", allNodes[c(tempMB, tempUncheckedIndecies[i])], ":", tempMsgLenCurrent, "\n")
+        # deciding whether to accept look ahead result or not 
+        if (tempLocalMini < minMsgLen) {
+          
+          minMsgLen = tempLocalMini
+          index = tempIndexLocalMini
+          
+          # add the node index with the minimum msg len into mb and remove it from unCheckedIndecies
+          mb = c(mb, unCheckedIndecies[c(indexLocalMini, index)])
+          
+          if (debug) {
+            
+            cat("add", allNodes[unCheckedIndecies[c(indexLocalMini, index)]], "into mb \n")
+            cat("current mb is {", allNodes[mb], "} with msg len", minMsgLen, "\n")
+            cat("***End look ahead*** \n")
+            cat("------------------------------- \n")
+            
+          }
+          
+          unCheckedIndecies = unCheckedIndecies[-c(indexLocalMini, index)] # remove node index from unCheckedIndecies
+          
+        } else { # stop look ahead
+          
+          if (debug) cat("Stop! No better choice for MB! \n")
+          
+          break 
+          
+        } # end else 
         
-      } # end for i 
+        # end look ahead
+        ##############################################################
+        
+      } # end if 
       
-      # deciding whether to accept look ahead result or not 
-      if (tempLocalMini < minMsgLen) {
-        
-        minMsgLen = tempLocalMini
-        index = tempIndexLocalMini
-        
-        # add the node index with the minimum msg len into mb and remove it from unCheckedIndecies
-        mb = c(mb, unCheckedIndecies[c(indexLocalMini, index)])
-        
-        if (debug) {
-          
-          cat("add", allNodes[unCheckedIndecies[c(indexLocalMini, index)]], "into mb \n")
-          cat("current mb is {", allNodes[mb], "} with msg len", minMsgLen, "\n")
-          cat("***End look ahead*** \n")
-          cat("------------------------------- \n")
-          
-        }
-        
-        unCheckedIndecies = unCheckedIndecies[-c(indexLocalMini, index)] # remove node index from unCheckedIndecies
-        
-      } else { # stop look ahead
-        
-        if (debug) cat("Stop! No better choice for MB! \n")
-        
-        break 
-        
-      } # end else 
-      
-      # end look ahead
-      ##############################################################
-    
     } # end else 
     
   } # end repeat

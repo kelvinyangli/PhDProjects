@@ -60,7 +60,7 @@ getParentsInstantiationIndices = function(arities, numParents, parentsIndices, n
 }
 
 
-mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = 2) {
+msgLenWithParents = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base) {
   
   arityChild = arities[nodeIndex]
   
@@ -113,7 +113,7 @@ mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, 
 
 
 # message length for a single node with no parents
-mmlSingleNode = function(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base) {
+msgLenWithoutParents = function(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base) {
   
   arity = arities[nodeIndex]
   
@@ -135,4 +135,18 @@ mmlSingleNode = function(nodeIndex, indexListPerNodePerValue, arities, sampleSiz
 }
 
 
-
+mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE) {
+  
+  if (noParents) {
+    
+    msgLen = msgLenWithoutParents(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base)
+    
+  } else {
+    
+    msgLen = msgLenWithParents(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base)
+    
+  }
+  
+  return(msgLen)
+  
+}
