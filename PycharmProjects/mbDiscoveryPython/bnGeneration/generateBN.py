@@ -176,11 +176,9 @@ def values2Indices(cptDimension, indices):
     return index
 
 
-dag = generateDag(3, 2, True)
-cpts = generateCPTs(dag, 2, 5)
-data = generateData(dag, cpts, 20)
-
-
+dag = generateDag(7, 2, False)
+cpts = generateCPTs(dag, 3, 5)
+data = generateData(dag, cpts, 5000)
 
 
 

@@ -1,9 +1,9 @@
 
-numNodes = 21
+numNodes = 12
 maxNumParents = 3
-maxNumValues = 3
-concentration = 5
-sampleSize = 10000
+maxNumValues = 4
+concentration = 1
+sampleSize = 5000
 numTests = 10
 
 debug = TRUE
@@ -28,6 +28,8 @@ re.sa.cpt = rep(0, numTests)
 
 pre.iamb = rep(0, numTests)
 re.iamb = rep(0, numTests)
+
+findMB.gs.cpt = findMB.gs.cpt.revised = findMB.gs.cpt.lookahead = findMB.sa.cpt = findMB.iamb = 0
 
 par(mfrow = c(1, 2))
 
@@ -84,6 +86,13 @@ for (i in 1:numTests) {
       cat("iamb:                    ", round(acc.iamb, 3), "\n")
       cat("-------------------------- \n")
     } # end debug
+    
+    # accumulate correct mb identify
+    if (sum(acc.gs.cpt[5:6]) == 2) findMB.gs.cpt = findMB.gs.cpt + 1
+    if (sum(acc.gs.cpt.revised[5:6]) == 2) findMB.gs.cpt.revised = findMB.gs.cpt.revised + 1
+    if (sum(acc.gs.cpt.lookahead[5:6]) == 2) findMB.gs.cpt.lookahead = findMB.gs.cpt.lookahead + 1
+    if (sum(acc.sa.cpt[5:6]) == 2) findMB.sa.cpt = findMB.sa.cpt + 1
+    if (sum(acc.iamb[5:6]) == 2) findMB.iamb = findMB.iamb + 1
     
     # accumulate precision and recall for computing the average over all nodes
     pre.gs.cpt[i] = pre.gs.cpt[i] + acc.gs.cpt[5]
@@ -172,11 +181,35 @@ if (debug) {
   #cat("sa+cpt.revised:", round(f.sa.cpt.revised, 3), "\n")
   cat("iamb:            ", round(f.iamb, 3), "\n")
   
+  cat("------------------------------------- \n")
+  cat("correct finding out of", numNodes * numTests, "MBs \n")
+  cat("gs+cpt:          ", findMB.gs.cpt, "\n")
+  cat("gs+cpt.revised:  ", findMB.gs.cpt.revised, "\n")
+  cat("gs+cpt+lookahead:", findMB.gs.cpt.lookahead, "\n")
+  cat("sa+cpt:          ", findMB.sa.cpt, "\n")
+  cat("iamb:            ", findMB.iamb, "\n")
 }
 
 df = data.frame(pre.gs.cpt, pre.gs.cpt.revised, pre.gs.cpt.lookahead, pre.sa.cpt, pre.iamb,
                 re.gs.cpt, re.gs.cpt.revised, re.gs.cpt.lookahead, re.sa.cpt, re.iamb,
                 f.gs.cpt, f.gs.cpt.revised, f.gs.cpt.lookahead, f.sa.cpt, f.iamb)
 
-apply(df, 2, mean)
+meanAcc = apply(df, 2, mean)
+sdAcc = apply(df, 2, sd)
+seAcc = sdAcc/sqrt(nrow(df))
+ci.upper = meanAcc + 1.96 * seAcc
+ci.lower = meanAcc - 1.96 * seAcc
+
+par(mfrow = c(1,4))
+x = c("gs+cpt", "gs+cpt.revised", "gs+lookahead+cpt", "sa+cpt", "iamb")
+plotCI(1:5, meanAcc[1:5], ui = ci.upper[1:5], li = ci.lower[1:5], ylab = "precision", main = x)
+plotCI(1:5, meanAcc[6:10], ui = ci.upper[6:10], li = ci.lower[6:10], ylab = "recall", main = x)
+plotCI(1:5, meanAcc[11:15], ui = ci.upper[11:15], li = ci.lower[11:15], ylab = "f-measure", main = x)
+
+findMB = c(findMB.gs.cpt, findMB.gs.cpt.revised, findMB.gs.cpt.lookahead, findMB.sa.cpt, findMB.iamb)
+plot(1:5, findMB, ylim = c(min(findMB), numNodes * numTests), ylab = "correct MB finds", main = x)
+
+
+
+
 
