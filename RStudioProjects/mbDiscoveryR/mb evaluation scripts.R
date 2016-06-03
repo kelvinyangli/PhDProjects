@@ -1,9 +1,9 @@
 
-numNodes = 12
+numNodes = 20
 maxNumParents = 3
-maxNumValues = 4
+maxNumValues = 3
 concentration = 1
-sampleSize = 5000
+sampleSize = 10000
 numTests = 10
 
 debug = TRUE
@@ -20,8 +20,8 @@ re.gs.cpt.lookahead = rep(0, numTests)
 #pre.gs.cpt.revised.lookahead = rep(0, numTests)
 #re.gs.cpt.revised.lookahead = rep(0, numTests)
 
-pre.sa.cpt = rep(0, numTests)
-re.sa.cpt = rep(0, numTests)
+#pre.sa.cpt = rep(0, numTests)
+#re.sa.cpt = rep(0, numTests)
 
 #pre.sa.cpt.revised = rep(0, numTests)
 #re.sa.cpt.revised = rep(0, numTests)
@@ -49,7 +49,7 @@ for (i in 1:numTests) {
   
   graphviz.plot(dag)
   
-  if (debug) cat("Test", i, "--- seed", seed, "\n")
+  cat("Test", i, "--- seed", seed, "\n")
   
   ##############################################################################
   # find mb of each node in a dag
@@ -61,37 +61,35 @@ for (i in 1:numTests) {
     mb.gs.cpt.revised = mbGreedySearch(data, allNodes[j], mmlCPT.revised)
     mb.gs.cpt.lookahead = mbGreedySearchWithLookAhead(data, allNodes[j], mmlCPT)
     #mb.gs.cpt.revised.lookahead = mbGreedySearchWithLookAhead(data, allNodes[j], mmlCPT.revised)
-    mb.sa.cpt = mbSimulatedAnnealing(data, allNodes[j], mmlCPT, rep(0, numNodes - 1), 
-                                     maxIterations = 100, nbStep = 2, step = 0.05)
+    #mb.sa.cpt = mbSimulatedAnnealing(data, allNodes[j], mmlCPT, rep(0, numNodes - 1), 
+    #                                 maxIterations = 100, nbStep = 2, step = 0.05)
     #mb.sa.cpt.revised = mbSimulatedAnnealing(data, allNodes[j], mmlCPT.revised, rep(0, numNodes - 1), 
     #                                 maxIterations = 100, nbStep = 2, step = 0.05)
     mb.iamb = learn.mb(data, allNodes[j], method = "iamb")
     
-    acc.gs.cpt = mbAccuracy(mbTrue, mb.gs.cpt, allNodes[j], allNodes)
-    acc.gs.cpt.revised = mbAccuracy(mbTrue, mb.gs.cpt.revised, allNodes[j], allNodes)
-    acc.gs.cpt.lookahead = mbAccuracy(mbTrue, mb.gs.cpt.lookahead, allNodes[j], allNodes)
-    #acc.gs.cpt.revised.lookahead = mbAccuracy(mbTrue, mb.gs.cpt.revised.lookahead, allNodes[j], allNodes)
-    acc.sa.cpt = mbAccuracy(mbTrue, mb.sa.cpt, allNodes[j], allNodes)
-    #acc.sa.cpt.revised = mbAccuracy(mbTrue, mb.sa.cpt.revised, allNodes[j], allNodes)
-    acc.iamb = mbAccuracy(mbTrue, mb.iamb, allNodes[j], allNodes)
+    cat(allNodes[j], "\n")
     
-    if (debug) {
-      cat(allNodes[j], "\n")
-      cat("gs+cpt:                  ", round(acc.gs.cpt, 3), "\n")
-      cat("gs+cpt.revised:          ", round(acc.gs.cpt.revised, 3), "\n")
-      cat("gs+cpt+lookahead:        ", round(acc.gs.cpt.lookahead, 3), "\n")
-      #cat("gs+cpt.revised+lookahead:", round(acc.gs.cpt.revised.lookahead, 3), "\n")
-      cat("sa+cpt:                  ", round(acc.sa.cpt, 3), "\n")
-      #cat("sa+cpt.revised:          ", round(acc.sa.cpt.revised, 3), "\n")
-      cat("iamb:                    ", round(acc.iamb, 3), "\n")
-      cat("-------------------------- \n")
-    } # end debug
+    acc.gs.cpt = mbAccuracy(mbTrue, mb.gs.cpt, allNodes[j], allNodes)
+    cat("gs+cpt:                  ", round(acc.gs.cpt, 3), "\n")
+    
+    acc.gs.cpt.revised = mbAccuracy(mbTrue, mb.gs.cpt.revised, allNodes[j], allNodes)
+    cat("gs+cpt.revised:          ", round(acc.gs.cpt.revised, 3), "\n")
+    
+    acc.gs.cpt.lookahead = mbAccuracy(mbTrue, mb.gs.cpt.lookahead, allNodes[j], allNodes)
+    cat("gs+cpt+lookahead:        ", round(acc.gs.cpt.lookahead, 3), "\n")
+    
+    #acc.sa.cpt = mbAccuracy(mbTrue, mb.sa.cpt, allNodes[j], allNodes)
+    #cat("sa+cpt:                  ", round(acc.sa.cpt, 3), "\n")
+    
+    acc.iamb = mbAccuracy(mbTrue, mb.iamb, allNodes[j], allNodes)
+    cat("iamb:                    ", round(acc.iamb, 3), "\n")
+    cat("-------------------------- \n")
     
     # accumulate correct mb identify
     if (sum(acc.gs.cpt[5:6]) == 2) findMB.gs.cpt = findMB.gs.cpt + 1
     if (sum(acc.gs.cpt.revised[5:6]) == 2) findMB.gs.cpt.revised = findMB.gs.cpt.revised + 1
     if (sum(acc.gs.cpt.lookahead[5:6]) == 2) findMB.gs.cpt.lookahead = findMB.gs.cpt.lookahead + 1
-    if (sum(acc.sa.cpt[5:6]) == 2) findMB.sa.cpt = findMB.sa.cpt + 1
+    #if (sum(acc.sa.cpt[5:6]) == 2) findMB.sa.cpt = findMB.sa.cpt + 1
     if (sum(acc.iamb[5:6]) == 2) findMB.iamb = findMB.iamb + 1
     
     # accumulate precision and recall for computing the average over all nodes
@@ -107,8 +105,8 @@ for (i in 1:numTests) {
     #pre.gs.cpt.revised.lookahead[i] = pre.gs.cpt.revised.lookahead[i] + acc.gs.cpt.revised.lookahead[5]
     #re.gs.cpt.revised.lookahead[i] = re.gs.cpt.revised.lookahead[i] + acc.gs.cpt.revised.lookahead[6]
     
-    pre.sa.cpt[i] = pre.sa.cpt[i] + acc.sa.cpt[5]
-    re.sa.cpt[i] = re.sa.cpt[i] + acc.sa.cpt[6]
+    #pre.sa.cpt[i] = pre.sa.cpt[i] + acc.sa.cpt[5]
+    #re.sa.cpt[i] = re.sa.cpt[i] + acc.sa.cpt[6]
     
     #pre.sa.cpt.revised[i] = pre.sa.cpt.revised[i] + acc.sa.cpt.revised[5]
     #re.sa.cpt.revised[i] = re.sa.cpt.revised[i] + acc.sa.cpt.revised[6]
@@ -131,8 +129,8 @@ for (i in 1:numTests) {
   #pre.gs.cpt.revised.lookahead[i] = pre.gs.cpt.revised.lookahead[i]/numNodes
   #re.gs.cpt.revised.lookahead[i] = re.gs.cpt.revised.lookahead[i]/numNodes
   
-  pre.sa.cpt[i] = pre.sa.cpt[i]/numNodes
-  re.sa.cpt[i] = re.sa.cpt[i]/numNodes
+  #pre.sa.cpt[i] = pre.sa.cpt[i]/numNodes
+  #re.sa.cpt[i] = re.sa.cpt[i]/numNodes
   
   #pre.sa.cpt.revised[i] = pre.sa.cpt.revised[i]/numNodes
   #re.sa.cpt.revised[i] = re.sa.cpt.revised[i]/numNodes
@@ -147,7 +145,7 @@ f.gs.cpt = 2 * pre.gs.cpt * re.gs.cpt / (pre.gs.cpt + re.gs.cpt)
 f.gs.cpt.revised = 2 * pre.gs.cpt.revised * re.gs.cpt.revised / (pre.gs.cpt.revised + re.gs.cpt.revised)
 f.gs.cpt.lookahead = 2 * pre.gs.cpt.lookahead * re.gs.cpt.lookahead / (pre.gs.cpt.lookahead + re.gs.cpt.lookahead)
 #f.gs.cpt.revised.lookahead = 2 * pre.gs.cpt.revised.lookahead * re.gs.cpt.revised.lookahead / (pre.gs.cpt.revised.lookahead + re.gs.cpt.revised.lookahead)
-f.sa.cpt = 2 * pre.sa.cpt * re.sa.cpt / (pre.sa.cpt + re.sa.cpt)
+#f.sa.cpt = 2 * pre.sa.cpt * re.sa.cpt / (pre.sa.cpt + re.sa.cpt)
 #f.sa.cpt.revised = 2 * pre.sa.cpt.revised * re.sa.cpt.revised / (pre.sa.cpt.revised + re.sa.cpt.revised)
 f.iamb = 2 * pre.iamb * re.iamb / (pre.iamb + re.iamb)
 
@@ -159,7 +157,7 @@ if (debug) {
   cat("gs+cpt:          ", round(pre.gs.cpt, 3), "\n")
   cat("gs+cpt.revised:  ", round(pre.gs.cpt.revised, 3), "\n")
   cat("gs+cpt+lookahead:", round(pre.gs.cpt.lookahead, 3), "\n")
-  cat("sa+cpt:          ", round(pre.sa.cpt, 3), "\n")
+  #cat("sa+cpt:          ", round(pre.sa.cpt, 3), "\n")
   #cat("sa+cpt.revised:", round(pre.sa.cpt.revised, 3), "\n")
   cat("iamb:            ", round(pre.iamb, 3), "\n")
   
@@ -168,7 +166,7 @@ if (debug) {
   cat("gs+cpt:          ", round(re.gs.cpt, 3), "\n")
   cat("gs+cpt.revised:  ", round(re.gs.cpt.revised, 3), "\n")
   cat("gs+cpt+lookahead:", round(re.gs.cpt.lookahead, 3), "\n")
-  cat("sa+cpt:          ", round(re.sa.cpt, 3), "\n")
+  #cat("sa+cpt:          ", round(re.sa.cpt, 3), "\n")
   #cat("sa+cpt.revised:", round(re.sa.cpt.revised, 3), "\n")
   cat("iamb:            ", round(re.iamb, 3), "\n")
   
@@ -177,7 +175,7 @@ if (debug) {
   cat("gs+cpt:          ", round(f.gs.cpt, 3), "\n")
   cat("gs+cpt.revised:  ", round(f.gs.cpt.revised, 3), "\n")
   cat("gs+cpt+lookahead:", round(f.gs.cpt.lookahead, 3), "\n")
-  cat("sa+cpt:          ", round(f.sa.cpt, 3), "\n")
+  #cat("sa+cpt:          ", round(f.sa.cpt, 3), "\n")
   #cat("sa+cpt.revised:", round(f.sa.cpt.revised, 3), "\n")
   cat("iamb:            ", round(f.iamb, 3), "\n")
   
@@ -186,13 +184,14 @@ if (debug) {
   cat("gs+cpt:          ", findMB.gs.cpt, "\n")
   cat("gs+cpt.revised:  ", findMB.gs.cpt.revised, "\n")
   cat("gs+cpt+lookahead:", findMB.gs.cpt.lookahead, "\n")
-  cat("sa+cpt:          ", findMB.sa.cpt, "\n")
+  #cat("sa+cpt:          ", findMB.sa.cpt, "\n")
   cat("iamb:            ", findMB.iamb, "\n")
 }
 
-df = data.frame(pre.gs.cpt, pre.gs.cpt.revised, pre.gs.cpt.lookahead, pre.sa.cpt, pre.iamb,
-                re.gs.cpt, re.gs.cpt.revised, re.gs.cpt.lookahead, re.sa.cpt, re.iamb,
-                f.gs.cpt, f.gs.cpt.revised, f.gs.cpt.lookahead, f.sa.cpt, f.iamb)
+
+df = data.frame(pre.gs.cpt, pre.gs.cpt.revised, pre.gs.cpt.lookahead,pre.iamb,
+                re.gs.cpt, re.gs.cpt.revised, re.gs.cpt.lookahead, re.iamb,
+                f.gs.cpt, f.gs.cpt.revised, f.gs.cpt.lookahead, f.iamb)
 
 meanAcc = apply(df, 2, mean)
 sdAcc = apply(df, 2, sd)
@@ -200,14 +199,14 @@ seAcc = sdAcc/sqrt(nrow(df))
 ci.upper = meanAcc + 1.96 * seAcc
 ci.lower = meanAcc - 1.96 * seAcc
 
-par(mfrow = c(1,4))
-x = c("gs+cpt", "gs+cpt.revised", "gs+lookahead+cpt", "sa+cpt", "iamb")
-plotCI(1:5, meanAcc[1:5], ui = ci.upper[1:5], li = ci.lower[1:5], ylab = "precision", main = x)
-plotCI(1:5, meanAcc[6:10], ui = ci.upper[6:10], li = ci.lower[6:10], ylab = "recall", main = x)
-plotCI(1:5, meanAcc[11:15], ui = ci.upper[11:15], li = ci.lower[11:15], ylab = "f-measure", main = x)
+par(mfrow = c(2, 2))
+x = c("gs+cpt", "gs+cpt.revised", "gs+lookahead+cpt", "iamb")
+plotCI(1:4, meanAcc[1:4], ui = ci.upper[1:4], li = ci.lower[1:4], ylab = "precision", main = x)
+plotCI(1:4, meanAcc[5:8], ui = ci.upper[5:8], li = ci.lower[5:8], ylab = "recall", main = x)
+plotCI(1:4, meanAcc[9:12], ui = ci.upper[9:12], li = ci.lower[9:12], ylab = "f-measure", main = x)
 
-findMB = c(findMB.gs.cpt, findMB.gs.cpt.revised, findMB.gs.cpt.lookahead, findMB.sa.cpt, findMB.iamb)
-plot(1:5, findMB, ylim = c(min(findMB), numNodes * numTests), ylab = "correct MB finds", main = x)
+findMB = c(findMB.gs.cpt, findMB.gs.cpt.revised, findMB.gs.cpt.lookahead, findMB.iamb)
+plot(1:4, findMB, ylim = c(min(findMB), numNodes * numTests), ylab = "correct MB finds", main = x)
 
 
 
