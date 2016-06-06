@@ -1,6 +1,6 @@
 # MB discovery using mml + cpt
 # 
-mbGreedySearch = function(data, node, score, base = 2, debug = FALSE) {
+mbGreedySearch = function(data, node, score, base = 2, indicatorMatrix = NULL, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -45,9 +45,33 @@ mbGreedySearch = function(data, node, score, base = 2, debug = FALSE) {
   ##############################################################
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
-  minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base, noParents = TRUE)
   
-  if (debug) cat("0 parent:", minMsgLen, "\n")
+  if (!is.null(indicatorMatrix)) {
+    
+    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, sigma = 3, base, noPredictors = TRUE)
+    
+  } else {
+    
+    minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base, noParents = TRUE)
+    
+  } # end if 
+  
+  if (debug) {
+    
+    if (!is.null(indicatorMatrix)) {
+      
+      scoreName = "mmlLogit"
+      
+    } else {
+      
+      scoreName = "mmlCPT"
+      
+    }
+    
+    cat("Search: Greedy search --- Score:", scoreName, "\n")
+    cat("0 parent:", minMsgLen, "\n")
+   
+  }
   
   repeat {
     
@@ -68,7 +92,15 @@ mbGreedySearch = function(data, node, score, base = 2, debug = FALSE) {
       
       parentsIndices = c(mb, unCheckedIndices[i])
       
-      msgLenCurrent = score(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
+      if (!is.null(indicatorMatrix)) {
+        
+        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3, base, noPredictors = FALSE)
+        
+      } else {
+        
+        msgLenCurrent = score(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
+        
+      }
       
       if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       

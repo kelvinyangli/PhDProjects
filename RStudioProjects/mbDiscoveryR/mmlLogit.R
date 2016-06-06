@@ -33,7 +33,7 @@ innerProd = function(beta, X) {
   summation = 0 
   
   for (i in 1:length(beta)) summation = summation + X[i] * beta[i]
-    
+  
   return(summation)
   
 }
@@ -95,7 +95,7 @@ negLoglike2ndDerivative = function(indicatorMatrix, xIndices, beta, j, k) {
   for (i in 1:nrow(indicatorMatrix)) {
     
     nll2nd = nll2nd + negLoglike2ndDerivativeSingle(indicatorMatrix, xIndices, beta, i, j, k)
-  
+    
   }
   
   return(nll2nd)
@@ -146,7 +146,7 @@ logDeterminant = function(matrix) {
     logDet = logDet + log(diag(choleskeyUpper)[i], base = 2)
     
   }
-
+  
   return(logDet)
   
 }
@@ -245,6 +245,23 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   
 }
 
+
+mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma, base, noPredictors = FALSE) {
+  
+  if (noPredictors) {
+    
+    msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma, base)$mml[[1]]
+    
+  } else {
+    
+    msgLen = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma, base)$mml[[1]]
+    
+  }
+  
+  return(msgLen)
+  
+}
+
 #################################################### function ####################################
 # search for mb using mml 
 mbMMLLogit = function(data, indicatorMatrix, y, sigma = 3, base = 2, debug = FALSE) {
@@ -300,12 +317,12 @@ mbMMLLogit = function(data, indicatorMatrix, y, sigma = 3, base = 2, debug = FAL
     for (i in 1:length(unUsedNodesIndexes)) { # combine each remaining node with current mb and compute mml
       
       mmlCurrent = msgLenWithPredictors(data, indicatorMatrix, yIndex, c(unUsedNodesIndexes[i], cmb), 
-                       cardinalities, allNodes, sigma, base)$mml
+                                        cardinalities, allNodes, sigma, base)$mml
       
       if (debug) {
         
         cat("    >", allNodes[unUsedNodesIndexes[i]], "has msg len:", round(mmlCurrent, 2), "\n") 
-  
+        
       } # end debug
       
       if (mmlCurrent < mmlMini) { # if adding this node decreases the mml score, then replace mml and add into cmb
@@ -315,7 +332,7 @@ mbMMLLogit = function(data, indicatorMatrix, y, sigma = 3, base = 2, debug = FAL
         toAdd = i
         
       }
-  
+      
     }
     
     # stop when there is nothing to add from the remaining nodes
@@ -325,7 +342,7 @@ mbMMLLogit = function(data, indicatorMatrix, y, sigma = 3, base = 2, debug = FAL
       
       print("No better candidate to add \n")
       break
-    
+      
     } # end if 
     
     cmb = c(cmb, unUsedNodesIndexes[toAdd])
@@ -345,7 +362,7 @@ mbMMLLogit = function(data, indicatorMatrix, y, sigma = 3, base = 2, debug = FAL
       
       print("No more node to add \n")
       break
-  
+      
     } # end if 
     
   } # end repeat
