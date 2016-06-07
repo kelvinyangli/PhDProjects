@@ -108,7 +108,7 @@ msgLenWithParents = function(nodeIndex, parentsIndices, indexListPerNodePerValue
   } # end for i
   
   return(fixedTerm + nonFixedTerm)
-  
+
 }
 
 
@@ -131,7 +131,7 @@ msgLenWithoutParents = function(nodeIndex, indexListPerNodePerValue, arities, sa
   } # end for arity i
   
   return(fixedTerm - cumSum)
-  
+
 }
 
 
