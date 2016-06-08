@@ -92,7 +92,7 @@ msgLenWithParents = function(nodeIndex, parentsIndices, indexListPerNodePerValue
       potentialCombination = getParentsInstantiationIndices(arities, numParents, parentsIndices, numParentsInstantiations, i)
       
       commonParentsIndices = intersectIndices(numParents, parentsIndices, indexListPerNodePerValue, potentialCombination)
-      
+      #ll[[i]]=commonParentsIndices
       N_pa_i = length(commonParentsIndices)
       
       cumSum = multiParentsComputation(nodeIndex, arityChild, indexListPerNodePerValue, commonParentsIndices, base = base)
