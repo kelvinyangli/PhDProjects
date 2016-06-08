@@ -135,9 +135,9 @@ msgLenWithoutParents = function(nodeIndex, indexListPerNodePerValue, arities, sa
 }
 
 
-mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE) {
+mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base) {
   
-  if (noParents) {
+  if (length(parentsIndices) < 1) {
     
     msgLen = msgLenWithoutParents(nodeIndex, indexListPerNodePerValue, arities, sampleSize, base)
     

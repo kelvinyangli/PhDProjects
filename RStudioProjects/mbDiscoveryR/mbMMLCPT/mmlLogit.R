@@ -246,9 +246,9 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
 }
 
 
-mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma, base, noPredictors = FALSE) {
+mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma, base) {
   
-  if (noPredictors) {
+  if (length(xIndices) < 1) {
     
     msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma, base)$mml[[1]]
     
@@ -262,120 +262,4 @@ mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allN
   
 }
 
-#################################################### function ####################################
-# search for mb using mml 
-mbMMLLogit = function(data, indicatorMatrix, y, sigma = 3, base = 2, debug = FALSE) {
-  
-  allNodes = colnames(data)
-  
-  numNodes = length(allNodes)
-  
-  yIndex = which(allNodes == y)
-  unUsedNodesIndexes = (1:numNodes)[-yIndex]
-  
-  cardinalities = rep(2, numNodes) 
-  
-  for (j in 1:ncol(data)) cardinalities[j] = nlevels(data[, j])
-  
-  cmb = c()
-  # x = c()
-  
-  if (debug) {
-    cat("----------------------------------------------------------------\n")
-    cat("* learning the Markov blanket of", y, "\n")
-  } # then
-  
-  # msg len to encode the size k of mb 
-  # k takes integer value from [0, n - 1] uniformly
-  # logK = log(numNodes)
-  
-  # msg len of empty markov blanket
-  mmlMini = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma, base)$mml[[1]]
-  
-  if (debug) {
-    
-    cat("    > empty MB has msg len:", round(mmlMini, 2), "\n")  
-    
-  } # then
-  
-  repeat{ # use greedy search for an optimal mb
-    
-    if (debug) {
-      
-      cat("    * calculating msg len \n")
-      
-    } # end debug
-    
-    toAdd = NULL
-    
-    # msg len to encode the mb
-    # logK is explained above
-    # the second part is the msg len to encode which k nodes to choose from all n - 1 nodes
-    # log (n - 1 choose k) is the second part
-    # logK + log(choose(numNodes - 1, length(cmb) + 1))
-    
-    for (i in 1:length(unUsedNodesIndexes)) { # combine each remaining node with current mb and compute mml
-      
-      mmlCurrent = msgLenWithPredictors(data, indicatorMatrix, yIndex, c(unUsedNodesIndexes[i], cmb), 
-                                        cardinalities, allNodes, sigma, base)$mml
-      
-      if (debug) {
-        
-        cat("    >", allNodes[unUsedNodesIndexes[i]], "has msg len:", round(mmlCurrent, 2), "\n") 
-        
-      } # end debug
-      
-      if (mmlCurrent < mmlMini) { # if adding this node decreases the mml score, then replace mml and add into cmb
-        
-        mmlMini = mmlCurrent
-        
-        toAdd = i
-        
-      }
-      
-    }
-    
-    # stop when there is nothing to add from the remaining nodes
-    # that is when mml score does not decrease 
-    # it indicates adding more nodes into cmb does not make current model better
-    if (is.null(toAdd)) {
-      
-      print("No better candidate to add \n")
-      break
-      
-    } # end if 
-    
-    cmb = c(cmb, unUsedNodesIndexes[toAdd])
-    
-    if (debug) {
-      
-      cat("    @", allNodes[unUsedNodesIndexes[toAdd]], "include in the Markov blanket", "\n")
-      cat("    > Markov blanket (", length(cmb), "nodes ) now is '", allNodes[cmb], "'\n")
-      
-    } # end debug
-    
-    # remove added node index from unchecked nodes indices
-    unUsedNodesIndexes = unUsedNodesIndexes[-toAdd]
-    
-    # if 0 node left for inclusion stop
-    if (length(unUsedNodesIndexes) == 0) {
-      
-      print("No more node to add \n")
-      break
-      
-    } # end if 
-    
-  } # end repeat
-  
-  if (debug) {
-    
-    cat("    * Algorithm stops! \n")
-    
-  }
-  
-  return(allNodes[cmb])
-  
-}
-
-# when testing on asia net, glm shows warnings, glm.fit: fitted probabilities numerically 0 or 1 occurred 
 

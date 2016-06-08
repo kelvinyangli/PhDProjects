@@ -1,6 +1,6 @@
 # MB discovery using mml + cpt
 # 
-mbGreedySearch = function(data, node, score, base = 2, indicatorMatrix = NULL, debug = FALSE) {
+mbBackwardElemination = function(data, node, score, base = 2, indicatorMatrix = NULL, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -12,10 +12,10 @@ mbGreedySearch = function(data, node, score, base = 2, indicatorMatrix = NULL, d
   numNodes = ncol(data)
   sampleSize = nrow(data)
   
-  mb = c()
-  #mb = rep(0, numNodes - 1)
-  #unCheckedNodes = allNodes[allNodes != node] # remove target node
-  unCheckedIndices = (1:numNodes)[-nodeIndex]
+  # start with the full mb
+  mb = (1:numNodes)[-nodeIndex]
+  
+  #blackList = c()
   
   ##############################################################
   # get the arity of each node 
@@ -46,13 +46,13 @@ mbGreedySearch = function(data, node, score, base = 2, indicatorMatrix = NULL, d
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
   
-  if (!is.null(indicatorMatrix)) {
+  if (!is.null(indicatorMatrix)) { # use mmlLogit
     
-    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, sigma = 3, base, noPredictors = TRUE)
+    minMsgLen = score(data, indicatorMatrix, nodeIndex, mb, arities, allNodes, sigma = 3, base, noPredictors = TRUE)
     
-  } else {
+  } else { # use mmlCPT
     
-    minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base, noParents = TRUE)
+    minMsgLen = score(nodeIndex, mb, indexListPerNodePerValue, arities, sampleSize, base)
     
   } # end if 
   
@@ -68,41 +68,41 @@ mbGreedySearch = function(data, node, score, base = 2, indicatorMatrix = NULL, d
       
     }
     
-    cat("Search: Greedy search --- Score:", scoreName, "\n")
-    cat("0 parent:", minMsgLen, "\n")
-   
+    cat("Search: Backward elemination --- Score:", scoreName, "\n")
+    cat("full mb:", minMsgLen, "\n")
+    
   }
   
   repeat {
     
-    # repeat the process of computing mml for remaining unCheckedIndices
-    # if unCheckedIndices is empty or all msg len > min msg len then stop
+    # delete one node at a time and find the node which has the largest decreasing of mml score
+    # if the resulting mml score is less than global mini then replace and keep going
+    # if mb is empty or all msg len > min msg len then stop
     
     index = 0 # initialize index to 0
     
-    if (length(unCheckedIndices) == 0) {
+    if (length(mb) == 0) {
       
-      if (debug) cat("BM is full! \n")
+      if (debug) cat("BM is empty! \n")
       break
       
     }
     
-    # compute msg len for the target given each unchecked node as its parents
-    for (i in 1:length(unCheckedIndices)) {
+    # compute msg len for the target given each mb-x_i as the parents
+    for (i in 1:length(mb)) {
       
-      parentsIndices = c(mb, unCheckedIndices[i])
-      
+
       if (!is.null(indicatorMatrix)) {
         
-        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3, base, noPredictors = FALSE)
+        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, mb[-i], arities, allNodes, sigma = 3, base, noPredictors = FALSE)
         
       } else {
         
-        msgLenCurrent = score(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
+        msgLenCurrent = score(nodeIndex, mb[-i], indexListPerNodePerValue, arities, sampleSize, base)
         
-      }
+      } # end if else 
       
-      if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
+      if (debug) cat("parents =", allNodes[mb[-i]], ":", msgLenCurrent, "\n")
       
       # if the current msg len is smaller then replace minMsgLen by the current 
       # and record the current index
@@ -118,21 +118,21 @@ mbGreedySearch = function(data, node, score, base = 2, indicatorMatrix = NULL, d
     
     if (index == 0) {
       
-      if (debug) cat("Stop! No better choice for MB! \n")
+      if (debug) cat("Stop! No better node to delete from current MB! \n")
       
       break 
       
     } else {
       
-      if (debug) cat("add", allNodes[unCheckedIndices[index]], "into mb \n")
+      if (debug) cat("delete", allNodes[mb[index]], "from current mb \n")
       
       # add the node index with the minimum msg len into mb and remove it from unCheckedIndices
-      mb = c(mb, unCheckedIndices[index])
+      mb = mb[-index]
       
       if (debug) cat("current mb is {", allNodes[mb], "} with msg len", minMsgLen, "\n")
       if (debug) cat("------------------------------- \n")
       
-      unCheckedIndices = unCheckedIndices[-index]
+      #unCheckedIndices = unCheckedIndices[-index]
       
     } # end else 
     
