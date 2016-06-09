@@ -1,6 +1,14 @@
-# code is correct
-# sanity check has done
-
+###############################################################################
+# this is a revised version of the original mmlCPT formula by Wallace & Boulton 1968
+# in the original formula, a node value frequencies can take extreme values such as 0 
+# and hence when encoding n[m], Wallace & Boulton used the formula for "weak decomposition"
+# weak decomposition - choose(N+M-1, M-1)
+# in this revised version, we don't allow extreme values to be taken, and hence "weak 
+# decomposition" is replace by "strong decomposition"
+# strong decomposition - chose(N-1, M-1)
+# in terms of the actual results, the difference b/w the two version is very small
+# most of the times, there is no noticeable difference
+###############################################################################
 msgLenWithParents.revised = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = 2) {
   
   arityChild = arities[nodeIndex]

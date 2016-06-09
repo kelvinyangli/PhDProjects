@@ -1,3 +1,4 @@
+
 dataInfo = function(data) {
   
   ##############################################################
@@ -34,7 +35,7 @@ dataInfo = function(data) {
 
 # MB discovery using mml + cpt
 # 
-mbForwardSelection.rev = function(data, node, score, arities, indexListPerNodePerValue,
+mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodePerValue,
                                base = 2, indicatorMatrix = NULL, debug = FALSE) {
   
   ##############################################################
@@ -51,7 +52,7 @@ mbForwardSelection.rev = function(data, node, score, arities, indexListPerNodePe
   
   unCheckedIndices = (1:numNodes)[-nodeIndex]
   
-  cachedIndicesList = list()
+  tempCachedIndicesList = list()
   ##############################################################
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
@@ -91,6 +92,8 @@ mbForwardSelection.rev = function(data, node, score, arities, indexListPerNodePe
     
     index = 0 # initialize index to 0
     
+    cachedIndicesList = tempCachedIndicesList
+    
     if (length(unCheckedIndices) == 0) {
       
       if (debug) cat("BM is full! \n")
@@ -111,7 +114,7 @@ mbForwardSelection.rev = function(data, node, score, arities, indexListPerNodePe
         
         res = score(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, base)
         msgLenCurrent = res$msgLen
-        cachedIndicesList = res$cachedIndicesList
+        #cachedIndicesList = res$cachedIndicesList
         
       }
       
@@ -124,7 +127,8 @@ mbForwardSelection.rev = function(data, node, score, arities, indexListPerNodePe
         
         minMsgLen = msgLenCurrent
         index = i
-        
+        tempCachedIndicesList = res$cachedIndicesList
+
       } # end if 
       
     } # end for i 

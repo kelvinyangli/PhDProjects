@@ -1,5 +1,7 @@
-# code is correct
-# sanity check has done
+#############################################################################################
+# this is an earlier version of mmlCPT
+# this version works good, but the speed is slightly slower than the version which cach indices
+#############################################################################################
 
 
 logFactorial = function(n, base) {

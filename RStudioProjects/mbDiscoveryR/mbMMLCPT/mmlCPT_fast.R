@@ -1,9 +1,26 @@
-# code is correct
-# sanity check has done
+######################################################################################
+# this is the latest version of mmlCPT
+# this version takes advantage of caching common parents indices for the use of the 
+# next step, and hence it is slightly faster than the non-cached version
+######################################################################################
 
-#cachedIndicesList = list()
+logFactorial = function(n, base) {
+  
+  # if n = 0 then log of 0 factorial is 0
+  ss = 0 
+  
+  if (n > 0) {
+    
+    for (i in 1:n) ss = ss + log(i, base = base)
+    
+  }
+  
+  return(ss)
+  
+}
 
-msgLenWithParents.rev = function(nodeIndex, parentsIndices, indexListPerNodePerValue, 
+
+msgLenWithParents.fast = function(nodeIndex, parentsIndices, indexListPerNodePerValue, 
                                  cachedIndicesList, arities, sampleSize, base) {
   
   newAddedParentIndex = parentsIndices[length(parentsIndices)]
@@ -101,7 +118,7 @@ msgLenWithoutParents = function(nodeIndex, indexListPerNodePerValue, arities, sa
 }
 
 
-mmlCPT.rev = function(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, 
+mmlCPT.fast = function(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, 
                   arities, sampleSize, base) {
   
   if (length(parentsIndices) < 1) {
@@ -110,7 +127,7 @@ mmlCPT.rev = function(nodeIndex, parentsIndices, indexListPerNodePerValue, cache
     
   } else {
     
-    res = msgLenWithParents.rev(nodeIndex, parentsIndices, indexListPerNodePerValue, 
+    res = msgLenWithParents.fast(nodeIndex, parentsIndices, indexListPerNodePerValue, 
                                    cachedIndicesList, arities, sampleSize, base)
     
   }

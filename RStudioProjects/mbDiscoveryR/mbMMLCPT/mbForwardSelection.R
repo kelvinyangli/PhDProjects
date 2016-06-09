@@ -1,31 +1,16 @@
 # MB discovery using mml + cpt
-# 
-mbForwardSelection = function(data, node, score, base = 2, indicatorMatrix = NULL, debug = FALSE) {
-  
-  ##############################################################
-  # get the basic information and 
-  # create empty vectors for storing mb
-  
-  allNodes = names(data)
-  nodeIndex = which(allNodes == node) # get index of the target node
-  
-  numNodes = ncol(data)
-  sampleSize = nrow(data)
-  
-  mb = c()
-  #mb = rep(0, numNodes - 1)
-  #unCheckedNodes = allNodes[allNodes != node] # remove target node
-  unCheckedIndices = (1:numNodes)[-nodeIndex]
+
+dataInfo = function(data) {
   
   ##############################################################
   # get the arity of each node 
   # get the indices for each value of each node
-  # 
-  arities = rep(0, numNodes)
+  
+  arities = rep(0, ncol(data))
   
   indexListPerNodePerValue = list()
   
-  for (i in 1:numNodes) {
+  for (i in 1:ncol(data)) {
     
     arities[i] = nlevels(data[, i])
     
@@ -41,6 +26,29 @@ mbForwardSelection = function(data, node, score, base = 2, indicatorMatrix = NUL
     indexListPerNodePerValue[[i]] = indexListPerValue
     
   } # end for node i
+  
+  ls = list(arities = arities, indexListPerNodePerValue = indexListPerNodePerValue)
+  
+  return(ls)
+  
+}
+
+mbForwardSelection = function(data, node, score, arities, indexListPerNodePerValue, 
+                              base = 2, indicatorMatrix = NULL, debug = FALSE) {
+  
+  ##############################################################
+  # get the basic information and 
+  # create empty vectors for storing mb
+  
+  allNodes = names(data)
+  nodeIndex = which(allNodes == node) # get index of the target node
+  
+  numNodes = ncol(data)
+  sampleSize = nrow(data)
+  
+  mb = c()
+  
+  unCheckedIndices = (1:numNodes)[-nodeIndex]
   
   ##############################################################
   # msg len for a single node with no parents

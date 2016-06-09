@@ -15,7 +15,7 @@ mbBackwardElemination = function(data, node, score, base = 2, indicatorMatrix = 
   # start with the full mb
   mb = (1:numNodes)[-nodeIndex]
   
-  #blackList = c()
+  blackList = c()
   
   ##############################################################
   # get the arity of each node 
@@ -69,7 +69,8 @@ mbBackwardElemination = function(data, node, score, base = 2, indicatorMatrix = 
     }
     
     cat("Search: Backward elemination --- Score:", scoreName, "\n")
-    cat("full mb:", minMsgLen, "\n")
+    cat("full mb:", allNodes[mb], "\n")
+    cat("score  :", minMsgLen, "\n")
     
   }
   
@@ -102,7 +103,7 @@ mbBackwardElemination = function(data, node, score, base = 2, indicatorMatrix = 
         
       } # end if else 
       
-      if (debug) cat("parents =", allNodes[mb[-i]], ":", msgLenCurrent, "\n")
+      if (debug) cat("mb-", allNodes[mb[i]], ":", msgLenCurrent, "\n")
       
       # if the current msg len is smaller then replace minMsgLen by the current 
       # and record the current index
@@ -124,7 +125,7 @@ mbBackwardElemination = function(data, node, score, base = 2, indicatorMatrix = 
       
     } else {
       
-      if (debug) cat("delete", allNodes[mb[index]], "from current mb \n")
+      if (debug) cat("best choice: delete", allNodes[mb[index]], "\n")
       
       # add the node index with the minimum msg len into mb and remove it from unCheckedIndices
       mb = mb[-index]
