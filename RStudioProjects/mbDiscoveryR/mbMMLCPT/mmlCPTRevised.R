@@ -17,7 +17,7 @@ msgLenWithParents.revised = function(nodeIndex, parentsIndices, indexListPerNode
   
   numParentsInstantiations = prod(arities[parentsIndices])
   
-  fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
+  #fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
   
   nonFixedTerm = 0
   
@@ -53,7 +53,7 @@ msgLenWithParents.revised = function(nodeIndex, parentsIndices, indexListPerNode
     
   } # end for i
   
-  return(fixedTerm + nonFixedTerm)
+  return(nonFixedTerm)
   
 }
 
@@ -63,7 +63,9 @@ msgLenWithoutParents.revised = function(nodeIndex, indexListPerNodePerValue, ari
   
   arity = arities[nodeIndex]
   
-  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + logFactorial(sampleSize - 1, base = base) - 
+  # 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + 
+  
+  fixedTerm = logFactorial(sampleSize - 1, base = base) - 
     log(factorial(arity - 1), base = base) - logFactorial(sampleSize - arity, base = base) + 
     logFactorial(sampleSize, base = base)
   

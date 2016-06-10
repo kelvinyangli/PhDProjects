@@ -1,10 +1,10 @@
 
-numNodes = 9
+numNodes = 5
 maxNumParents = 2
 maxNumValues = 2
 concentration = 1
-sampleSize = 5000
-numTests = 10
+sampleSize = 500
+numTests = 2
 
 debug = TRUE
 
