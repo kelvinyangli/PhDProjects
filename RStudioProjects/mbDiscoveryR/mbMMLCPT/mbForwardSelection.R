@@ -34,7 +34,7 @@ dataInfo = function(data) {
 }
 
 mbForwardSelection = function(data, node, score, arities, indexListPerNodePerValue, 
-                              base = 2, indicatorMatrix = NULL, debug = FALSE) {
+                              base = exp(1), indicatorMatrix = NULL, mbSize = 1000, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -54,11 +54,11 @@ mbForwardSelection = function(data, node, score, arities, indexListPerNodePerVal
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
   
-  if (!is.null(indicatorMatrix)) {
+  if (!is.null(indicatorMatrix)) {# mmlLogit
     
-    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, sigma = 3, base)
+    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, sigma = 3)
     
-  } else {
+  } else {# mmlCPT
     
     minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base)
     
@@ -102,7 +102,7 @@ mbForwardSelection = function(data, node, score, arities, indexListPerNodePerVal
       
       if (!is.null(indicatorMatrix)) {
         
-        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3, base)
+        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3)
         
       } else {
         

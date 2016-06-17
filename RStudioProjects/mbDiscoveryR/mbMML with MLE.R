@@ -66,8 +66,8 @@ negLoglike1stDerivative = function(indicatorMatrix, dependVarIndex, independVarI
 }
 
 
-negLogLike = cmpfun(negLogLike)
-negLoglike1stDerivative = cmpfun(negLoglike1stDerivative)
+#negLogLike = cmpfun(negLogLike)
+#negLoglike1stDerivative = cmpfun(negLoglike1stDerivative)
 ############################################## Fisher information ###################################################
 # given MAP estimation of parameter beta
 # compute determinant of expected FIM
@@ -146,9 +146,9 @@ logDeterminant = function(matrix) {
   
 }
 
-negLoglike2ndDerivative = cmpfun(negLoglike2ndDerivative)
-fisherMatrix = cmpfun(fisherMatrix)
-logDeterminant = cmpfun(logDeterminant)
+#negLoglike2ndDerivative = cmpfun(negLoglike2ndDerivative)
+#fisherMatrix = cmpfun(fisherMatrix)
+#logDeterminant = cmpfun(logDeterminant)
 ################################################## msg len ############################################
 msgLen = function(indicatorMatrix, dependVarIndex, independVarIndexes, cardinalities, sigma) {
   

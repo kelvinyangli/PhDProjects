@@ -40,11 +40,12 @@ innerProd = function(beta, X) {
 
 
 # log likelihood for a single row of data
-logLikeSingle = function(indicatorMatrix, yIndex, xIndices, beta, rowIndex, base) {
+# use natural log base, since the simplification of -log like cancels log and exp, hence base is natural
+logLikeSingle = function(indicatorMatrix, yIndex, xIndices, beta, rowIndex) {
   
   betaDotX = innerProd(beta, c(1, indicatorMatrix[rowIndex, xIndices]))
   
-  logLike = -log(1 + exp(betaDotX), base) + indicatorMatrix[rowIndex, yIndex] * betaDotX
+  logLike = -log(1 + exp(betaDotX)) + indicatorMatrix[rowIndex, yIndex] * betaDotX
   
   return(logLike)
   
@@ -52,14 +53,14 @@ logLikeSingle = function(indicatorMatrix, yIndex, xIndices, beta, rowIndex, base
 
 
 # negative log likelihood for the entire dataset
-negLogLike = function(indicatorMatrix, yIndex, xIndices, beta, base) {
+negLogLike = function(indicatorMatrix, yIndex, xIndices, beta) {
   
   logLike = 0 
   
   # cumulative sum log likelihood for the entire data set
   for (i in 1:nrow(indicatorMatrix)) {
     
-    logLike = logLike + logLikeSingle(indicatorMatrix, yIndex, xIndices, beta, i, base)
+    logLike = logLike + logLikeSingle(indicatorMatrix, yIndex, xIndices, beta, i)
     
   }
   
@@ -135,6 +136,7 @@ fisherMatrix = function(indicatorMatrix, yIndex, xIndices, beta) {
 # calculate log of the determinant of a matrix
 # matrix has to be symmetric positive definite
 # use cholesky decomposition to decompose matrix FIM = L*transpose(L)
+# since log like used natural base, we use natural base for log det(fisher) too
 logDeterminant = function(matrix) {
   
   choleskeyUpper = chol(matrix)
@@ -143,7 +145,7 @@ logDeterminant = function(matrix) {
   
   for (i in 1:nrow(matrix)) {
     
-    logDet = logDet + log(diag(choleskeyUpper)[i], base = 2)
+    logDet = logDet + log(diag(choleskeyUpper)[i])
     
   }
   
@@ -153,7 +155,7 @@ logDeterminant = function(matrix) {
 
 ######################################  msg len with no predictor #####################################
 # check for this 
-msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma, base) {
+msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma) {
   
   # formula for empty model
   formula = paste(allNodes[yIndex], "~ 1")
@@ -162,17 +164,17 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
   beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
   
   # value for the negative log likelihood 
-  nll = negLogLike(indicatorMatrix, yIndex, NULL, beta, base)
+  nll = negLogLike(indicatorMatrix, yIndex, NULL, beta)
   
   # fisher information matrix 
   fisherInfoMatrix = negLoglike2ndDerivative(indicatorMatrix, NULL, beta, 1, 1)
   
   # log of the determinant of the FIM
-  logFisher = log(fisherInfoMatrix, base)
+  logFisher = log(fisherInfoMatrix)
   
   # computing mml 
-  mml = 0.5 * log(2 * pi, base) + log(sigma, base) - 0.5 * log(cardinalities[yIndex], base) + 
-    0.5 * beta ^ 2 / sigma ^ 2 + 0.5 * logFisher + nll + 0.5 * (1 + log(0.083333, base))
+  mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(cardinalities[yIndex]) + 
+    0.5 * beta ^ 2 / sigma ^ 2 + 0.5 * logFisher + nll + 0.5 * (1 + log(0.083333))
   
   # store results in a list 
   lst = list(beta, nll, logFisher, mml)
@@ -186,7 +188,7 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
 
 ################################################## msg len ############################################
 msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, 
-                                allNodes, sigma, base) {
+                                allNodes, sigma) {
   
   # arity of dependent variable y
   arityOfY = cardinalities[yIndex]
@@ -215,7 +217,7 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   fittedLogit = glm(formula, family = binomial(link = "logit"), data = data)
   
   # value for the negative log likelihood 
-  nll = negLogLike(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients, base)
+  nll = negLogLike(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients)
   
   # fisher information matrix 
   fisherInfoMatrix = fisherMatrix(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients)
@@ -224,9 +226,9 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   logFisher = logDeterminant(fisherInfoMatrix)
   
   # computing mml 
-  mmlFixedPart =  0.5 * nFreePar * log(2 * pi, base) + nFreePar * log(sigma, base) - 0.5 * log(arityOfY, base) - 
-    0.5 * sum((cardinalities[xIndices] - 1) * log(arityOfY, base) + 
-                (arityOfY - 1) * log(cardinalities[xIndices], base)) + 0.5 * nFreePar*(1 + log(latticeConst, base)) 
+  mmlFixedPart =  0.5 * nFreePar * log(2 * pi) + nFreePar * log(sigma) - 0.5 * log(arityOfY) - 
+    0.5 * sum((cardinalities[xIndices] - 1) * log(arityOfY) + 
+                (arityOfY - 1) * log(cardinalities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
   
   # sum of logit parameters square
   sumParSquare = 0 
@@ -246,15 +248,15 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
 }
 
 
-mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma, base) {
+mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma) {
   
   if (length(xIndices) < 1) {
     
-    msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma, base)$mml[[1]]
+    msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma)$mml[[1]]
     
   } else {
     
-    msgLen = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma, base)$mml[[1]]
+    msgLen = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma)$mml[[1]]
     
   }
   
