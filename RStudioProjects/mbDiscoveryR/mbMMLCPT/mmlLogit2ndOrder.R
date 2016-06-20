@@ -95,20 +95,30 @@ negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
   
 }
 
+# computing entries of fisher information matrix when the target has at least 1 parent
+# where there is no parent, FIM is a 1x1 matrix, which is just a sigle value 
+# and hence can be computed easily without using this function
 fisherMatrix2ndOrder = function(indicatorMatrix, yIndex, predictors, expConstants, completeIndicatorMatrix) {
   
-  # FIM is a square matrix, with dimensions = |beta|
+  # FIM is a square matrix, with dimensions = |beta| = |predictors| + 1
+  # where predictors = c(1st order terms, 2nd order terms)
   FIM = matrix(NA, length(predictors) + 1, length(predictors) + 1) 
   
   #fill in the (1, 1) entry of FIM
   FIM[1, 1] = sum(expConstants)
   
-  # fill in the lower triangular FIM from the 2nd column
+  # fill in the lower triangular FIM from the 2nd row
   for (j in 2:nrow(FIM)) {
     
-    # start filling from the 2nd column since the 1st column is idential to the diagnose
+    # fill in the lower traingular FIM from the 2nd column 
+    # since the 1st column is idential to the diagnose
     for (k in 2:j) {
       
+      # x[, j] = indicatorMatrix[, xIndices[j - 1]] = indicatorMatrix[, xIndices][, j - 1]
+      # take j-1 instead of j is because the jth index in FIM corresponds to the (j-1)th index in xIndice
+      # since an integer 1 is added in front of the Xs for the intercept
+      # conduct vector multiplication x_ij * x_ik first, then inner product with expConstants
+      # notice that x_i here is the joint of the original data and interaction data
       FIM[j, k] = expConstants %*% (completeIndicatorMatrix[, predictors[j - 1]] * completeIndicatorMatrix[, predictors[k - 1]])
       
     } # end for k
@@ -162,8 +172,7 @@ msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, arities
   expConstants = exp(betaDotX) / (1 + exp(betaDotX)) ^ 2
   
   # when there is no parents, expConstants is a single number
-  # hence sum(exp(beta*X)) = sampleSize * exp(beta*X) = nrow(indicatorMatrix) * expConstants
-  # FIM is a 1x1 matrix
+  # FIM is a 1x1 matrix = sum(expConstants) = sampleSize * expConstants
   # log of the determinant of the FIM
   logFisher = log(expConstants * nrow(indicatorMatrix))
   
@@ -218,13 +227,10 @@ makeFormula = function(allNodes, yIndex, xIndices) {
 
 ################################################## msg len ############################################
 msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, 
-                                        allNodes, sigma, interactData, completeIndicatorMatrix) {
+                                        allNodes, interactData, completeIndicatorMatrix, sigma) {
   
   # arity of dependent variable y
   arityOfY = arities[yIndex]
-  
-  # this is for binary case
-  #nFreePar = length(xIndices) + 1
   
   # lattice constant
   k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)
@@ -248,12 +254,9 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
     
   }
   
-  # pre-compute betaDotX for each row
-  betaDotX = rep(0, nrow(indicatorMatrix))
   
-  # pre-compute exp(beta*X)/(1 + exp(beta*X))^2 for reach row
-  expConstants = rep(0, nrow(indicatorMatrix))
-  
+  # compute the indices for all 1st and 2nd order terms
+  # predictors = c(1st order indices, 2nd order indices) in completeIndicatorMatrix
   if (length(xIndices) > 1) { # only have interaction if there are more than 1 parent
     
     # interaction of predictors
@@ -268,6 +271,11 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
     
   }
   
+  # pre-compute betaDotX for each row
+  betaDotX = rep(0, nrow(indicatorMatrix))
+  
+  # pre-compute exp(beta*X)/(1 + exp(beta*X))^2 for reach row
+  expConstants = rep(0, nrow(indicatorMatrix))
   
   for (i in 1:nrow(indicatorMatrix)) {
     
@@ -317,8 +325,8 @@ mmlLogit2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, al
     
   } else {
     
-    msgLen = msgLenWithPredictors2ndOrder(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma, interactData, 
-                                          completeIndicatorMatrix)$mml[[1]]
+    msgLen = msgLenWithPredictors2ndOrder(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, 
+                                          completeIndicatorMatrix, sigma)$mml[[1]]
     
   }
   

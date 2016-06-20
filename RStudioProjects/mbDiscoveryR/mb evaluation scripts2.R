@@ -1,8 +1,8 @@
-numNodes = 5
-maxNumParents = 1
+numNodes = 7
+maxNumParents = 2
 maxNumValues = 2
 concentration = 1
-sampleSize = 1000
+sampleSize = 5000
 seed = generateSeed()
 set.seed(seed)
 
@@ -23,8 +23,8 @@ for (i in 1:length(allNodes)) {
   cat("target:  ", allNodes[i], "\n")
   cat("mb.true: ", bnlearn::mb(dag, allNodes[i]), "\n")
   
-  mb.cpt = mbForwardSelection(data,allNodes[i],mmlCPT,datainfo$arities,datainfo$indexListPerNodePerValue,
-                              indicatorMatrix = NULL, debug=F)
+  mb.cpt = mbForwardSelection(data,allNodes[i], mmlCPT, datainfo$arities, datainfo$indexListPerNodePerValue,
+                              indicatorMatrix = NULL, debug = F)
   
   cat("mb.cpt:  ", mb.cpt, "\n")
   
@@ -32,9 +32,14 @@ for (i in 1:length(allNodes)) {
   
   #cat("mb.backward:  ", mb.backward, "\n")
   
-  mb.logit = mbForwardSelection(data,allNodes[i],mmlLogit,datainfo$arities,datainfo$indexListPerNodePerValue,
-                                indicatorMatrix = indicatorMatrix, debug=F)
+  mb.logit = mbForwardSelection(data,allNodes[i], mmlLogit, datainfo$arities, datainfo$indexListPerNodePerValue,
+                                indicatorMatrix = indicatorMatrix, debug = F)
   cat("mb.logit:", mb.logit, "\n")
+  
+  mb.logit2 = mbForwardSelection(data,allNodes[i], mmlLogit2ndOrder, datainfo$arities, datainfo$indexListPerNodePerValue,
+                                indicatorMatrix = indicatorMatrix, interaction = T, debug = F)
+  
+  cat("mb.logit2:", mb.logit2, "\n")
   
   mb.iamb = learn.mb(data, allNodes[i], "iamb")
   cat("mb.iamb:", mb.iamb, "\n")

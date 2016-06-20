@@ -27,15 +27,18 @@ getIndicator = function(data) {
 
 ################################################## negative log likelihood ############################################
 # negative log likelihood for the entire dataset
-# for single row nll = -log(1 + exp(beta %*% X)) + y[i]*(beta $*% X)
+# for single row nll = -log(1 + exp(beta %*% X)) + y[i]*(beta %*% X)
 negLogLike = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
   
   if (is.null(xIndices)) {
+    
+    # when is no parent, betaDotX is a single value rather than a vector
     
     logLike = -log(1 + exp(betaDotX)) * nrow(indicatorMatrix) + sum(indicatorMatrix[, yIndex]) * betaDotX
     
   } else {
     
+    # where there exists parent, betaDotX is a vector where each element corresponds to a single row of data
     logLike = sum(-log(1 + exp(betaDotX))) + indicatorMatrix[, yIndex] %*% betaDotX
     
   }
@@ -46,20 +49,27 @@ negLogLike = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
 
 ##################################################  
 # computing entries of fisher information matrix when the target has at least 1 parent
+# where there is no parent, FIM is a 1x1 matrix, which is just a sigle value 
+# and hence can be computed easily without using this function
 fisherMatrix = function(indicatorMatrix, yIndex, xIndices, expConstants) {
   
-  # FIM is a square matrix, with dimensions = |beta|
+  # FIM is a square matrix, with dimensions = |beta| = |xIndices| + 1 for binary case
   FIM = matrix(NA, length(xIndices) + 1, length(xIndices) + 1) 
   
   #fill in the (1, 1) entry of FIM
   FIM[1, 1] = sum(expConstants)
   
-  # fill in the lower triangular FIM from the 2nd column
+  # fill in the lower triangular FIM from the 2nd row 
   for (j in 2:nrow(FIM)) {
     
-    # start filling from the 2nd column since the 1st column is idential to the diagnose
+    # fill in the lower traingular FIM from the 2nd column 
+    # since the 1st column is idential to the diagnose
     for (k in 2:j) {
       
+      # x[, j] = indicatorMatrix[, xIndices[j - 1]] = indicatorMatrix[, xIndices][, j - 1]
+      # take j-1 instead of j is because the jth index in FIM corresponds to the (j-1)th index in xIndice
+      # since an integer 1 is added in front of the Xs for the intercept
+      # conduct vector multiplication x_ij * x_ik first, then inner product with expConstants
       FIM[j, k] = expConstants %*% (indicatorMatrix[, xIndices[j - 1]] * indicatorMatrix[, xIndices[k - 1]])
       
     } # end for k
@@ -97,7 +107,7 @@ logDeterminant = function(matrix) {
 }
 
 ######################################  msg len with no predictor #####################################
-msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma) {
+msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, arities, allNodes, sigma) {
   
   # formula for empty model
   formula = paste(allNodes[yIndex], "~ 1")
@@ -115,13 +125,12 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
   expConstants = exp(betaDotX) / (1 + exp(betaDotX)) ^ 2
   
   # when there is no parents, expConstants is a single number
-  # hence sum(exp(beta*X)) = sampleSize * exp(beta*X) = nrow(indicatorMatrix) * expConstants
-  # FIM is a 1x1 matrix
+  # FIM is a 1x1 matrix = sum(expConstants) = sampleSize * expConstants
   # log of the determinant of the FIM
   logFisher = log(expConstants * nrow(indicatorMatrix))
   
   # computing mml 
-  mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(cardinalities[yIndex]) + 
+  mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(arities[yIndex]) + 
     0.5 * beta ^ 2 / sigma ^ 2 + 0.5 * logFisher + nll + 0.5 * (1 + log(0.083333))
   
   # store results in a list 
@@ -134,14 +143,22 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
 }
 
 ################################################## msg len ############################################
-msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, 
+msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, arities, 
                                 allNodes, sigma) {
   
   # arity of dependent variable y
-  arityOfY = cardinalities[yIndex]
+  arityOfY = arities[yIndex]
   
-  # this is for binary case
-  nFreePar = length(xIndices) + 1
+  # create formula for fitting logit model using glm
+  formula = paste(allNodes[yIndex], "~", paste0(allNodes[xIndices], collapse = "+"))
+  
+  # parameter estimation of negative log likelihood using GLM
+  # glm always use the first level (in this case "A") for reference when estimating coefficients
+  # the reference can be changed by change the order of levels in data frame using relevel()
+  beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
+  
+  # the number of free parameters = |beta|
+  nFreePar = length(beta)
   
   # lattice constant
   k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)
@@ -155,14 +172,6 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
     latticeConst = min(k)
     
   }
-  
-  # create formula for fitting logit model using glm
-  formula = paste(allNodes[yIndex], "~", paste0(allNodes[xIndices], collapse = "+"))
-  
-  # parameter estimation of negative log likelihood using GLM
-  # glm always use the first level (in this case "A") for reference when estimating coefficients
-  # the reference can be changed by change the order of levels in data frame using relevel()
-  beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
   
   # pre-compute betaDotX for each row
   betaDotX = rep(0, nrow(indicatorMatrix))
@@ -189,8 +198,8 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   
   # computing mml 
   mmlFixedPart =  0.5 * nFreePar * log(2 * pi) + nFreePar * log(sigma) - 0.5 * log(arityOfY) - 
-    0.5 * sum((cardinalities[xIndices] - 1) * log(arityOfY) + 
-                (arityOfY - 1) * log(cardinalities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
+    0.5 * sum((arities[xIndices] - 1) * log(arityOfY) + 
+                (arityOfY - 1) * log(arities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
   
   # sum of logit parameters square
   sumParSquare = 0 
@@ -209,15 +218,15 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   
 }
 
-mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma) {
+mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma) {
   
   if (is.null(xIndices)) {
     
-    msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma)$mml[[1]]
+    msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, arities, allNodes, sigma)$mml[[1]]
     
   } else {
     
-    msgLen = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma)$mml[[1]]
+    msgLen = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma)$mml[[1]]
     
   }
   
