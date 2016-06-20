@@ -169,7 +169,7 @@ logDeterminant = function(matrix) {
   
   for (i in 1:nrow(matrix)) {
     
-    logDet = logDet + log(diag(choleskeyUpper)[i], base = 2)
+    logDet = logDet + log(diag(choleskeyUpper)[i])
     
   }
   

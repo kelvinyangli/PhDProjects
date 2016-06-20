@@ -4,7 +4,7 @@
 # when our dataset contains values such as "A", "B", "C", ...  
 # should obtain same answer as using optim, because glm also use mle 
 
-################################################## pre process data ############################################\
+################################################## pre process data ############################################
 # transform binary data into 0 and 1
 getIndicator = function(data) {
   
@@ -25,42 +25,18 @@ getIndicator = function(data) {
   
 }
 
-################################################## negative log likelihood
-# inner product of vectors X and Beta with the same length, where
-# # X[1] = 1 and beta[1] = beta0 
-innerProd = function(beta, X) {
-  
-  summation = 0 
-  
-  for (i in 1:length(beta)) summation = summation + X[i] * beta[i]
-  
-  return(summation)
-  
-}
-
-
-# log likelihood for a single row of data
-# use natural log base, since the simplification of -log like cancels log and exp, hence base is natural
-logLikeSingle = function(indicatorMatrix, yIndex, xIndices, beta, rowIndex) {
-  
-  betaDotX = innerProd(beta, c(1, indicatorMatrix[rowIndex, xIndices]))
-  
-  logLike = -log(1 + exp(betaDotX)) + indicatorMatrix[rowIndex, yIndex] * betaDotX
-  
-  return(logLike)
-  
-}
-
-
+################################################## negative log likelihood ############################################
 # negative log likelihood for the entire dataset
-negLogLike = function(indicatorMatrix, yIndex, xIndices, beta) {
+# for single row nll = -log(1 + exp(beta %*% X)) + y[i]*(beta $*% X)
+negLogLike = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
   
-  logLike = 0 
-  
-  # cumulative sum log likelihood for the entire data set
-  for (i in 1:nrow(indicatorMatrix)) {
+  if (is.null(xIndices)) {
     
-    logLike = logLike + logLikeSingle(indicatorMatrix, yIndex, xIndices, beta, i)
+    logLike = -log(1 + exp(betaDotX)) * nrow(indicatorMatrix) + sum(indicatorMatrix[, yIndex]) * betaDotX
+    
+  } else {
+    
+    logLike = sum(-log(1 + exp(betaDotX))) + indicatorMatrix[, yIndex] %*% betaDotX
     
   }
   
@@ -68,62 +44,28 @@ negLogLike = function(indicatorMatrix, yIndex, xIndices, beta) {
   
 }
 
-
-# 2nd derivative of the negative log likelihood for computing the fisher information matrix
-# defferentiate w.r.t j and k, where j, k = 1, 2, ..., m+1, where m+1 = lenght(beta)
-negLoglike2ndDerivativeSingle = function(indicatorMatrix, xIndices, beta, rowIndex, j, k) {
-  
-  betaDotX = innerProd(beta, c(1, indicatorMatrix[rowIndex, xIndices]))
-  
-  # the jth coordinate of the vector x_i
-  x_ij = c(1, indicatorMatrix[rowIndex, ])[j]
-  
-  # the kth coordinate of the vector x_i
-  x_ik = c(1, indicatorMatrix[rowIndex, ])[k]
-  
-  nll2ndSingle = (exp(betaDotX) / (1 + exp(betaDotX)) ^ 2) * x_ij * x_ik
-  
-  return(nll2ndSingle)
-  
-}
-
-#
-#
-negLoglike2ndDerivative = function(indicatorMatrix, xIndices, beta, j, k) {
-  
-  nll2nd = 0
-  
-  for (i in 1:nrow(indicatorMatrix)) {
-    
-    nll2nd = nll2nd + negLoglike2ndDerivativeSingle(indicatorMatrix, xIndices, beta, i, j, k)
-    
-  }
-  
-  return(nll2nd)
-  
-}
-
-
 ##################################################  computing entries of fisher information matrix
-fisherMatrix = function(indicatorMatrix, yIndex, xIndices, beta) {
+fisherMatrix = function(indicatorMatrix, yIndex, xIndices, expConstants) {
   
-  FIM = matrix(NA, length(beta), length(beta)) 
+  # FIM is a square matrix, with dimensions = |beta|
+  FIM = matrix(NA, length(xIndices) + 1, length(xIndices) + 1) 
   
   #fill in the (1, 1) entry of FIM
-  FIM[1, 1] = negLoglike2ndDerivative(indicatorMatrix, xIndices, beta, 1, 1)
+  FIM[1, 1] = sum(expConstants)
   
-  # fill in the lower triangular FIM
+  # fill in the lower triangular FIM from the 2nd column
   for (j in 2:nrow(FIM)) {
     
+    # start filling from the 2nd column since the 1st column is idential to the diagnose
     for (k in 2:j) {
       
-      FIM[j, k] = negLoglike2ndDerivative(indicatorMatrix, xIndices, beta, j, k)
+      FIM[j, k] = expConstants %*% (indicatorMatrix[, xIndices[j - 1]] * indicatorMatrix[, xIndices[k - 1]])
       
     } # end for k
     
   } # end for j
   
-  # the 1st column is identical ti the diagnose of FIM
+  # the 1st column is identical to the diagnose of FIM
   FIM[, 1] = diag(FIM)
   
   # the upper triangular is identical to the lower triangular FIM
@@ -154,7 +96,6 @@ logDeterminant = function(matrix) {
 }
 
 ######################################  msg len with no predictor #####################################
-# check for this 
 msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma) {
   
   # formula for empty model
@@ -163,14 +104,18 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
   # estimate parameter of logit model using glm
   beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
   
+  # when there is no parent, betaDotX = beta_0 = beta
+  betaDotX = beta
+  
   # value for the negative log likelihood 
-  nll = negLogLike(indicatorMatrix, yIndex, NULL, beta)
+  nll = negLogLike(indicatorMatrix, yIndex, NULL, betaDotX)
   
-  # fisher information matrix 
-  fisherInfoMatrix = negLoglike2ndDerivative(indicatorMatrix, NULL, beta, 1, 1)
+  # pre-compute expConstants
+  expConstants = exp(betaDotX) / (1 + exp(betaDotX)) ^ 2
   
+  # when there is no parents, FIM = sum(expConstants)
   # log of the determinant of the FIM
-  logFisher = log(fisherInfoMatrix)
+  logFisher = log(sum(expConstants))
   
   # computing mml 
   mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(cardinalities[yIndex]) + 
@@ -184,7 +129,6 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
   return(lst)
   
 }
-
 
 ################################################## msg len ############################################
 msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, 
@@ -202,6 +146,7 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   if (nFreePar <= length(k)) {
     
     latticeConst = k[nFreePar]
+    
   } else {
     
     latticeConst = min(k)
@@ -214,13 +159,27 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   # parameter estimation of negative log likelihood using GLM
   # glm always use the first level (in this case "A") for reference when estimating coefficients
   # the reference can be changed by change the order of levels in data frame using relevel()
-  fittedLogit = glm(formula, family = binomial(link = "logit"), data = data)
+  beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
+  
+  # pre-compute betaDotX for each row
+  betaDotX = rep(0, nrow(indicatorMatrix))
+  
+  # pre-compute exp(beta*X)/(1 + exp(beta*X))^2 for reach row
+  expConstants = rep(0, nrow(indicatorMatrix))
+  
+  for (i in 1:nrow(indicatorMatrix)) {
+    
+    betaDotX[i] = beta[1] + beta[-1] %*% indicatorMatrix[i, xIndices]
+    
+    expConstants[i] = (exp(betaDotX[i]) / (1 + exp(betaDotX[i])) ^ 2)
+      
+  } # end for i
   
   # value for the negative log likelihood 
-  nll = negLogLike(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients)
+  nll = negLogLike(indicatorMatrix, yIndex, xIndices, betaDotX)
   
   # fisher information matrix 
-  fisherInfoMatrix = fisherMatrix(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients)
+  fisherInfoMatrix = fisherMatrix(indicatorMatrix, yIndex, xIndices, expConstants)
   
   # log of the determinant of the FIM
   logFisher = logDeterminant(fisherInfoMatrix)
@@ -232,21 +191,20 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
   
   # sum of logit parameters square
   sumParSquare = 0 
-  for (i in 1:length(nFreePar)) sumParSquare = sumParSquare + fittedLogit$coefficients[i] ^ 2
+  for (i in 1:length(nFreePar)) sumParSquare = sumParSquare + beta[i] ^ 2
   
   mmlNonFixedPart = 0.5 * sumParSquare / sigma ^ 2 + 0.5 * logFisher + nll
   
   mml = mmlFixedPart + mmlNonFixedPart
   
   # store results in a list 
-  lst = list(fittedLogit$coefficients, nll, logFisher, mml)
+  lst = list(beta, nll, logFisher, mml)
   
   names(lst) = c("par", "nll", "logFisher", "mml")
   
   return(lst)
   
 }
-
 
 mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma) {
   
