@@ -44,7 +44,8 @@ negLogLike = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
   
 }
 
-##################################################  computing entries of fisher information matrix
+##################################################  
+# computing entries of fisher information matrix when the target has at least 1 parent
 fisherMatrix = function(indicatorMatrix, yIndex, xIndices, expConstants) {
   
   # FIM is a square matrix, with dimensions = |beta|
@@ -113,9 +114,11 @@ msgLenWithNoPredictors = function(data, indicatorMatrix, yIndex, cardinalities, 
   # pre-compute expConstants
   expConstants = exp(betaDotX) / (1 + exp(betaDotX)) ^ 2
   
-  # when there is no parents, FIM = sum(expConstants)
+  # when there is no parents, expConstants is a single number
+  # hence sum(exp(beta*X)) = sampleSize * exp(beta*X) = nrow(indicatorMatrix) * expConstants
+  # FIM is a 1x1 matrix
   # log of the determinant of the FIM
-  logFisher = log(sum(expConstants))
+  logFisher = log(expConstants * nrow(indicatorMatrix))
   
   # computing mml 
   mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(cardinalities[yIndex]) + 
@@ -208,7 +211,7 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, cardina
 
 mmlLogit = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma) {
   
-  if (length(xIndices) < 1) {
+  if (is.null(xIndices)) {
     
     msgLen = msgLenWithNoPredictors(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma)$mml[[1]]
     

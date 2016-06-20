@@ -1,5 +1,5 @@
-numNodes = 15
-maxNumParents = 2
+numNodes = 5
+maxNumParents = 1
 maxNumValues = 2
 concentration = 1
 sampleSize = 1000
@@ -23,16 +23,17 @@ for (i in 1:length(allNodes)) {
   cat("target:  ", allNodes[i], "\n")
   cat("mb.true: ", bnlearn::mb(dag, allNodes[i]), "\n")
   
-  mb.forward = mbForwardSelection(data, allNodes[i], mmlCPT, datainfo$arities, datainfo$indexListPerNodePerValue)
+  mb.cpt = mbForwardSelection(data,allNodes[i],mmlCPT,datainfo$arities,datainfo$indexListPerNodePerValue,
+                              indicatorMatrix = NULL, debug=F)
   
-  cat("mb.forward:  ", mb.forward, "\n")
+  cat("mb.cpt:  ", mb.cpt, "\n")
   
-  mb.backward = mbBackwardElemination(data, allNodes[i], mmlCPT)
+  #mb.backward = mbBackwardElemination(data, allNodes[i], mmlCPT)
   
-  cat("mb.backward:  ", mb.backward, "\n")
+  #cat("mb.backward:  ", mb.backward, "\n")
   
-  mb.logit = mbForwardSelection(data, allNodes[i], mmlLogit, datainfo$arities, datainfo$indexListPerNodePerValue, 2, indicatorMatrix)
-  
+  mb.logit = mbForwardSelection(data,allNodes[i],mmlLogit,datainfo$arities,datainfo$indexListPerNodePerValue,
+                                indicatorMatrix = indicatorMatrix, debug=F)
   cat("mb.logit:", mb.logit, "\n")
   
   mb.iamb = learn.mb(data, allNodes[i], "iamb")
@@ -45,21 +46,6 @@ for (i in 1:length(allNodes)) {
 
 
 
-for (i in 1:length(allNodes)) {
-  
-  cat("target:  ", allNodes[i], "\n")
-  cat("mb.true: ", bnlearn::mb(dag, allNodes[i]), "\n")
-  
-  mb.cpt = mbGreedySearchWithLookAhead(data, allNodes[i], mmlCPT)
-  
-  cat("mb.cpt:  ", mb.cpt, "\n")
-  
-  mb.iamb = learn.mb(data, allNodes[i], "iamb")
-  
-  cat("mb.iamb: ", mb.iamb, "\n")
-  cat("--------------------------- \n")
-  
-}
 
 
 

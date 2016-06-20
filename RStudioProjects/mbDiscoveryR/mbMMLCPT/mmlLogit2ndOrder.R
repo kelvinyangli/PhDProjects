@@ -25,31 +25,22 @@ getIndicator = function(data) {
   
 }
 
-################################################## negative log likelihood
-# inner product of vectors X and Beta with the same length, where
-# # X[1] = 1 and beta[1] = beta0 
-innerProd = function(beta, X) {
+# compute all pairs of interaction data
+getInteractData = function(data) {
   
-  summation = 0 
+  interact = matrix(0, nrow = nrow(data), ncol = choose(ncol(data), 2))
   
-  for (i in 1:length(beta)) summation = summation + X[i] * beta[i]
-  
-  return(summation)
-  
-}
-
-
-makeInteractData = function(indicatorMatrix, rowIndex, xIndices) {
-  
-  interData = rep(0, sum(1:(length(xIndices) - 1)))
+  interact = as.data.frame(interact)
   
   k = 1
   
-  for (i in 1:(length(xIndices) - 1)) {
+  for (i in 1:(ncol(data) - 1)) {
     
-    for (j in (i + 1):length(xIndices)) {
+    for (j in (i + 1):ncol(data)) {
       
-      interData[k] = prod(indicatorMatrix[rowIndex, xIndices[i]], indicatorMatrix[rowIndex, xIndices[j]])
+      interact[, k] = data[, i] * data[, j]
+      
+      colnames(interact)[k] = paste0(colnames(data)[i], colnames(data)[j], collapse = "")
       
       k = k + 1
       
@@ -57,35 +48,46 @@ makeInteractData = function(indicatorMatrix, rowIndex, xIndices) {
     
   } # end for i
   
-  return(interData)
+  return(interact)
   
 }
 
-# log likelihood of the 2nd order logit model for a single row of data
-logLikeSingle2ndOrder = function(indicatorMatrix, yIndex, xIndices, beta, rowIndex) {
+# create interact predictors according to 1st order predictors and return their column indices in interactData
+interactPredictors = function(interactData, allNodes, xIndices) {
   
-  # interactData is a function that compute the product of predictors 
-  # i.e x_i * x_j following the same order when creating a formula for logit model 
-  # hence the order of the parameters beta and data X is consistant
+  interactXs = rep(0, choose(length(xIndices), 2))
   
-  betaDotX = innerProd(beta, c(1, indicatorMatrix[rowIndex, xIndices], makeInteractData(indicatorMatrix, rowIndex, xIndices)))
+  k = 1 
   
-  logLike = -log(1 + exp(betaDotX)) + indicatorMatrix[rowIndex, yIndex] * betaDotX
+  for (i in 1:(length(xIndices) - 1)) {
+    
+    for (j in (i + 1):length(xIndices)) {
+      
+      # since when compute the interactData, interactions are considered in the order of the column labels
+      # however, when adding node into predictor sets, nodes may be added in a different order
+      # hence when considering interaction terms, pair of nodes are ordered so that it align with the column names of interactData
+      interactXs[k] = which(colnames(interactData) == paste0(allNodes[xIndices[c(i, j)][order(xIndices[c(i, j)])]], collapse = ""))
+      
+      k = k + 1
+      
+    } # end for j
+    
+  } # end for i
   
-  return(logLike)
+  return(interactXs)
   
 }
-
 
 # negative log likelihood of the 2nd order logit model for the entire dataset
-negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, beta) {
+negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
   
-  logLike = 0 
-  
-  # cumulative sum log likelihood for the entire data set
-  for (i in 1:nrow(indicatorMatrix)) {
+  if (is.null(xIndices)) { # if there is no parent
     
-    logLike = logLike + logLikeSingle2ndOrder(indicatorMatrix, yIndex, xIndices, beta, i)
+    logLike = -log(1 + exp(betaDotX)) * nrow(indicatorMatrix) + sum(indicatorMatrix[, yIndex]) * betaDotX
+    
+  } else { # if there is at least one parent
+    
+    logLike = sum(-log(1 + exp(betaDotX))) + indicatorMatrix[, yIndex] %*% betaDotX
     
   }
   
@@ -93,62 +95,27 @@ negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, beta) {
   
 }
 
-
-# 2nd derivative of the negative log likelihood of the 2nd order logit for computing the fisher information matrix
-# defferentiate w.r.t j and k, where j, k = 1, 2, ..., m+1, where m+1 = lenght(beta)
-negLoglike2ndDerivativeSingle2ndOrder = function(indicatorMatrix, xIndices, beta, rowIndex, j, k) {
+fisherMatrix2ndOrder = function(indicatorMatrix, yIndex, predictors, expConstants, completeIndicatorMatrix) {
   
-  betaDotX = innerProd(beta, c(1, indicatorMatrix[rowIndex, xIndices], makeInteractData(indicatorMatrix, rowIndex, xIndices)))
-  
-  # the jth coordinate of the vector x_i, where x_i = c(original x_i, interact data)
-  x_ij = c(1, indicatorMatrix[rowIndex, ], makeInteractData(indicatorMatrix, rowIndex, xIndices))[j]
-  
-  # the kth coordinate of the vector x_i
-  x_ik = c(1, indicatorMatrix[rowIndex, ], makeInteractData(indicatorMatrix, rowIndex, xIndices))[k]
-  
-  nll2ndSingle = (exp(betaDotX) / (1 + exp(betaDotX)) ^ 2) * x_ij * x_ik
-  
-  return(nll2ndSingle)
-  
-}
-
-#
-#
-negLoglike2ndDerivative2ndOrder = function(indicatorMatrix, xIndices, beta, j, k) {
-  
-  nll2nd = 0
-  
-  for (i in 1:nrow(indicatorMatrix)) {
-    
-    nll2nd = nll2nd + negLoglike2ndDerivativeSingle2ndOrder(indicatorMatrix, xIndices, beta, i, j, k)
-    
-  }
-  
-  return(nll2nd)
-  
-}
-
-
-##################################################  computing entries of fisher information matrix
-fisherMatrix2ndOrder = function(indicatorMatrix, yIndex, xIndices, beta) {
-  
-  FIM = matrix(NA, length(beta), length(beta)) 
+  # FIM is a square matrix, with dimensions = |beta|
+  FIM = matrix(NA, length(predictors) + 1, length(predictors) + 1) 
   
   #fill in the (1, 1) entry of FIM
-  FIM[1, 1] = negLoglike2ndDerivative2ndOrder(indicatorMatrix, xIndices, beta, 1, 1)
+  FIM[1, 1] = sum(expConstants)
   
-  # fill in the lower triangular FIM
+  # fill in the lower triangular FIM from the 2nd column
   for (j in 2:nrow(FIM)) {
     
+    # start filling from the 2nd column since the 1st column is idential to the diagnose
     for (k in 2:j) {
       
-      FIM[j, k] = negLoglike2ndDerivative2ndOrder(indicatorMatrix, xIndices, beta, j, k)
+      FIM[j, k] = expConstants %*% (completeIndicatorMatrix[, predictors[j - 1]] * completeIndicatorMatrix[, predictors[k - 1]])
       
     } # end for k
     
   } # end for j
   
-  # the 1st column is identical ti the diagnose of FIM
+  # the 1st column is identical to the diagnose of FIM
   FIM[, 1] = diag(FIM)
   
   # the upper triangular is identical to the lower triangular FIM
@@ -177,9 +144,7 @@ logDeterminant = function(matrix) {
   
 }
 
-######################################  msg len with no predictor #####################################
-# check for this 
-msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma) {
+msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, arities, allNodes, sigma) {
   
   # formula for empty model
   formula = paste(allNodes[yIndex], "~ 1")
@@ -187,17 +152,23 @@ msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, cardina
   # estimate parameter of logit model using glm
   beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
   
+  # if there is no parent, then beta*X = beta0 = beta
+  betaDotX = beta
+  
   # value for the negative log likelihood 
-  nll = negLogLike2ndOrder(indicatorMatrix, yIndex, NULL, beta)
+  nll = negLogLike2ndOrder(indicatorMatrix, yIndex, NULL, betaDotX)
   
-  # fisher information matrix 
-  fisherInfoMatrix = negLoglike2ndDerivative2ndOrder(indicatorMatrix, NULL, beta, 1, 1)
+  # pre-compute expConstants
+  expConstants = exp(betaDotX) / (1 + exp(betaDotX)) ^ 2
   
+  # when there is no parents, expConstants is a single number
+  # hence sum(exp(beta*X)) = sampleSize * exp(beta*X) = nrow(indicatorMatrix) * expConstants
+  # FIM is a 1x1 matrix
   # log of the determinant of the FIM
-  logFisher = log(fisherInfoMatrix)
+  logFisher = log(expConstants * nrow(indicatorMatrix))
   
   # computing mml 
-  mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(cardinalities[yIndex]) + 
+  mml = 0.5 * log(2 * pi) + log(sigma) - 0.5 * log(arities[yIndex]) + 
     0.5 * beta ^ 2 / sigma ^ 2 + 0.5 * logFisher + nll + 0.5 * (1 + log(0.083333))
   
   # store results in a list 
@@ -212,6 +183,9 @@ msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, cardina
 makeFormula = function(allNodes, yIndex, xIndices) {
   
   if (length(xIndices) > 1) { # if there are more than 1 predictors
+    
+    # re-order xIndices to make it consistent with the colnames(interactData)
+    #tempIndices = xIndices[order(xIndices)]
     
     pairs = vector(length = sum(1:(length(xIndices) - 1)))
     
@@ -243,11 +217,11 @@ makeFormula = function(allNodes, yIndex, xIndices) {
 }
 
 ################################################## msg len ############################################
-msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, 
-                                allNodes, sigma) {
+msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, 
+                                        allNodes, sigma, interactData, completeIndicatorMatrix) {
   
   # arity of dependent variable y
-  arityOfY = cardinalities[yIndex]
+  arityOfY = arities[yIndex]
   
   # this is for binary case
   #nFreePar = length(xIndices) + 1
@@ -261,9 +235,9 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
   # parameter estimation of negative log likelihood using GLM
   # glm always use the first level (in this case "A") for reference when estimating coefficients
   # the reference can be changed by change the order of levels in data frame using relevel()
-  fittedLogit = glm(formula, family = binomial(link = "logit"), data = data)
+  beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
   
-  nFreePar = length(fittedLogit$coefficients)
+  nFreePar = length(beta)
   
   if (nFreePar <= length(k)) {
     
@@ -274,30 +248,59 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
     
   }
   
+  # pre-compute betaDotX for each row
+  betaDotX = rep(0, nrow(indicatorMatrix))
+  
+  # pre-compute exp(beta*X)/(1 + exp(beta*X))^2 for reach row
+  expConstants = rep(0, nrow(indicatorMatrix))
+  
+  if (length(xIndices) > 1) { # only have interaction if there are more than 1 parent
+    
+    # interaction of predictors
+    interactXs = interactPredictors(interactData, allNodes, xIndices) 
+    
+    # joint of 1st and 2nd order predictors
+    predictors = c(xIndices, ncol(indicatorMatrix) + interactXs)
+    
+  } else { # if there is at most one parent, then the predictors contain only 1st order predictors
+    
+    predictors = xIndices
+    
+  }
+  
+  
+  for (i in 1:nrow(indicatorMatrix)) {
+    
+    betaDotX[i] = beta[1] + beta[-1] %*% completeIndicatorMatrix[i, predictors]
+    
+    expConstants[i] = (exp(betaDotX[i]) / (1 + exp(betaDotX[i])) ^ 2)
+    
+  } # end for i
+  
   # value for the negative log likelihood 
-  nll = negLogLike2ndOrder(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients)
+  nll = negLogLike2ndOrder(indicatorMatrix, yIndex, xIndices, betaDotX)
   
   # fisher information matrix 
-  fisherInfoMatrix = fisherMatrix2ndOrder(indicatorMatrix, yIndex, xIndices, fittedLogit$coefficients)
+  fisherInfoMatrix = fisherMatrix2ndOrder(indicatorMatrix, yIndex, predictors, expConstants, completeIndicatorMatrix)
   
   # log of the determinant of the FIM
   logFisher = logDeterminant(fisherInfoMatrix)
   
   # computing mml 
   mmlFixedPart =  0.5 * nFreePar * log(2 * pi) + nFreePar * log(sigma) - 0.5 * log(arityOfY) - 
-    0.5 * sum((cardinalities[xIndices] - 1) * log(arityOfY) + 
-                (arityOfY - 1) * log(cardinalities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
+    0.5 * sum((arities[xIndices] - 1) * log(arityOfY) + 
+                (arityOfY - 1) * log(arities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
   
   # sum of logit parameters square
   sumParSquare = 0 
-  for (i in 1:length(nFreePar)) sumParSquare = sumParSquare + fittedLogit$coefficients[i] ^ 2
+  for (i in 1:length(nFreePar)) sumParSquare = sumParSquare + beta[i] ^ 2
   
   mmlNonFixedPart = 0.5 * sumParSquare / sigma ^ 2 + 0.5 * logFisher + nll
   
   mml = mmlFixedPart + mmlNonFixedPart
   
   # store results in a list 
-  lst = list(fittedLogit$coefficients, nll, logFisher, mml)
+  lst = list(beta, nll, logFisher, mml)
   
   names(lst) = c("par", "nll", "logFisher", "mml")
   
@@ -306,15 +309,16 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
 }
 
 
-mmlLogit2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma) {
+mmlLogit2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, completeIndicatorMatrix, sigma) {
   
   if (length(xIndices) < 1) {
     
-    msgLen = msgLenWithNoPredictors2ndOrder(data, indicatorMatrix, yIndex, cardinalities, allNodes, sigma)$mml[[1]]
+    msgLen = msgLenWithNoPredictors2ndOrder(data, indicatorMatrix, yIndex, arities, allNodes, sigma)$mml[[1]]
     
   } else {
     
-    msgLen = msgLenWithPredictors2ndOrder(data, indicatorMatrix, yIndex, xIndices, cardinalities, allNodes, sigma)$mml[[1]]
+    msgLen = msgLenWithPredictors2ndOrder(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma, interactData, 
+                                          completeIndicatorMatrix)$mml[[1]]
     
   }
   

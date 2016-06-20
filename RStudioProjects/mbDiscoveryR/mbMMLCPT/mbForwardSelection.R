@@ -34,7 +34,7 @@ dataInfo = function(data) {
 }
 
 mbForwardSelection = function(data, node, score, arities, indexListPerNodePerValue, 
-                              base = exp(1), indicatorMatrix = NULL, mbSize = 1000, debug = FALSE) {
+                              base = exp(1), indicatorMatrix = NULL, mbSize = 1000, interaction = FALSE, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -51,18 +51,41 @@ mbForwardSelection = function(data, node, score, arities, indexListPerNodePerVal
   unCheckedIndices = (1:numNodes)[-nodeIndex]
   
   ##############################################################
+  # when considering interaction between predictors, ie. 2nd order logit
+  if (interaction) {
+    
+    # compute all pairs of interaction data
+    interactData = getInteractData(indicatorMatrix)
+    
+    # joint the original indicator matrix with the interaction matrix
+    completeIndicatorMatrix = cbind(indicatorMatrix, interactData)
+    
+    completeIndicatorMatrix = as.matrix(completeIndicatorMatrix)
+    
+  }
+
+  ##############################################################
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
   
   if (!is.null(indicatorMatrix)) {# mmlLogit
     
-    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, sigma = 3)
+    if (interaction) { # 2nd order logit
+      
+      minMsgLen = score(data, indicatorMatrix, nodeIndex, NULL, arities, allNodes, interactData, completeIndicatorMatrix, sigma = 3)
+      
+    } else { # 1st order logit
+      
+      minMsgLen = score(data, indicatorMatrix, nodeIndex, NULL, arities, allNodes, sigma = 3)
+      
+    }
     
   } else {# mmlCPT
     
     minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base)
     
   } # end if 
+  ##############################################################
   
   if (debug) {
     
@@ -100,15 +123,26 @@ mbForwardSelection = function(data, node, score, arities, indexListPerNodePerVal
       
       parentsIndices = c(mb, unCheckedIndices[i])
       
+      ##############################################################
+      # msg len with at least 1 parent
       if (!is.null(indicatorMatrix)) {
         
-        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3)
+        if (interaction) { # 2nd order logit
+          
+          msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, interactData, completeIndicatorMatrix, sigma = 3)
+          
+        } else { # 1st order logit
+          
+          msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3)
+          
+        }
         
-      } else {
+      } else { # mmlCPT
         
         msgLenCurrent = score(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base)
         
       }
+      ##############################################################
       
       if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       
