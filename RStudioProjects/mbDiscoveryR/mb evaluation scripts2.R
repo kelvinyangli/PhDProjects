@@ -1,8 +1,8 @@
-numNodes = 7
-maxNumParents = 2
+numNodes = 21
+maxNumParents = 3
 maxNumValues = 2
 concentration = 1
-sampleSize = 5000
+sampleSize = 1000
 seed = generateSeed()
 set.seed(seed)
 

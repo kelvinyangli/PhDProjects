@@ -4,11 +4,9 @@ import numpy as np
 import pandas as pd
 
 
-def generateDag(numNodes, maxNumParents, draw=False):
+def generateDag(numNodes, maxNumParents):
 
-    nodesNumbers = np.arange(1, numNodes + 1)
-    string = "V"
-    nodes = [string + str(n) for n in nodesNumbers]
+    nodes = ["V" + str(n) for n in range(1, numNodes + 1)]
 
     dag = pgv.AGraph(strict=True, directed=True)
 
@@ -31,7 +29,7 @@ def generateDag(numNodes, maxNumParents, draw=False):
             # randomly sample an integer from [0, upperBound] as the number of parents for the current node
             numParents = random.randrange(0, upperBound + 1)
 
-            # randomly sample indices for parents
+            # randomly sample parents for the current node from preceding indices
             parents = random.sample(nodes[:i], numParents)
 
             # if the current node has parents
@@ -47,15 +45,7 @@ def generateDag(numNodes, maxNumParents, draw=False):
 
         dag.add_edges_from(edgeList)
 
-    if draw:
-
-        dag.layout(prog="dot")
-        dag.draw("C:\PhDProjects\PycharmProjects\mbDiscoveryPython\img\dag.png")
-
     return dag
-
-
-dag = generateDag(13, 2, True)
 
 
 def generateCPTs(dag, maxNumValues, concentration):
@@ -67,13 +57,13 @@ def generateCPTs(dag, maxNumValues, concentration):
         arities = [2] * dag.number_of_nodes()
 
     else:
-        arities = [random.randint(2, maxNumValues) for i in range(0, dag.number_of_nodes())]
+        arities = [random.randint(2, maxNumValues) for i in range(dag.number_of_nodes())]
 
     # empty list to store cpts values
     cpts = []
 
     # iteratively generate cpts values for each node
-    for i in range(0, dag.number_of_nodes()):
+    for i in range(dag.number_of_nodes()):
 
         # get parents of the current node
         parents = dag.predecessors(dag.nodes()[i])
@@ -85,7 +75,7 @@ def generateCPTs(dag, maxNumValues, concentration):
         else:
             # count the number of total parents instantiations from arities of parents nodes
             numParentsInstants = 1
-            for j in range(0, len(parents)):
+            for j in range(len(parents)):
                 parentIndex = dag.nodes().index(parents[j])
                 numParentsInstants *= arities[parentIndex]
 
@@ -103,17 +93,14 @@ def generateCPTs(dag, maxNumValues, concentration):
 
     return cpts
 
-# cpts = generateCPTs(dag, 2, 1)
-# print(cpts)
 
-
+# the sampled data are integers containing 0, 1, 2, ... instead of strings A, B, C, ...
+# since this can save lots of efforts to convert strings back to integers sometimes
+# this code has a problem, since dag returns nodes not the correct ordering
 def generateData(dag, cpts, sampleSize):
 
     # empty matrix to store sampled data
-    df = pd.DataFrame(index=range(0, sampleSize), columns=dag.nodes())
-
-    # potential node values
-    # alphabets = np.array(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"])
+    df = pd.DataFrame(index=range(sampleSize), columns=dag.nodes())
 
     # sample data from cpts node by node
     for i in range(len(cpts) - 1):
@@ -129,29 +116,24 @@ def generateData(dag, cpts, sampleSize):
 
             df.iloc[:, i] = np.random.choice(range(arity), sampleSize, cpts[i][0].tolist)
 
-        # # if a node has exact one parent
-        # elif len(parents) == 1:
-        #
-        #     indices = df[parents].iloc[j]
-        #
-        #     df.iloc[:, i] = np.random.choice(range(arity), sampleSize, cpts[i][indices].tolist)
-
         # if a node has more than one parent, sample data for it based on its parents' value
         else:
 
-            parentsIndices = [dag.nodes().index(parents[k]) for k in range(0, len(parents))]
+            parentsIndices = [dag.nodes().index(parents[k]) for k in range(len(parents))]
 
-            for j in range(0, sampleSize):
+            cptDimension = cpts[len(cpts) - 1][parentsIndices]
+
+            # for each row j of df
+            for j in range(sampleSize):
 
                 # if a node has exact one parent, use parent value as index in cpts list
                 if len(parents) == 1:
 
-                    index = df[parentsIndices].iloc[j]
+                    index = df.iloc[j, parentsIndices[0]]
 
                 # if a node has more than 1 parent, compute cpts list index using values2Indices function
                 else:
 
-                    cptDimension = cpts[len(cpts) - 1][parentsIndices]
                     parentsInstantIndices = df[parentsIndices].iloc[j] + 1
                     index = values2Indices(cptDimension, parentsInstantIndices) - 1
 
@@ -176,9 +158,7 @@ def values2Indices(cptDimension, indices):
     return index
 
 
-dag = generateDag(7, 2, False)
-cpts = generateCPTs(dag, 3, 5)
-data = generateData(dag, cpts, 5000)
+
 
 
 
