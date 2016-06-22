@@ -4,6 +4,8 @@
 
 #measure = "precision"
 
+library(reshape2)
+
 plotting = function(currentDirectory, measure) {
   
   if (currentDirectory == "maxNumParents") {

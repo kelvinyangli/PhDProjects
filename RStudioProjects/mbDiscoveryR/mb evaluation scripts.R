@@ -1,9 +1,9 @@
 
-numNodes = 37
+numNodes = 21
 maxNumParents = 4
 maxNumValues = 2
 concentration = 1
-sampleSize = 10000
+sampleSize = 5000
 numTests = 10
 
 # debug = FALSE
