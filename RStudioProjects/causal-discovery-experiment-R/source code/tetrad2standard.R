@@ -1,18 +1,19 @@
-# tetrad dag matrix to standard dag matrix contains only 1 and 0
+# tetrad pdag matrix to standard pdag matrix contains only 1 and 0 for the use of matlab
 # 
-tetrad2Matlab = function(currentDirectory) {
+tetrad2Std = function(currentDirectory) {
   
   directory = paste0(currentDirectory, "/Learned networks/pc_pattern/")
     
   tetradMatrices = list.files(directory)
-  datasets = list.files(paste0(currentDirectory, "/Datasets/Training/"))
-  
+    
+  datasets = list.files(paste0(currentDirectory, "/Datasets/Training csv/"))
+    
   for (k in 1:length(tetradMatrices)) {
     
     tetrad = read.table(paste0(directory, tetradMatrices[k]))
     
-    data = readRDS(paste0(currentDirectory, "/Datasets/Training/", datasets[k]))
-    
+    data = read.csv(paste0(currentDirectory, "/Datasets/Training csv/", datasets[k]))
+      
     colnames(tetrad) = colnames(data)
     
     dagMatrix = matrix(NA, nrow = nrow(tetrad), ncol = ncol(tetrad))

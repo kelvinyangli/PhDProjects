@@ -1,5 +1,7 @@
-# convert dag matrix learned by k2 in matlab into bn learn format
-currentDirectory = "numNodes"
+# convert dag matrix to dag and cpts in bnlearn
+# dag matrix maybe learned by k2 (matlab) or pcPatter (tetrad)
+
+currentDirectory = "alarm"
 
 matrices = list.files(paste0(currentDirectory, "/Learned networks/dagMatrix/dag_pc/"))
 datasets = list.files(paste0(currentDirectory, "/Datasets/Training/"))

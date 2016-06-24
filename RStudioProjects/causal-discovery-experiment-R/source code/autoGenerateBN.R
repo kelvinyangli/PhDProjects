@@ -158,7 +158,7 @@ generateBNAndData = function(numNodes, maxNumParents, maxNumValues, concentratio
     # write.csv(dataTesting, paste0(currentDirectory, "/Datasets/", fileName, "_", seed, "_testing.csv"), row.names = FALSE)
     saveRDS(dataTesting, paste0(currentDirectory, "/Datasets/Testing/", fileName, ".rds"))
     
-    # convert testing data to numeric fomat using toNumeric and save into Datasets/Numeric
+    # convert testing data to numeric format using toNumeric and save into Datasets/Numeric
     dataTestingNumeric = toNumeric(dataTesting)
     saveRDS(dataTestingNumeric, paste0(currentDirectory, "/Datasets/Numeric/", fileName, ".rds"))
     

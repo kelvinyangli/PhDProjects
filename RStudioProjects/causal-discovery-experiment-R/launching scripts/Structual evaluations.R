@@ -1,39 +1,37 @@
 # scripts for precision, recall, and edit distance
 
-currentDirectory = "numNodes"
+currentDirectory = "alarm"
 
-learningMethods = c("pc")
+learningMethods = c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab","pc")
 
 # load all true cpts and convert to dags
-allTrueCPTs = list.files(paste0(currentDirectory, "/True networks/CPTs"))
+# allTrueCPTs = list.files(paste0(currentDirectory, "/True networks/CPTs"))
 
-allTrueCPTs = orderFiles(allTrueCPTs, currentDirectory, 20)
+# allTrueCPTs = orderFiles(allTrueCPTs, currentDirectory, 20)
 
-allTrueCPTsList = list()
+# allTrueCPTsList = list()
 
-allTrueDagsList = list()
+# allTrueDagsList = list()
 
-for (i in 1:length(allTrueCPTs)) {
+#for (i in 1:length(allTrueCPTs)) {
   
-  allTrueCPTsList[[i]] = readRDS(paste0(currentDirectory, "/True networks/CPTs/", allTrueCPTs[i]))
+#  allTrueCPTsList[[i]] = readRDS(paste0(currentDirectory, "/True networks/CPTs/", allTrueCPTs[i]))
   
-  allTrueDagsList[[i]] = model2network(modelstring(allTrueCPTsList[[i]]))
+#  allTrueDagsList[[i]] = model2network(modelstring(allTrueCPTsList[[i]]))
   
-}
+#}
 
 # accuracies
-sapply(learningMethods, autoAccuracy, currentDirectory = currentDirectory, 
-       numIterations = 20, allTrueDagsList = allTrueDagsList, debug = FALSE)
+sapply(learningMethods, autoAccuracyKnownBN, currentDirectory = currentDirectory, numIterations = 20)
 
 # precision and recall
-autoPrecisionRecall(currentDirectory = currentDirectory, numIterations = 20)
+autoPrecisionRecallKnownBN(currentDirectory = currentDirectory, numIterations = 20)
 
 # f measure
-autoFMeasure(currentDirectory = currentDirectory, numIterations = 20)
+autoFMeasureKnownBN(currentDirectory = currentDirectory, numIterations = 20)
 
 # edit distance
-sapply(learningMethods, autoEditDistance, currentDirectory = currentDirectory, 
-       numIterations = 20, allTrueDagsList = allTrueDagsList, debug = FALSE)
+sapply(learningMethods, autoEditDistanceKnownBN, currentDirectory = currentDirectory, numIterations = 20)
 
 
 

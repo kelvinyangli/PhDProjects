@@ -1,8 +1,8 @@
 ################################# Structure learning ####################################
 # current learning algorithms including 
 # bnlearn::mmhc, aic, bic, bde, k2
-# other algorithms that will be included in are 
-# pcalg::pc, ges
+# pc in Tetrad
+# original k2 in Matlab
 #########################################################################################
 
 # source('C:/Users/Administrator/Dropbox/PhD@Monash/R/Code/Experiments/source code/orderFiles.R')

@@ -17,7 +17,7 @@ sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
 
 # pc 
 sourceDir("C:/Users/Administrator/Dropbox/PhD@Monash/R/Code/Experiments/source code")
-sourceDir("C:/Users/Administrator/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
+#sourceDir("C:/Users/Administrator/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
 setwd("Experiments_04052016")
 setwd("Experiments_20042016/")
 
