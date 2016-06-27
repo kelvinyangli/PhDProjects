@@ -92,7 +92,8 @@ hammingDags = function(learned, true) {
 autoEditDistance = function(currentDirectory, learningMethod, numIterations, allTrueDagsList, debug = FALSE) {
   
   allLearnedCPTs = list.files(paste0(currentDirectory, "/Learned networks/CPTs/", learningMethod))
-  allLearnedCPTs = orderFiles(allLearnedCPTs, currentDirectory, numIterations)
+  # re-order files if needed
+  #allLearnedCPTs = orderFiles(allLearnedCPTs, currentDirectory, numIterations)
   
   # 3 empty score vectors
   shdCpdags = vector(length = length(allLearnedCPTs)) 

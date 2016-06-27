@@ -65,6 +65,11 @@ tetrad2Std("sachs")
 tetrad2Std("insurance")
 tetrad2Std("alarm")
 
+# evaluation using kld
+sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, currentDirectory = "asia")
+sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, currentDirectory = "sachs")
+sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, currentDirectory = "insurance")
+sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, currentDirectory = "alarm")
 
 ####################################### plot ####################################
 # save plots
