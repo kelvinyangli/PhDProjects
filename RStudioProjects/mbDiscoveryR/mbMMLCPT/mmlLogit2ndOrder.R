@@ -4,7 +4,6 @@
 # when our dataset contains values such as "A", "B", "C", ...  
 # should obtain same answer as using optim, because glm also use mle 
 
-################################################## pre process data ############################################\
 # transform binary data into 0 and 1
 getIndicator = function(data) {
   
@@ -225,7 +224,6 @@ makeFormula = function(allNodes, yIndex, xIndices) {
   
 }
 
-################################################## msg len ############################################
 msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, 
                                         allNodes, interactData, completeIndicatorMatrix, sigma) {
   
@@ -315,7 +313,6 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
   return(lst)
   
 }
-
 
 mmlLogit2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, completeIndicatorMatrix, sigma) {
   

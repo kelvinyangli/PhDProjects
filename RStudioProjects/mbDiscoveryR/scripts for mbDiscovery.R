@@ -20,17 +20,12 @@ sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
 
 # source from local repository
 sourceDir("mbMMLCPT/")
-sourceDir("../causal-discovery-experiment-R/source code/")
+sourceDir("createBN/")
 
 # macs
 # dropbox
 #sourceDir("~/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
 #sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
-
-# local repository
-sourceDir("mbMMLCPT/")
-sourceDir("../causal-discovery-experiment-R/source code/")
-
 
 datasets = list.files("Experiments_mbDiscovery/Datasets/")
 
