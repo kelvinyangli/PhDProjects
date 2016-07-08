@@ -1,25 +1,8 @@
-# scripts for plotting and save plot
 
-currentDirectory = "numNodes"
+currentDirectory = "insurance"
+measure = "bir"
 
-measure = "density"
-
-if (currentDirectory == "maxNumParents") {
-  ls = 0:15
-  xlabel = "Maximum number of parents"
-} else if (currentDirectory == "maxNumValues") {
-  ls = 2:6
-  xlabel = "Maximum arity"
-} else if (currentDirectory == "concentration") {
-  ls = c(1:10, 50, 100, 150, 200)
-  xlabel = "Concentration parameter in symmetric Dirichlet distribution"
-} else if (currentDirectory == "numInstances") {
-  ls = c(seq(100, 900, 100), seq(1000, 9000, 1000), seq(10000, 100000, 10000))
-  xlabel = "Sample size"
-} else if (currentDirectory == "numNodes") {
-  ls = c(2, 3, 13, 23, 33, 43, 53, 63, 73, 83, 93, 100, 200)
-  xlabel = "Number of nodes"
-}
+ls = c(seq(100, 900, 100), seq(1000, 9000, 1000), seq(10000, 100000, 10000))
 
 if (measure == "rmse") {
   
@@ -96,13 +79,18 @@ if (measure == "f measure") {
   ylabel = "Average density"
 }
 
-figure = ggplot(meltTempMean, aes(x = log2(meltTempMean[,1]), y = (value), color = Methods)) + 
-  geom_line(data = meltTempMean) + ylab(label = measure) + xlab(paste0("log2(", xlabel, ")"))
+figure = ggplot(meltTempMean, aes(x = (meltTempMean[,1]), y = value, color = Methods)) + 
+  geom_line(data = meltTempMean) + ylab(label = ylabel) + xlab(xlabel)
 
-figure = figure + geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.01) + 
+figure = figure + geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.2) + 
   ylim(min(meltTempMean$value-error), max(meltTempMean$value+error))
 
 figure
 
-#figure + facet_grid(.~measure)
+#ggsave(figure, filename = paste0(currentDirectory, "/Plots/", measure, "_", currentDirectory, ".png"), width = 20, height = 10, unit = "cm")
+
+#ggsave(figure, filename = paste0("C:/Users/Administrator/Dropbox/PhD@Monash/Experimental report/figures/", measure, "_", currentDirectory, ".png"), width = 20, height = 10, unit = "cm")
+
+
+
 

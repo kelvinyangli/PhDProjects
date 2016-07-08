@@ -1,8 +1,7 @@
 # get arity of all variables for all data sets
-currentDirectory = "numInstances_nonRandomizedNodeOrdering"
+currentDirectory = "alarm"
 
 datasets = list.files(paste0(currentDirectory, "/Datasets/Testing"))
-datasets = orderFiles(datasets, currentDirectory, numIterations)
 
 for (i in 1:length(datasets)) {
   data = readRDS(paste0(currentDirectory, "/Datasets/Testing/", datasets[i]))

@@ -24,7 +24,7 @@ autoKLD = function(currentDirectory, learningMethod, numIterations = 20, debug =
   klDivergence = rep(0, length(allLearnedCPTs))
   
   for (i in 1:length(allLearnedCPTs)) {
-  #for (i in 1:140) { # compute kld b/w each true and learned cpts
+  #for (i in 1:40) { # compute kld b/w each true and learned cpts
     
     if (debug) if ((i %% numIterations) == 0) cat("computing kld when", currentDirectory, "=", i/numIterations, "\n")
 

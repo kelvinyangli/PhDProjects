@@ -26,7 +26,7 @@ autoPredictionKnownBN = function(currentDirectory, numIterations, maxNumParents,
     reference = prediction(cptsTrue, data, maxNumParents, maxNumValues, debug = debug)
     
     # save results to a csv file
-    write.csv(reference, paste0(currentDirectory, "/Evaluations/reference/", trueCPTs[i], ".csv"), row.names = FALSE)
+    write.csv(reference, paste0(currentDirectory, "/Evaluations/reference/", allDataSets[i], ".csv"), row.names = FALSE)
     
     # compute actual rmse and bir for each learning method
     for (j in 1:length(learningMethods)) {
@@ -37,9 +37,9 @@ autoPredictionKnownBN = function(currentDirectory, numIterations, maxNumParents,
       # compute actual rmse and bir using 10000 samples from test data (numeric format)
       actual = prediction(cptsLearned, data, maxNumParents, maxNumValues, debug = debug)
       
-      write.csv(actual$rmse, paste0(currentDirectory, "/Evaluations/rmse/", learningMethods[j], "/", trueCPTs[i], ".csv"), row.names = FALSE)
+      write.csv(actual$rmse, paste0(currentDirectory, "/Evaluations/rmse/", learningMethods[j], "/", allDataSets[i], ".csv"), row.names = FALSE)
       
-      write.csv(actual$bir, paste0(currentDirectory, "/Evaluations/bir/", learningMethods[j], "/", trueCPTs[i], ".csv"), row.names = FALSE)
+      write.csv(actual$bir, paste0(currentDirectory, "/Evaluations/bir/", learningMethods[j], "/", allDataSets[i], ".csv"), row.names = FALSE)
       
     }
     

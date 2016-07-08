@@ -1,14 +1,14 @@
 # convert dag matrix to dag and cpts in bnlearn
 # dag matrix maybe learned by k2 (matlab) or pcPatter (tetrad)
 
-currentDirectory = "alarm"
+currentDirectory = "asia"
 
-matrices = list.files(paste0(currentDirectory, "/Learned networks/dagMatrix/dag_pc/"))
+matrices = list.files(paste0(currentDirectory, "/Learned networks/dagMatrix/k2Matlab/"))
 datasets = list.files(paste0(currentDirectory, "/Datasets/Training/"))
 
 for (i in 1:length(datasets)) {
   
-  dagMatrix = read.csv(paste0(currentDirectory, "/Learned networks/dagMatrix/dag_pc/", matrices[i]))
+  dagMatrix = read.csv(paste0(currentDirectory, "/Learned networks/dagMatrix/k2Matlab/", matrices[i]))
   
   rownames(dagMatrix) = colnames(dagMatrix)
   
@@ -26,3 +26,8 @@ for (i in 1:length(datasets)) {
   
 }
 
+
+
+for (i in 1:length(cpts)) {
+  cat(nrow(cpts[[i]]$prob), "\n")
+}

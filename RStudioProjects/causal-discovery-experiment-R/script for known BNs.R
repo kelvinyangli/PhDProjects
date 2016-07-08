@@ -71,6 +71,20 @@ sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, c
 sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, currentDirectory = "insurance")
 sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), autoKLDKnownBN, currentDirectory = "alarm")
 
+# integrate cluster results for bir and rmse
+
+currentDirectory = "alarm"
+
+getMeanReferenceKnownBN(currentDirectory, 20)
+
+sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), getMeanPredictionKnownBN, currentDirectory = currentDirectory, measure = "rmse", 
+       numIterations = 20, alpha = 0.05)
+
+sapply(c("aic", "bic", "bde", "k2", "mmhc", "k2Matlab", "pc"), getMeanPredictionKnownBN, currentDirectory = currentDirectory, measure = "bir", 
+       numIterations = 20, alpha = 0.05)
+
+randomGuessingRMSEsKnownBN(currentDirectory, 20)
+
 ####################################### plot ####################################
 # save plots
 numIterations = 20
