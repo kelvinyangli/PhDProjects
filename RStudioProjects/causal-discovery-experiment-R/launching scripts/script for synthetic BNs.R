@@ -22,7 +22,7 @@ setwd("Experiments_04052016")
 setwd("Experiments_20042016/")
 
 # mac
-sourceDir("~/Dropbox/PhD@Monash/R/Code/Experiments/source code") 
+sourceDir("source code/") 
 setwd("~/Desktop/Experiments_22032016")
 
 
