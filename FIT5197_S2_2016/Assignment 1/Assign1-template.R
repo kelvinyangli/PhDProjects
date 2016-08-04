@@ -5,10 +5,10 @@
 ################################################################################################
 
 # read file1.csv into R 
-file1 = read.csv("file1.csv", header = TRUE)
+file1 = read.csv("Assignment 1/file1.csv", header = TRUE)
   
 # view file1 (optional)
-View(file1)
+# View(file1)
 
 # conduct hypothesis test
 # null hypothesis: two variables are independent
@@ -46,21 +46,28 @@ for (i in 1:length(file1$V1)) {
 chisq.test(x = V12, y = file1$V3)
 
 # exercise 2
+file2a = read.csv("Assignment 1/file2a.csv")
+file2b = read.csv("Assignment 1/file2b.csv")
+
+# 2a
+chisq.test(x = file2b$V2, y = file2b$V10)
+# 2b
+chisq.test(x = file2b$V2, y = file2b$V12)
+# 2c
+chisq.test(x = file2b$V2, y = file2b$V14)
+# plot V2 against V14
+plot(file2b$V2, file2b$V14)
 
 # exercise 3
-file2a = read.csv("file2a.csv")
-file2b = read.csv("file2b.csv")
-
-# replace the last value of column 1 by 1 due to there is only one level in the 
-# original data set
-file2b$V1[nrow(file2b)] = 1 
-
-# exercise 3a
-chisq.test(file2b$V1, file2b$V2)
-# exercise 3b
-chisq.test(file2b$V1, file2b$V10)
-# exercise 3c
-chisq.test(file2a$V1, file2a$V2)
+# 3a
+chisq.test(file2a$V2, file2a$V10)
+plot(file2a$V2, file2a$V10)
+# 3b
+chisq.test(file2b$V2, file2b$V12)
+plot(file2b$V2, file2b$V12)
+# 3c
+chisq.test(file2a$V2, file2a$V14)
+plot(file2a$V2, file2a$V14)
 
 
 
