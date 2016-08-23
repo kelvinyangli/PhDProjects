@@ -10,6 +10,10 @@ file1 = read.csv("Assignment 1/file1.csv", header = TRUE)
 # view file1 (optional)
 # View(file1)
 
+# to delete the missing values NAs in a dataset, one option is to delete the 
+# entire row which contains NAs, such a function in R is na.omit. For more 
+# details of this function, please type in ?na.omit
+
 # conduct hypothesis test
 # null hypothesis: two variables are independent
 # alternative hypothesis: two variables are not independent, i.e dependent

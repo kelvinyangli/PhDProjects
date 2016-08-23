@@ -1,5 +1,5 @@
 ######################################################################################
-# this is the latest version of mmlCPT
+# this is an updated version of mmlCPT in terms of computational speed
 # this version takes advantage of caching common parents indices for the use of the 
 # next step, and hence it is slightly faster than the non-cached version
 ######################################################################################

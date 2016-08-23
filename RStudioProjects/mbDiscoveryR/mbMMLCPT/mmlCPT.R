@@ -1,5 +1,7 @@
 #############################################################################################
-# this is an earlier version of mmlCPT
+# this is the boulton and wallace 1969 version of mml for multistate distribution
+# this version uses weak composition 
+# there is an extra error term 0.5*log(pi*e/6) being added to each parameter of a CPT
 # this version works good, but the speed is slightly slower than the version which cach indices
 #############################################################################################
 
@@ -70,7 +72,7 @@ msgLenWithParents = function(nodeIndex, parentsIndices, indexListPerNodePerValue
   
   numParentsInstantiations = prod(arities[parentsIndices])
   
-  #fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
+  fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
   
   nonFixedTerm = 0
   
@@ -109,7 +111,7 @@ msgLenWithParents = function(nodeIndex, parentsIndices, indexListPerNodePerValue
     #cat(logNumerator - logConstant - cumSum, "\n")
   } # end for i
   
-  return(nonFixedTerm)
+  return(fixedTerm + nonFixedTerm)
 
 }
 
@@ -119,9 +121,8 @@ msgLenWithoutParents = function(nodeIndex, indexListPerNodePerValue, arities, sa
   
   arity = arities[nodeIndex]
   
-  # 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base)
-  
-  fixedTerm = logFactorial(sampleSize + arity - 1, base = base) - log(factorial(arity - 1), base = base)
+  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + 
+    logFactorial(sampleSize + arity - 1, base = base) - log(factorial(arity - 1), base = base)
   
   cumSum = 0
   
