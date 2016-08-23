@@ -2,7 +2,7 @@
 
 currentDirectory = "numNodes"
 
-measure = "density"
+measure = "shd dags"
 
 if (currentDirectory == "maxNumParents") {
   ls = 0:15
@@ -94,15 +94,17 @@ if (measure == "f measure") {
   ylabel = "Constant - KL-divergece"
 } else if (measure == "density") {
   ylabel = "Average density"
+} else if (measure == "shd skeletons") {
+  ylabel = "Edit distance for Skeletons"
 }
 
-figure = ggplot(meltTempMean, aes(x = log2(meltTempMean[,1]), y = (value), color = Methods)) + 
-  geom_line(data = meltTempMean) + ylab(label = measure) + xlab(paste0("log2(", xlabel, ")"))
 
+figure = ggplot(meltTempMean, aes(x = log2(meltTempMean[,1]), y = (value), color = Methods)) + 
+  geom_line(data = meltTempMean) + ylab(label = ylabel) + xlab(paste0("log2(", xlabel, ")")) + 
+  geom_line(data = df_true)
+#xlab(paste0("log10(", xlabel, ")"))
 figure = figure + geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.01) + 
   ylim(min(meltTempMean$value-error), max(meltTempMean$value+error))
 
+#figure = figure + facet_grid(.~measure)
 figure
-
-#figure + facet_grid(.~measure)
-
