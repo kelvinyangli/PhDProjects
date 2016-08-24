@@ -45,7 +45,7 @@ mbGreedySearchWithLookAhead = function(data, node, score, base = 2, debug = FALS
   
   ##############################################################
   # msg len for a single node with no parents
-  minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base, noParents = TRUE)
+  minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base)
   
   if (debug) cat("0 parent:", minMsgLen, "\n")
   
@@ -71,7 +71,7 @@ mbGreedySearchWithLookAhead = function(data, node, score, base = 2, debug = FALS
       
       parentsIndecies = c(mb, unCheckedIndecies[i])
       
-      msgLenCurrent = score(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
+      msgLenCurrent = score(nodeIndex, parentsIndecies, indexListPerNodePerValue, arities, sampleSize, base)
       
       # updating local minimum and node index
       if (msgLenCurrent < localMini) {
@@ -124,7 +124,7 @@ mbGreedySearchWithLookAhead = function(data, node, score, base = 2, debug = FALS
           
           tempParentsIndecies = c(tempMB, tempUncheckedIndecies[i])
           
-          tempMsgLenCurrent = score(nodeIndex, tempParentsIndecies, indexListPerNodePerValue, arities, sampleSize, base, noParents = FALSE)
+          tempMsgLenCurrent = score(nodeIndex, tempParentsIndecies, indexListPerNodePerValue, arities, sampleSize, base)
           
           # updating local minimum and node index
           if (tempMsgLenCurrent < tempLocalMini) {

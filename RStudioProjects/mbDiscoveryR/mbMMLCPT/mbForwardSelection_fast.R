@@ -1,5 +1,5 @@
 
-dataInfo = function(data) {
+getDataInfo = function(data) {
   
   ##############################################################
   # get the arity of each node 
@@ -33,10 +33,9 @@ dataInfo = function(data) {
 }
 
 
-# MB discovery using mml + cpt
-# 
+# MB discovery using 
 mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodePerValue,
-                               base = 2, indicatorMatrix = NULL, debug = FALSE) {
+                               base = 2, indicatorMatrix = NULL, interactData = NULL, completeIndicatorMatrix = NULL, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -57,11 +56,11 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
   
-  if (!is.null(indicatorMatrix)) {
+  if (!is.null(indicatorMatrix)) {# case for using logit model
     
-    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, sigma = 3, base)
+    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, interactData, completeIndicatorMatrix, sigma = 3)
     
-  } else {
+  } else {# case for using cpt
     
     minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, c(), arities, 
                       sampleSize, base)
@@ -108,7 +107,8 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
       
       if (!is.null(indicatorMatrix)) {
         
-        msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, sigma = 3, base)
+        res = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, interactData, 
+                              completeIndicatorMatrix, sigma = 3)
         
       } else {
         

@@ -24,7 +24,7 @@ getIndicator = function(data) {
   
 }
 
-# compute all pairs of interaction data
+# compute all pairs of interaction data, here data is indicatorMatrix
 getInteractData = function(data) {
   
   interact = matrix(0, nrow = nrow(data), ncol = choose(ncol(data), 2))

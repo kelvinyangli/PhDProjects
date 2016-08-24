@@ -1,6 +1,6 @@
 # MB discovery using mml + cpt
 
-dataInfo = function(data) {
+getDataInfo = function(data) {
   
   ##############################################################
   # get the arity of each node 
