@@ -9,5 +9,18 @@ mb2stage = function(data, targetNode, score, dataInfo) {
   
   pcLearned = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue)
   
+  pcLearned2 = c()
+  
+  for (i in 1:length(pcLearned)) {
+    
+    pcLearned2 = c(pcLearned2, mbForwardSelection.fast(data, pcLearned[i], mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue))
+    
+  }
+  
+  cmb = unique(c(pcLearned, pcLearned2))
+  
+  if (targetNode %in% cmb) cmb = cmb[cmb != targetNode]
+  
+  return(cmb)
   
 }

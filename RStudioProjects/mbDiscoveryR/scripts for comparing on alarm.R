@@ -47,8 +47,8 @@ for (i in 1:length(allNodes)) {
   
   mbList[[i]] = mbLearned
   
-  #mbTrue = bnlearn::mb(cpts, targetNode)
-  mbTrue = bnlearn::nbr(cpts, targetNode)
+  mbTrue = bnlearn::mb(cpts, targetNode)
+  #mbTrue = bnlearn::nbr(cpts, targetNode)
   
   results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
   
@@ -106,13 +106,13 @@ colMeans(resultsMatrix)
 #interactData = getInteractData(indicatorMatrix)
 #completeIndicatorMatrix = cbind(indicatorMatrix, interactData)
 
-# compute mb of each node using mmlLogit
+# compute mb of each node using mmlCPT with 2 stages
 for (i in 1:length(allNodes)) {
   
   targetNode = allNodes[i]
   
-  mbLearned = learn.mb(data, targetNode, method = "iamb")
-  
+  mbLearned = mb2stage(data, targetNode, mmlCPT.fast, dataInfo)
+    
   mbTrue = bnlearn::mb(cpts, targetNode)
   
   results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
