@@ -25,20 +25,17 @@ sourceDir("createBN/")
 # euclidean distance to the perfect precision and recall is also reported, that is, 
 # sqrt((1 - precision)^2 + (1 - recall)^2)
 
-getStatistic = function(resultsMatrix) {
-  
-  sDeviations = apply(resultsMatrix, 2, sd)
-  
-  return(1.96 * sDeviations)
-  
-}
-
 cpts = read.dsc("Known BNs/alarm.dsc")
+
+#dag = generateDag(37, 4)
+#cpts = generateCPTs(dag, 4, 1)
+
 data = rbn(cpts, 4000)
 
 dataInfo = getDataInfo(data) 
 allNodes = nodes(cpts)
 
+mbList = list()
 resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 3, dimnames = list(allNodes, c("precision", "recall", "distance")))
 
 # compute mb of each node using standard forward selection
@@ -48,7 +45,10 @@ for (i in 1:length(allNodes)) {
   
   mbLearned = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue)
   
-  mbTrue = bnlearn::mb(cpts, targetNode)
+  mbList[[i]] = mbLearned
+  
+  #mbTrue = bnlearn::mb(cpts, targetNode)
+  mbTrue = bnlearn::nbr(cpts, targetNode)
   
   results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
   
@@ -57,8 +57,49 @@ for (i in 1:length(allNodes)) {
   resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
   
 } 
-
 colMeans(resultsMatrix)
+
+# use symmetry condition to re-check for mb candidate for each node
+names(mbList) = allNodes
+for (i in 1:length(allNodes)) {
+  
+  node = allNodes[i] 
+  
+  # if node x is in mb(y), then y is also in mb(x)
+  for (j in 1:length(allNodes)) {
+    
+    if ((j != i) && (node %in% mbList[[j]])) {# if node exists in the mb of another node
+      
+      if (!allNodes[j] %in% mbList[[i]]) {# if this other node is not in mb(node)
+        
+        # then add it into mb(node)
+        mbList[[i]] = c(mbList[[i]], allNodes[j])
+        
+      } # end if
+      
+    } # end if
+    
+  } # end for j
+  
+} # end for i
+
+# evaluation
+for (i in 1:length(allNodes)) {
+  
+  targetNode = allNodes[i]
+  
+  mbLearned = mbList[[i]]
+  mbTrue = bnlearn::mb(cpts, targetNode)
+  
+  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
+  
+  resultsMatrix[i, "precision"] = results$precision
+  resultsMatrix[i, "recall"] = results$recall
+  resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
+  
+}
+colMeans(resultsMatrix)
+
 
 ##############################################################################################################
 #indicatorMatrix = getIndicator(data)

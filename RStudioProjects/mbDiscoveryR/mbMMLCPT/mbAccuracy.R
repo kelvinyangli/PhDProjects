@@ -50,7 +50,7 @@ mbAccuracy = function(mbTrue, mbLearned, targetNode, allNodes) {
     
   }
   
-  accuracy = data.frame(TP, TN, FP, FN, precision, recall)
+  accuracy = data.frame(precision, recall)
   #names(accuracy) = c("tp", "tn", "fp", "fn", "precision", "recall")
   
   return(accuracy)
