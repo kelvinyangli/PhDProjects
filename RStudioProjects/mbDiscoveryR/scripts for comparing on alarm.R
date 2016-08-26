@@ -27,6 +27,11 @@ sourceDir("createBN/")
 
 cpts = read.dsc("Known BNs/alarm.dsc")
 
+##############################################################################################################
+# re-sample cpts for alarm using uniform prior 
+dag = model2network(modelstring(cpts))
+data = rbn(cpts, 20000)
+
 #dag = generateDag(37, 4)
 #cpts = generateCPTs(dag, 4, 1)
 
@@ -37,6 +42,7 @@ data = data[1:4000,]
 dataInfo = getDataInfo(data) 
 allNodes = nodes(cpts)
 
+##############################################################################################################
 mbList = list()
 resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 3, dimnames = list(allNodes, c("precision", "recall", "distance")))
 
@@ -127,7 +133,7 @@ for (i in 1:length(allNodes)) {
 
 colMeans(resultsMatrix)
 
-#######
+##############################################################################################################
 #evaluate pcmb results from c++
 ord = c(3, 1, 2, 17, 25, 18, 26, 28, 7, 8, 30, 9, 20, 19, 4, 14, 23, 15, 12, 32, 11, 10, 21, 31, 22, 13, 24, 16, 37, 36, 35, 34, 33, 27, 29, 6, 5)
 allNodes.short = colnames(alarm)
