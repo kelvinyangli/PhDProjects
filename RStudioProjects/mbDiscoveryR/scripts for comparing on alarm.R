@@ -32,6 +32,8 @@ cpts = read.dsc("Known BNs/alarm.dsc")
 
 data = rbn(cpts, 4000)
 
+data = read.csv("alarm.csv") # use data provided by Jena for PCMB 20000 samples
+data = data[1:500,]
 dataInfo = getDataInfo(data) 
 allNodes = nodes(cpts)
 
@@ -124,5 +126,35 @@ for (i in 1:length(allNodes)) {
 } 
 
 colMeans(resultsMatrix)
+
+#######
+#evaluate pcmb results from c++
+ord = c(3, 1, 2, 17, 25, 18, 26, 28, 7, 8, 30, 9, 20, 19, 4, 14, 23, 15, 12, 32, 11, 10, 21, 31, 22, 13, 24, 16, 37, 36, 35, 34, 33, 27, 29, 6, 5)
+allNodes.short = colnames(alarm)
+allNodes.full = bnlearn::nodes(cpts)
+
+allNodes.short[ord] = allNodes.full
+
+mbList = getPCMB("pcmb.csv")[ord]
+
+for (i in 1:length(mbList)) {
+  
+  targetNode = allNodes.full[i]
+  
+  mbLearned = allNodes.short[mbList[[i]]]
+  mbTrue = bnlearn::mb(cpts, targetNode)
+  
+  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes.full)
+  
+  resultsMatrix[i, "precision"] = results$precision
+  resultsMatrix[i, "recall"] = results$recall
+  resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
+  
+}
+
+colMeans(resultsMatrix)
+
+
+
 
 
