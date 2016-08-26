@@ -33,7 +33,7 @@ cpts = read.dsc("Known BNs/alarm.dsc")
 data = rbn(cpts, 4000)
 
 data = read.csv("alarm.csv") # use data provided by Jena for PCMB 20000 samples
-data = data[1:500,]
+data = data[1:4000,]
 dataInfo = getDataInfo(data) 
 allNodes = nodes(cpts)
 
