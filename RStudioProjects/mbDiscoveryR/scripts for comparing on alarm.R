@@ -46,6 +46,7 @@ allNodes = nodes(cpts)
 mbList = list()
 resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 3, dimnames = list(allNodes, c("precision", "recall", "distance")))
 
+allNodes = colnames(data)
 # compute mb of each node using standard forward selection
 for (i in 1:length(allNodes)) {
   
