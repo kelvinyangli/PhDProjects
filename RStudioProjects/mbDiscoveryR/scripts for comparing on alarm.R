@@ -29,9 +29,13 @@ cpts = read.dsc("Known BNs/alarm.dsc")
 
 ##############################################################################################################
 # re-sample cpts for alarm using uniform prior 
+# the order of data column is the same as the order of names(cpts) or nodes(cpts)
+# alarmOrder.rds is the same order as names(cpts) and in full names
 dag = model2network(modelstring(cpts))
 data = rbn(cpts, 20000)
-
+alarmOrder = readRDS("alarmOrder.rds")
+data = data[, alarmOrder]
+write.csv(data, "../../../Users/Administrator/Desktop/LearningMBs/IJAR/code/web/alarm.csv", row.names = FALSE)
 #dag = generateDag(37, 4)
 #cpts = generateCPTs(dag, 4, 1)
 
@@ -39,14 +43,16 @@ data = rbn(cpts, 4000)
 
 data = read.csv("alarm.csv") # use data provided by Jena for PCMB 20000 samples
 data = data[1:4000,]
-dataInfo = getDataInfo(data) 
-allNodes = nodes(cpts)
+
+#dataInfo = getDataInfo(data) 
+#allNodes = nodes(cpts)
 
 ##############################################################################################################
+dataInfo = getDataInfo(data) 
 mbList = list()
+allNodes = colnames(data)
 resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 3, dimnames = list(allNodes, c("precision", "recall", "distance")))
 
-allNodes = colnames(data)
 # compute mb of each node using standard forward selection
 for (i in 1:length(allNodes)) {
   

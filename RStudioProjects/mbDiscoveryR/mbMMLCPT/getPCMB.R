@@ -25,15 +25,22 @@ getPCMB = function(fileName) {
       
       indexEnd = ncol(res)
       
-    }
+    } # end else
     
     
+    if (indexEnd < indexStart) { # if the learned mb is empty then return empty vector
+      
+      mbList[[i]] = c()
+      
+    } else { # else return the identified candidates
+      
+      mbList[[i]] = as.numeric(strsplit(res[i, (indexStart:indexEnd)], split = ",")) + 1
+      
+    } # end else 
     
-    mbList[[i]] = as.numeric(strsplit(res[i, (indexStart:indexEnd)], split = ",")) + 1
-    
-  }
+  } # end for i
   
-  names(mbList) = colnames(alarm)
+  #names(mbList) = colnames(alarm)
   
   return(mbList)
   
