@@ -24,79 +24,119 @@ sourceDir("createBN/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 dag = readRDS("alarmDag.rds") # read dag
 arities = readRDS("alarmArity.rds") # read arities
-cpts = generateCPTs2(dag, arities, 1) # sample cpts using specified arities
-dataPool = rbn(cpts, 20000) # sample data
-write.table(data, "alarm.data", row.names = FALSE, col.names = FALSE) # save data
+n = 16000
+beta = 1
+nIter = 10
 
-##############################################################################################################
-m = 500
-data = dataPool[1:m, ]
-dataInfo = getDataInfo(data) 
-mbList = list()
-allNodes = colnames(data)
-resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 3, dimnames = list(allNodes, c("precision", "recall", "distance")))
+res.std = matrix(0, nrow = nIter ^ 2, ncol = 4)
+res.sym = res.std
 
-# compute mb of each node using standard forward selection
-for (i in 1:length(allNodes)) {
+for (ii in 1:nIter) {
   
-  targetNode = allNodes[i]
+  seed1 = generateSeed()
+  set.seed(seed1)
   
-  mbLearned = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue)
+  cpts = generateCPTs2(dag, arities, beta) # sample cpts using specified arities
   
-  mbList[[i]] = mbLearned
-  
-  mbTrue = bnlearn::mb(cpts, targetNode)
-  #mbTrue = bnlearn::nbr(cpts, targetNode)
-  
-  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
-  
-  resultsMatrix[i, "precision"] = results$precision
-  resultsMatrix[i, "recall"] = results$recall
-  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
-  
-} 
-colMeans(resultsMatrix)
-
-# use symmetry condition to re-check for mb candidate for each node
-names(mbList) = allNodes
-for (i in 1:length(allNodes)) {
-  
-  node = allNodes[i] 
-  
-  # if node x is in mb(y), then y is also in mb(x)
-  for (j in 1:length(allNodes)) {
+  for (jj in 1:nIter) {
     
-    if ((j != i) && (node %in% mbList[[j]])) {# if node exists in the mb of another node
-      
-      if (!allNodes[j] %in% mbList[[i]]) {# if this other node is not in mb(node)
-        
-        # then add it into mb(node)
-        mbList[[i]] = c(mbList[[i]], allNodes[j])
-        
-      } # end if
-      
-    } # end if
+    seed2 = generateSeed()
+    set.seed(seed2)
     
-  } # end for j
-  
-} # end for i
+    data = rbn(cpts, n) # sample data
+    write.table(data, paste0("pcmb/alarm_", n, "_", seed1, "_", seed2, ".data"), row.names = FALSE, col.names = FALSE) # save data
+    
+    dataInfo = getDataInfo(data) 
+    mbList = list()
+    allNodes = colnames(data)
+    resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 4, dimnames = list(allNodes, c("precision", "recall", "distance", "fmeasure")))
+    
+    # compute mb of each node using standard forward selection
+    for (i in 1:length(allNodes)) {
+      
+      targetNode = allNodes[i]
+      
+      mbLearned = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue)
+      
+      mbList[[i]] = mbLearned
+      
+      mbTrue = bnlearn::mb(cpts, targetNode)
 
-# evaluation
-for (i in 1:length(allNodes)) {
-  
-  targetNode = allNodes[i]
-  
-  mbLearned = mbList[[i]]
-  mbTrue = bnlearn::mb(cpts, targetNode)
-  
-  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
-  
-  resultsMatrix[i, "precision"] = results$precision
-  resultsMatrix[i, "recall"] = results$recall
-  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
+      results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
+      
+      resultsMatrix[i, "precision"] = results$precision
+      resultsMatrix[i, "recall"] = results$recall
+      resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
+      if (results$precision + results$recall == 0) {
+        
+        resultsMatrix[i, "fmeasure"] = 0
+        
+      } else {
+        
+        resultsMatrix[i, "fmeasure"] = 2 * results$precision * results$recall / (results$precision + results$recall)
+        
+      }
+      
+    } 
+    
+    res.std[(ii - 1) * nIter + jj, ] = colMeans(resultsMatrix)
+    
+    # use symmetry condition to re-check for mb candidate for each node
+    names(mbList) = allNodes
+    for (i in 1:length(allNodes)) {
+      
+      node = allNodes[i] 
+      
+      # if node x is in mb(y), then y is also in mb(x)
+      for (j in 1:length(allNodes)) {
+        
+        if ((j != i) && (node %in% mbList[[j]])) {# if node exists in the mb of another node
+          
+          if (!allNodes[j] %in% mbList[[i]]) {# if this other node is not in mb(node)
+            
+            # then add it into mb(node)
+            mbList[[i]] = c(mbList[[i]], allNodes[j])
+            
+          } # end if
+          
+        } # end if
+        
+      } # end for j
+      
+    } # end for i
+    
+    # evaluation
+    for (i in 1:length(allNodes)) {
+      
+      targetNode = allNodes[i]
+      
+      mbLearned = mbList[[i]]
+      mbTrue = bnlearn::mb(cpts, targetNode)
+      
+      results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
+      
+      resultsMatrix[i, "precision"] = results$precision
+      resultsMatrix[i, "recall"] = results$recall
+      resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
+      if (results$precision + results$recall == 0) {
+        
+        resultsMatrix[i, "fmeasure"] = 0
+        
+      } else {
+        
+        resultsMatrix[i, "fmeasure"] = 2 * results$precision * results$recall / (results$precision + results$recall)
+        
+      } # end else
+      
+    }
+    res.sym[(ii - 1) * nIter + jj, ] = colMeans(resultsMatrix)
+    
+  }
   
 }
-colMeans(resultsMatrix)
+
+
+##############################################################################################################
 
 
 ##############################################################################################################
@@ -125,7 +165,7 @@ colMeans(resultsMatrix)
 
 ##############################################################################################################
 # pcmb from c++
-results = system(paste0("kmb4 alarm.data ", m, " 37 -1 1.0 1 1 0.01"), intern = TRUE)
+results = system(paste0("kmb4 alarm.data ", n, " 37 -1 1.0 1 1 0.01"), intern = TRUE)
 
 mbList = getPCMBsyn(results, 1)
 
@@ -147,7 +187,7 @@ for (i in 1:length(mbList)) {
 colMeans(resultsMatrix)
 
 # iamb from c++
-results = system(paste0("kmb4 alarm.data ", m, " 37 -1 1.0 1 0 0.01"), intern = TRUE)
+results = system(paste0("kmb4 alarm.data ", n, " 37 -1 1.0 1 0 0.01"), intern = TRUE)
 
 mbList = getPCMBsyn(results, 0)
 
