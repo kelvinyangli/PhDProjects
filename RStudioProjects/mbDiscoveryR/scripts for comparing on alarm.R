@@ -10,12 +10,6 @@ sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
   }
 }
 
-# pc 
-# let's try this out
-# source from dropbox
-#sourceDir("C:/Users/Administrator/Dropbox/PhD@Monash/R/Code/Experiments/source code/")
-#sourceDir("C:/Users/Administrator/Dropbox/PhD@Monash/R/Code/MB discovery/mbMMLCPT/")
-
 # source from local repository
 sourceDir("mbMMLCPT/")
 sourceDir("createBN/")
@@ -25,29 +19,18 @@ sourceDir("createBN/")
 # euclidean distance to the perfect precision and recall is also reported, that is, 
 # sqrt((1 - precision)^2 + (1 - recall)^2)
 
-cpts = read.dsc("Known BNs/alarm.dsc")
 
 ##############################################################################################################
-# re-sample cpts for alarm using uniform prior 
-# the order of data column is the same as the order of names(cpts) or nodes(cpts)
-# alarmOrder.rds is the same order as names(cpts) and in full names
-dag = model2network(modelstring(cpts))
-data = rbn(cpts, 20000)
-alarmOrder = readRDS("alarmOrder.rds")
-data = data[, alarmOrder]
-write.csv(data, "../../../Users/Administrator/Desktop/LearningMBs/IJAR/code/web/alarm.csv", row.names = FALSE)
-#dag = generateDag(37, 4)
-#cpts = generateCPTs(dag, 4, 1)
-
-data = rbn(cpts, 4000)
-
-data = read.csv("alarm.csv") # use data provided by Jena for PCMB 20000 samples
-data = data[1:4000,]
-
-#dataInfo = getDataInfo(data) 
-#allNodes = nodes(cpts)
+# re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
+dag = readRDS("alarmDag.rds") # read dag
+arities = readRDS("alarmArity.rds") # read arities
+cpts = generateCPTs2(dag, arities, 1) # sample cpts using specified arities
+dataPool = rbn(cpts, 20000) # sample data
+write.table(data, "alarm.data", row.names = FALSE, col.names = FALSE) # save data
 
 ##############################################################################################################
+m = 500
+data = dataPool[1:m, ]
 dataInfo = getDataInfo(data) 
 mbList = list()
 allNodes = colnames(data)
@@ -69,7 +52,7 @@ for (i in 1:length(allNodes)) {
   
   resultsMatrix[i, "precision"] = results$precision
   resultsMatrix[i, "recall"] = results$recall
-  resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
+  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
   
 } 
 colMeans(resultsMatrix)
@@ -110,7 +93,7 @@ for (i in 1:length(allNodes)) {
   
   resultsMatrix[i, "precision"] = results$precision
   resultsMatrix[i, "recall"] = results$recall
-  resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
+  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
   
 }
 colMeans(resultsMatrix)
@@ -126,7 +109,7 @@ for (i in 1:length(allNodes)) {
   
   targetNode = allNodes[i]
   
-  mbLearned = mb2stage(data, targetNode, mmlCPT.fast, dataInfo)
+  mbLearned = findMB(data, targetNode, dataInfo)
     
   mbTrue = bnlearn::mb(cpts, targetNode)
   
@@ -134,39 +117,56 @@ for (i in 1:length(allNodes)) {
   
   resultsMatrix[i, "precision"] = results$precision
   resultsMatrix[i, "recall"] = results$recall
-  resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
+  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
   
 } 
 
 colMeans(resultsMatrix)
 
 ##############################################################################################################
-#evaluate pcmb results from c++
-ord = c(3, 1, 2, 17, 25, 18, 26, 28, 7, 8, 30, 9, 20, 19, 4, 14, 23, 15, 12, 32, 11, 10, 21, 31, 22, 13, 24, 16, 37, 36, 35, 34, 33, 27, 29, 6, 5)
-allNodes.short = colnames(alarm)
-allNodes.full = bnlearn::nodes(cpts)
+# pcmb from c++
+results = system(paste0("kmb4 alarm.data ", m, " 37 -1 1.0 1 1 0.01"), intern = TRUE)
 
-allNodes.short[ord] = allNodes.full
-
-mbList = getPCMB("pcmb.csv")[ord]
+mbList = getPCMBsyn(results, 1)
 
 for (i in 1:length(mbList)) {
   
-  targetNode = allNodes.full[i]
+  targetNode = allNodes[i]
   
-  mbLearned = allNodes.short[mbList[[i]]]
+  mbLearned = allNodes[mbList[[i]]]
   mbTrue = bnlearn::mb(cpts, targetNode)
   
-  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes.full)
+  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
   
   resultsMatrix[i, "precision"] = results$precision
   resultsMatrix[i, "recall"] = results$recall
-  resultsMatrix[i, "distance"] = sqrt((1 - results$recall) ^ 2 + (1 - results$recall) ^ 2)
+  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
   
 }
 
 colMeans(resultsMatrix)
 
+# iamb from c++
+results = system(paste0("kmb4 alarm.data ", m, " 37 -1 1.0 1 0 0.01"), intern = TRUE)
+
+mbList = getPCMBsyn(results, 0)
+
+for (i in 1:length(mbList)) {
+  
+  targetNode = allNodes[i]
+  
+  mbLearned = allNodes[mbList[[i]]]
+  mbTrue = bnlearn::mb(cpts, targetNode)
+  
+  results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
+  
+  resultsMatrix[i, "precision"] = results$precision
+  resultsMatrix[i, "recall"] = results$recall
+  resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
+  
+}
+
+colMeans(resultsMatrix)
 
 
 
