@@ -1,4 +1,6 @@
-findCMB = function(data, node, dataInfo, debug = FALSE) {
+# this function finds the pc(T) and pc(x), for all x \in pc(T)
+
+findCMB = function(data, node, dataInfo, base = 2, debug = FALSE) {
   
   # cmb = c()
   
@@ -8,10 +10,11 @@ findCMB = function(data, node, dataInfo, debug = FALSE) {
     
     for (j in 1:length(cmb)) {
       
-      cmb = c(cmb, mmlPC(data, cmb[j], dataInfo, debug = debug))
+      cmb = c(cmb, mmlPC(data, cmb[j], dataInfo, base = base, debug = debug))
       
     } # end for j
     
+    cmb = unique(cmb)
     cmb = cmb[cmb != node] # remove target node
     
   } # end if 
@@ -19,3 +22,4 @@ findCMB = function(data, node, dataInfo, debug = FALSE) {
   return(cmb)
   
 }
+

@@ -5,11 +5,11 @@
 # since all methods will be tested under various sample sizes, we'll generate a large dataset at once. 
 # 95% confidence intervals are reported together with the computed statistics
 
-nNodes = 12
-maxNParents = 3
-maxArity = 2
+nNodes = 32
+maxNParents = 4
+maxArity = 3
 beta = 1 # concentration parameter
-n = 1000
+n = 5000
 seed = generateSeed()
 set.seed(seed)
 
@@ -24,7 +24,7 @@ write.table(data, paste0(fileName, ".data"), row.names = FALSE, col.names = FALS
 write.table(dagMatrix, paste0(fileName, ".data.net"), row.names = FALSE, col.names = FALSE)
 
 #################################################### apply mbMMLCPT #################################################### 
-dataInfo = getDataInfo(data[1:1000,]) 
+dataInfo = getDataInfo(data[1:5000,]) 
 mbList = list()
 allNodes = colnames(data)
 resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 3, dimnames = list(allNodes, c("precision", "recall", "distance")))
