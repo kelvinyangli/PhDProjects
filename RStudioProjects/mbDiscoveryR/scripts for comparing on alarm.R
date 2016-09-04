@@ -24,7 +24,7 @@ sourceDir("createBN/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 dag = readRDS("alarmDag.rds") # read dag
 arities = readRDS("alarmArity.rds") # read arities
-n = 16000
+n = 500
 beta = 1
 nIter = 10
 
