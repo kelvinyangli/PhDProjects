@@ -1,5 +1,5 @@
 # profile R code
 Rprof("mml.out")
-y = mbForwardSelection(data,"V5",mmlLogit2ndOrder,datainfo$arities,datainfo$indexListPerNodePerValue,indicatorMatrix = indicatorMatrix, interaction = T, debug=F)
+y = mbForwardSelection.fast(data, "CATECHOL", mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue, base = 2)
 Rprof(NULL)
 proftable("mml.out")

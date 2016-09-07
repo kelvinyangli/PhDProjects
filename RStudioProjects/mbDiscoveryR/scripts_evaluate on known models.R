@@ -13,6 +13,7 @@ sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
 # source from local repository
 sourceDir("mbMMLCPT/")
 sourceDir("createBN/")
+sourceDir("testing/")
 
 # apply mbMMLCPT on the alarm network
 # each node will be considered as a target and the average of precision and recall over all nodes are reported
@@ -23,14 +24,15 @@ sourceDir("createBN/")
 ##############################################################################################################
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 setwd("../")
-dag = readRDS("Known BNs/barleyDag.rds") # read dag
-arities = readRDS("Known BNs/barleyArity.rds") # read arities
-n = 150
+
+model = "alarm"
+dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
+arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # read arities
+n = 8000
 beta = 1
 nIter = 10
 
-res.std = matrix(0, nrow = nIter ^ 2, ncol = 4)
-res.sym = res.std
+allNodes = bnlearn::nodes(dag)
 
 for (ii in 1:nIter) {
   
@@ -45,11 +47,11 @@ for (ii in 1:nIter) {
     set.seed(seed2)
     
     data = rbn(cpts, n) # sample data
-    write.table(data, paste0("barley data/barley_", n, "_", seed1, "_", seed2, ".data"), row.names = FALSE, col.names = FALSE) # save data
+    write.table(data, paste0(model, " data/", model, "_", n, "_", seed1, "_", seed2, ".data"), row.names = FALSE, col.names = FALSE) # save data
     
     dataInfo = getDataInfo(data) 
     mbList = list()
-    allNodes = colnames(data)
+    
     resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 4, dimnames = list(allNodes, c("precision", "recall", "distance", "fmeasure")))
     
     # compute mb of each node using standard forward selection
@@ -81,7 +83,7 @@ for (ii in 1:nIter) {
     } # end for i 
     
     names(mbList) = allNodes
-    saveRDS(mbList, paste0("barley mb/cpt std/", n, "_", seed1, "_", seed2, ".rds")) # save learned mb as .rds
+    saveRDS(mbList, paste0(model, " mb/cpt std/", n, "_", seed1, "_", seed2, ".rds")) # save learned mb as .rds
     res.std[(ii - 1) * nIter + jj, ] = colMeans(resultsMatrix)
     
     # use symmetry condition to re-check for mb candidate for each node
@@ -108,7 +110,7 @@ for (ii in 1:nIter) {
       
     } # end for i
     
-    saveRDS(mbList, paste0("barley mb/cpt sym/", n, "_", seed1, "_", seed2, ".rds")) # save learned mb as .rds
+    saveRDS(mbList, paste0(model, " mb/cpt sym/", n, "_", seed1, "_", seed2, ".rds")) # save learned mb as .rds
     
     # evaluation
     for (i in 1:length(allNodes)) {
@@ -141,108 +143,58 @@ for (ii in 1:nIter) {
 } # end for ii 
 round(computeCI(res.std), 2) # compute mean and CI
 round(computeCI(res.sym), 2) # compute mean and CI
-write.csv(res.std, paste0("results/barley_cpt_std_", n, ".csv"), row.names = FALSE)
-write.csv(res.sym, paste0("results/barley_cpt_sym_", n, ".csv"), row.names = FALSE)
+write.csv(res.std, paste0("results/", model, "_cpt_std_", n, ".csv"), row.names = FALSE)
+write.csv(res.sym, paste0("results/", model, "_cpt_sym_", n, ".csv"), row.names = FALSE)
 
 ##############################################################################################################
+##### pcmb from c++
+datasets = list.files(paste0(model, " data/"), pattern = paste0(model, "_", n, "_"))
+allNodes = bnlearn::nodes(dag)
+
 setwd("pcmb/") # set wd to pcmb folder
 
-##### pcmb from c++
-res.std = matrix(0, nrow = nIter ^ 2, ncol = 4)
-datasets = list.files("../barley data/", pattern = paste0("barley_", n, "_"))
-allNodes = bnlearn::nodes(dag)
 for (ii in 1:length(datasets)) {
   
-  file.copy(paste0("../barley data/", datasets[ii]), "barley.data", overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
+  file.copy(paste0("../", model, " data/", datasets[ii]), paste0(model, ".data"), overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
   # notice that since data is copied to the same directory with the same name, they will be replaced by each other
   # also since we don't order datasets in "alarm data" folder, so the order of results is different from order of results in mmlcpt
   # but that's not a problem, since we only consider average, but not individual result
   
-  results = system(paste0("kmb4 barley.data ", n, " 48 -1 1.0 1 1 0.01"), intern = TRUE)
+  results = system(paste0("kmb4 ", model, ".data ", n, " ", length(allNodes), " -1 1.0 1 1 0.01"), intern = TRUE)
   
-  mbList = getPCMBsyn(results, 1) # convert c++ output of pcmb to list in R
-  names(mbList) = allNodes
-  saveRDS(mbList, paste0("../barley mb/iamb/", datasets[ii], ".rds")) # save learned mb as .rds
+  output = read.table("output.txt")[, 1] # load output file from c++
   
-  resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 4, dimnames = list(allNodes, c("precision", "recall", "distance", "fmeasure")))
+  mbList = parsePCMB(output, length(allNodes), allNodes)
   
-  for (i in 1:length(mbList)) {
-    
-    targetNode = allNodes[i]
-    
-    mbLearned = allNodes[mbList[[i]]]
-    mbTrue = bnlearn::mb(dag, targetNode)
-    
-    results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
-    
-    resultsMatrix[i, "precision"] = results$precision
-    resultsMatrix[i, "recall"] = results$recall
-    resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
-    if (results$precision + results$recall == 0) {
-      
-      resultsMatrix[i, "fmeasure"] = 0
-      
-    } else {
-      
-      resultsMatrix[i, "fmeasure"] = 2 * results$precision * results$recall / (results$precision + results$recall)
-      
-    } # end else 
-    
-  } # end for i
+  saveRDS(mbList, paste0("../", model, " mb/pcmb/", datasets[ii], ".rds")) # save learned mb as .rds
   
-  res.std[ii, ] = colMeans(resultsMatrix) # compute average statistics for each dataset
+  file.remove("output.txt")
   
 }
-round(computeCI(res.std), 2) # compute mean and CI
-write.csv(res.std, paste0("../results/barley_pcmb_", n, ".csv"), row.names = FALSE)
-
 
 ##### iamb from c++
-res.std = matrix(0, nrow = nIter ^ 2, ncol = 4)
 for (ii in 1:length(datasets)) {
   
-  file.copy(paste0("../barley data/", datasets[ii]), "barley.data", overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
+  file.copy(paste0("../", model, " data/", datasets[ii]), paste0(model, ".data"), overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
   # notice that since data is copied to the same directory with the same name, they will be replaced by each other
   # also since we don't order datasets in "alarm data" folder, so the order of results is different from order of results in mmlcpt
   # but that's not a problem, since we only consider average, but not individual result
   
-  results = system(paste0("kmb4 barley.data ", n, " 48 -1 1.0 1 0 0.01"), intern = TRUE)
+  results = system(paste0("kmb4 ", model, ".data ", n, " ", length(allNodes), " -1 1.0 1 0 0.01"), intern = TRUE)
   
-  mbList = getPCMBsyn(results, 0) # convert c++ output of iamb to list in R
-  names(mbList) = allNodes
-  saveRDS(mbList, paste0("../barley mb/iamb/", datasets[ii], ".rds")) # save learned mb as .rds
+  output = read.table("output.txt")[, 1] # load output file from c++
   
-  resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 4, dimnames = list(allNodes, c("precision", "recall", "distance", "fmeasure")))
+  mbList = parsePCMB(output, length(allNodes), allNodes)
   
-  for (i in 1:length(mbList)) {
-    
-    targetNode = allNodes[i]
-    
-    mbLearned = allNodes[mbList[[i]]]
-    mbTrue = bnlearn::mb(dag, targetNode)
-    
-    results = mbAccuracy(mbTrue, mbLearned, targetNode, allNodes)
-    
-    resultsMatrix[i, "precision"] = results$precision
-    resultsMatrix[i, "recall"] = results$recall
-    resultsMatrix[i, "distance"] = sqrt((1 - results$precision) ^ 2 + (1 - results$recall) ^ 2)
-    if (results$precision + results$recall == 0) {
-      
-      resultsMatrix[i, "fmeasure"] = 0
-      
-    } else {
-      
-      resultsMatrix[i, "fmeasure"] = 2 * results$precision * results$recall / (results$precision + results$recall)
-      
-    } # end else 
-    
-  } # end for i
+  saveRDS(mbList, paste0("../", model, " mb/iamb/", datasets[ii], ".rds")) # save learned mb as .rds
   
-  res.std[ii, ] = colMeans(resultsMatrix) # compute average statistics for each dataset
+  file.remove("output.txt")
   
 }
-round(computeCI(res.std), 2) # compute mean and CI
-write.csv(res.std, paste0("../results/barley_iamb_", n, ".csv"), row.names = FALSE)
+
+setwd("../")
+computeStats2(model, "pcmb", n, nIter = 10, alpha = 0.05, nDigits = 2)
+computeStats2(model, "iamb", n, nIter = 10, alpha = 0.05, nDigits = 2)
 
 
 

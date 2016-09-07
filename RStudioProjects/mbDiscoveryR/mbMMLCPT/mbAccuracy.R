@@ -1,10 +1,11 @@
 # this function computes the accuracies and precision, recall over the true mb
 # if true mb is empty but learned mb is not, then both precision and recall are 0
 # if learned mb is empty but true mb is not, then both precision and recall are 0
+# notice that mbLearned = -1 means the learned MB is empty
 
 mbAccuracy = function(mbTrue, mbLearned, targetNode, allNodes) {
     
-  if ((length(mbLearned) == 0) && (length(mbTrue) == 0)) {
+  if ((length(mbLearned) == 0) && (length(mbTrue) == 0)) { # if both true and learned mbs are empty
     
     precision = 1
     recall = 1
