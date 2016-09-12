@@ -34,46 +34,59 @@ nNodes = 50
 maxNParents = 5
 maxArity = 6
 beta = 1 # concentration parameter
-n = 500
+n = 100
 nIter = 10
 model = paste(nNodes, maxNParents, maxArity, beta, sep = "_")
 
-# generate dag, cpts, data, dagMatrix, and save them into correponding directories
-for (ii in 1:nIter) {
+# generate dag, cpts, dagMatrix, and save them into correponding directories
+for (i in 1:nIter) {
   
   # create model 
-  seed1 = generateSeed()
-  set.seed(seed1)
+  seed = generateSeed()
+  set.seed(seed)
   dag = generateDag(nNodes, maxNParents)
   cpts = generateCPTs(dag, maxArity, beta)
   
-  # save dagMatrix for pcmb/iamb
   dagMatrix = dag2matrix(dag)
-  write.table(dagMatrix, paste0(model, "/dag/", model1, "_", seed1, ".data.net"), row.names = FALSE, col.names = FALSE)
-  saveRDS(cpts, paste0(model, "/cpts/", model, "_", seed1, ".rds")) # save cpts 
+  write.table(dagMatrix, paste0(model, "/dag/", model, "_", seed, ".data.net"), row.names = FALSE, col.names = FALSE) # save dag as matrix
+  saveRDS(cpts, paste0(model, "/cpts/", model, "_", seed, ".rds")) # save cpts 
   
-  for (jj in 1:nIter) {
+  Sys.sleep(0.01) # suspend execution for 0.01 seconds to avoid generating the same seed
+  
+} # end for i
+
+# generate data 
+models = list.files(paste0(model, "/cpts/"))
+for (i in 1:length(models)) {
+  
+  cpts = readRDS(paste0(model, "/cpts/", models[i]))
+  
+  for (j in 1:nIter) { 
     
     # sample data
-    seed2 = generateSeed()
-    set.seed(seed2)
+    seed = generateSeed()
+    set.seed(seed)
     data = rbn(cpts, n)
     
-    fileName = paste(model, n, seed1, seed2, sep = "_")
-    write.table(data, paste0(model, "/data/", fileName, ".data"), row.names = FALSE, col.names = FALSE)
+    fileName = paste(strsplit(models[i], ".rds")[[1]], n, seed, sep = "_")
+    write.table(data, paste0(model, "/data/", fileName, ".data"), row.names = FALSE, col.names = FALSE) # save data
     
-  } # end for jj
+    Sys.sleep(0.01) # suspend execution for 0.01 seconds to avoid generating the same seed
+    
+  } # end for j
   
-} # end for ii
+} # end for i
+
 
 
 # apply mmlCPT 
-datasets = list.files(paste0(model, "/data/"), pattern = paste0(model, "_", n, "_"))
-models = list.files(paste0("../", model, "/cpts/"))
+datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
+models = list.files(paste0(model, "/cpts/"))
 for (ii in 1:length(datasets)) {
   
   data = read.table(paste0(model, "/data/", datasets[ii]))
   cpts = readRDS(paste0(model, "/cpts/", models[ceiling(ii / nIter)])) # load model to get allNodes for parsePCMB
+  colnames(data) = names(cpts)
   
   # prepare for mmlCPT
   dataInfo = getDataInfo(data) 
@@ -116,12 +129,13 @@ for (ii in 1:length(datasets)) {
   saveRDS(mbList, paste0(model, "/mb/cpt sym/", datasets[ii], ".rds")) # save mbList into folder
   
 } # end for ii
+
 computeStats(model, "cpt std", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 computeStats(model, "cpt sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 
 ################################################### evaluate iamb and pcmb results ###################################### 
 
-datasets = list.files(paste0(model, "/data/"), pattern = paste0(model, "_", n, "_"))
+datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
 models = list.files(paste0(model, "/cpts/"))
 
 setwd("pcmb2/") # set wd to pcmb folder
@@ -131,7 +145,7 @@ for (ii in 1:length(datasets)) {
   
   # copy data and dagMatrix from model/ folder to pcmb/ with the same name "synModel.data"
   file.copy(paste0("../", model, "/data/", datasets[ii]), "synModel.data", overwrite = TRUE) 
-  file.copy(paste0("../", model, "/dag/", datasets[ii], ".net"), "synModel.data.net", overwrite = TRUE)
+  file.copy(paste0("../", model, "/dag/", datasets[ceiling(ii / nIter)], ".net"), "synModel.data.net", overwrite = TRUE)
   # notice that since data is copied to the same directory with the same name, they will be replaced by each other
   # also since we don't order datasets, so the order of results is different from order of results in mmlcpt
   # but that's not a problem, since we only consider average, but not individual result
@@ -155,7 +169,7 @@ for (ii in 1:length(datasets)) {
   
   # copy data and dagMatrix from model/ folder to pcmb/ with the same name "synModel.data"
   file.copy(paste0("../", model, "/data/", datasets[ii]), "synModel.data", overwrite = TRUE) 
-  file.copy(paste0("../", model, "/dag/", datasets[ii], ".net"), "synModel.data.net", overwrite = TRUE)
+  file.copy(paste0("../", model, "/dag/", datasets[ceiling(ii / nIter)], ".net"), "synModel.data.net", overwrite = TRUE)
   # notice that since data is copied to the same directory with the same name, they will be replaced by each other
   # also since we don't order datasets, so the order of results is different from order of results in mmlcpt
   # but that's not a problem, since we only consider average, but not individual result
