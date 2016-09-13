@@ -125,7 +125,7 @@ mbForwardSelection = function(data, node, score, arities, indexListPerNodePerVal
       
       ##############################################################
       # msg len with at least 1 parent
-      if (!is.null(indicatorMatrix)) {
+      if (!is.null(indicatorMatrix)) { # mml logit
         
         if (interaction) { # 2nd order logit
           
