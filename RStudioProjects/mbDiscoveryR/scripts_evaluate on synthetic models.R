@@ -34,7 +34,7 @@ nNodes = 50
 maxNParents = 5
 maxArity = 6
 beta = 1 # concentration parameter
-n = 100
+n = 1000
 nIter = 10
 model = paste(nNodes, maxNParents, maxArity, beta, sep = "_")
 
@@ -104,27 +104,7 @@ for (ii in 1:length(datasets)) {
   saveRDS(mbList, paste0(model, "/mb/cpt std/", datasets[ii], ".rds")) # save mbList into folder
   
   # use symmetry condition to re-check for mb candidate for each node
-  for (i in 1:length(allNodes)) {
-    
-    node = allNodes[i] 
-    
-    # if node x is in mb(y), then y is also in mb(x)
-    for (j in 1:length(allNodes)) {
-      
-      if ((j != i) && (node %in% mbList[[j]])) {# if node exists in the mb of another node
-        
-        if (!allNodes[j] %in% mbList[[i]]) {# if this other node is not in mb(node)
-          
-          # then add it into mb(node)
-          mbList[[i]] = c(mbList[[i]], allNodes[j])
-          
-        } # end if
-        
-      } # end if
-      
-    } # end for j
-    
-  } # end for i
+  mbList = symmetryCheck(allNodes, mbList)
   
   saveRDS(mbList, paste0(model, "/mb/cpt sym/", datasets[ii], ".rds")) # save mbList into folder
   
@@ -192,6 +172,33 @@ setwd("../")
 
 computeStats(model, "pcmb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 computeStats(model, "iamb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
+
+# apply symmetry check for pcmb
+results = list.files(paste0(model, "/mb/pcmb/"), pattern = paste0("_", n, "_"))
+models = list.files(paste0(model, "/cpts/"))
+for (i in 1:length(results)) {
+  
+  cpts = readRDS(paste0(model, "/cpts/", models[ceiling(ii / nIter)])) # load model to get allNodes for parsePCMB
+  mbList = readRDS(paste0(model, "/mb/pcmb/", results[i]))
+  mbList = symmetryCheck(names(cpts), mbList)
+  
+  saveRDS(mbList, paste0(model, "/mb/pcmb sym/", results[i]))
+  
+}
+computeStats(model, "pcmb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+
+# apply symmetry check for iamb
+results = list.files(paste0(model, "/mb/iamb/"), pattern = paste0("_", n, "_"))
+for (i in 1:length(results)) {
+  
+  cpts = readRDS(paste0(model, "/cpts/", models[ceiling(ii / nIter)])) # load model to get allNodes for parsePCMB
+  mbList = readRDS(paste0(model, "/mb/iamb/", results[i]))
+  mbList = symmetryCheck(names(cpts), mbList)
+  
+  saveRDS(mbList, paste0(model, "/mb/iamb sym/", results[i]))
+  
+}
+computeStats(model, "iamb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
 
 ######################################################################################################## 
 # compute mb of each node using mmlCPT with 2 stages

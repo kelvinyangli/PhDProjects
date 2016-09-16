@@ -1,6 +1,7 @@
-libraries = c("bnlearn", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz")
-lapply(libraries, require, character.only = TRUE)
+#libraries = c("bnlearn", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz")
+#lapply(libraries, require, character.only = TRUE)
 
+library(bnlearn)
 sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
   allFiles = list.files(path, pattern = fileName)
   for (file in allFiles) {
@@ -26,10 +27,10 @@ sourceDir("mbMMLLogit/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 setwd("../")
 
-model = "alarm"
+model = "hailfinder"
 dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
 arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # read arities
-n = 100
+n = 12800
 beta = 1
 nIter = 10
 
