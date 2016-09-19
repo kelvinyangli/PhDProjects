@@ -34,7 +34,7 @@ nNodes = 50
 maxNParents = 5
 maxArity = 6
 beta = 1 # concentration parameter
-n = 1000
+n = 500
 nIter = 10
 model = paste(nNodes, maxNParents, maxArity, beta, sep = "_")
 

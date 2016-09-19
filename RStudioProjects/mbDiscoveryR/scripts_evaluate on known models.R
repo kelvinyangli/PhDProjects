@@ -2,6 +2,7 @@
 #lapply(libraries, require, character.only = TRUE)
 
 library(bnlearn)
+library(gtools)
 sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
   allFiles = list.files(path, pattern = fileName)
   for (file in allFiles) {
@@ -27,10 +28,10 @@ sourceDir("mbMMLLogit/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 setwd("../")
 
-model = "hailfinder"
+model = "insurance"
 dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
 arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # read arities
-n = 12800
+n = 500
 beta = 1
 nIter = 10
 

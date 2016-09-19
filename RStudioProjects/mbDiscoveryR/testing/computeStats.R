@@ -166,3 +166,54 @@ computeStats3 = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2
   
 }
 
+# this is for known models with the true parameter values
+computeStats4 = function(cpts, model, method, n, alpha = 0.05, nDigits = 2) {
+  
+  allNodes = names(cpts)
+  files = list.files(paste0(model, "/mb/", method), pattern = paste0("_", n, "_"))
+  
+  mtx = matrix(0, nrow = length(files), ncol = 4)
+  
+  for (i in 1:length(files)) { # for each files
+    
+    # columns = "precision", "recall", "distance", "fmeasure")
+    resultsMatrix = matrix(0, nrow = length(allNodes), ncol = 4)
+    
+    mbList = readRDS(paste0(model, "/mb/", method, "/", files[i])) # load learned mb
+    
+    for (j in 1:length(allNodes)) {
+      
+      mbTrue = bnlearn::mb(cpts, allNodes[j])
+      
+      mbLearned = mbList[[j]]
+      
+      res = mbAccuracy(mbTrue, mbLearned, allNodes[j], allNodes)
+      
+      precision = res$precision
+      recall = res$recall
+      
+      if ((precision + recall) == 0) { # if both precision and recall = 0 then f measure = 0
+        
+        distance = sqrt(2)
+        fmeasure = 0
+        
+      } else { # else compute the harmonic mean of precision and recall
+        
+        distance = sqrt((1 - precision) ^ 2 + (1 - recall) ^ 2)
+        fmeasure = 2 * precision * recall / (precision + recall)
+        
+      } # end else 
+      
+      resultsMatrix[j, ] = c(precision, recall, distance, fmeasure)
+      
+    } # end for j
+    
+    mtx[i, ] = colMeans(resultsMatrix)
+    
+  } # end for i
+  
+  write.csv(mtx, paste0("results_known/", model, "_", method, "_", n, ".csv"), row.names = FALSE)
+  
+  return(round(computeCI(mtx, alpha = alpha), nDigits))
+  
+}
