@@ -21,3 +21,9 @@ apparently, after using true prior, mmlcpt obtains a higher accuracy, and outper
 account prior distribution; this is good and bad; good because if prior is available then we could further improve mb discovery accuracy; bad 
 because in practice prior doesn't always available. 
 
+
+artificial model true prior: 
+
+7231 - both iamb and mml do well across all sample sizes; for large sample, all methods converge to the perfect scores. 
+
+34441 - as under small samples in the above case, both iamb and mml do well; but iamb doesn’t do well under large samples; pcmb and mml are better under large samples; in general, mml does well under all sample sizes and has a consistency performance. 
