@@ -1,0 +1,23 @@
+known model false prior: 
+
+insurance - iamb is the best across all sample sizes, pcmb becomes competitive to iamb under 10000 sample, mmlcpt is also very close to iamb
+but for small samples, pcmb and mmlcpt are not where close to iamb in general performance, although mmlcpt shows superior precision under 
+all sample sizes. 
+
+
+alarm - iamb and mmlcpt are good under small samples; rpdmb and ipcmb are good under medium samples; ipcmb and pcmb are good under large samples; 
+
+known model true prior: 
+
+asia - 
+
+insurance - 
+
+alarm - after applying symmetry check, mmlcpt is always the best across all sample sizes; the precision is always the highest, but recall iamb is 
+always the highest; notice that iamb does not converge well when increasing sample size; also notice that pcmb doesn't change much after symmetry
+check (maybe due to there is a symmetry check for pc in its algorithm), iamb under large sample decrease accuracy after symmetry check; 
+
+apparently, after using true prior, mmlcpt obtains a higher accuracy, and outperformances other methods, because other methods don't take into
+account prior distribution; this is good and bad; good because if prior is available then we could further improve mb discovery accuracy; bad 
+because in practice prior doesn't always available. 
+

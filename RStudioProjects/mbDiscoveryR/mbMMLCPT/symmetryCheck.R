@@ -29,3 +29,33 @@ symmetryCheck = function(allNodes, mbList) {
   return(mbList)
   
 }
+
+
+
+symmetryCheck2 = function(allNodes, mbList) {
+  
+  names(mbList) = allNodes
+  
+  for (i in 1:length(allNodes)) { # for each node
+    
+    node = allNodes[i] 
+    
+    # if node x is in mb(y), then y is also in mb(x)
+    for (j in 1:length(mbList[[i]])) {
+      
+      if (!node %in% mbList[[mbList[[i]][j]]]) { # if node is not in mb(otehr node)
+        
+        mbList[[mbList[[i]][j]]] = c(mbList[[mbList[[i]][j]]], node)
+        
+      } # end if
+      
+    } # end for j
+    
+  } # end for i
+  
+  return(mbList)
+  
+}
+
+
+

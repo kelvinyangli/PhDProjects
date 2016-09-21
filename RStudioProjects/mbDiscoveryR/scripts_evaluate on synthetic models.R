@@ -30,11 +30,11 @@ sourceDir("testing/")
 
 setwd("../")
 
-nNodes = 50
-maxNParents = 5
-maxArity = 6
+nNodes = 34
+maxNParents = 4
+maxArity = 4
 beta = 1 # concentration parameter
-n = 500
+n = 100
 nIter = 10
 model = paste(nNodes, maxNParents, maxArity, beta, sep = "_")
 
@@ -110,9 +110,6 @@ for (ii in 1:length(datasets)) {
   
 } # end for ii
 
-computeStats(model, "cpt std", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "cpt sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-
 ################################################### evaluate iamb and pcmb results ###################################### 
 
 datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
@@ -121,11 +118,14 @@ models = list.files(paste0(model, "/cpts/"))
 setwd("pcmb2/") # set wd to pcmb folder
 
 ##### pcmb c++
+file.remove("output.txt") 
 for (ii in 1:length(datasets)) {
   
   # copy data and dagMatrix from model/ folder to pcmb/ with the same name "synModel.data"
   file.copy(paste0("../", model, "/data/", datasets[ii]), "synModel.data", overwrite = TRUE) 
-  file.copy(paste0("../", model, "/dag/", datasets[ceiling(ii / nIter)], ".net"), "synModel.data.net", overwrite = TRUE)
+  fileName = strsplit(models[ceiling(ii / nIter)], ".rds")[[1]]
+  fileName = paste0(fileName, ".data.net")
+  file.copy(paste0("../", model, "/dag/", fileName), "synModel.data.net", overwrite = TRUE)
   # notice that since data is copied to the same directory with the same name, they will be replaced by each other
   # also since we don't order datasets, so the order of results is different from order of results in mmlcpt
   # but that's not a problem, since we only consider average, but not individual result
@@ -145,11 +145,14 @@ for (ii in 1:length(datasets)) {
 }
 
 ##### iamb c++
+file.remove("output.txt") 
 for (ii in 1:length(datasets)) {
   
   # copy data and dagMatrix from model/ folder to pcmb/ with the same name "synModel.data"
   file.copy(paste0("../", model, "/data/", datasets[ii]), "synModel.data", overwrite = TRUE) 
-  file.copy(paste0("../", model, "/dag/", datasets[ceiling(ii / nIter)], ".net"), "synModel.data.net", overwrite = TRUE)
+  fileName = strsplit(models[ceiling(ii / nIter)], ".rds")[[1]]
+  fileName = paste0(fileName, ".data.net")
+  file.copy(paste0("../", model, "/dag/", fileName), "synModel.data.net", overwrite = TRUE)
   # notice that since data is copied to the same directory with the same name, they will be replaced by each other
   # also since we don't order datasets, so the order of results is different from order of results in mmlcpt
   # but that's not a problem, since we only consider average, but not individual result
@@ -170,35 +173,39 @@ for (ii in 1:length(datasets)) {
 
 setwd("../")
 
-computeStats(model, "pcmb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "iamb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-
 # apply symmetry check for pcmb
 results = list.files(paste0(model, "/mb/pcmb/"), pattern = paste0("_", n, "_"))
 models = list.files(paste0(model, "/cpts/"))
 for (i in 1:length(results)) {
   
-  cpts = readRDS(paste0(model, "/cpts/", models[ceiling(ii / nIter)])) # load model to get allNodes for parsePCMB
+  cpts = readRDS(paste0(model, "/cpts/", models[ceiling(i / nIter)])) # load model to get allNodes for parsePCMB
   mbList = readRDS(paste0(model, "/mb/pcmb/", results[i]))
   mbList = symmetryCheck(names(cpts), mbList)
   
   saveRDS(mbList, paste0(model, "/mb/pcmb sym/", results[i]))
   
 }
-computeStats(model, "pcmb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
 
 # apply symmetry check for iamb
 results = list.files(paste0(model, "/mb/iamb/"), pattern = paste0("_", n, "_"))
 for (i in 1:length(results)) {
   
-  cpts = readRDS(paste0(model, "/cpts/", models[ceiling(ii / nIter)])) # load model to get allNodes for parsePCMB
+  cpts = readRDS(paste0(model, "/cpts/", models[ceiling(i / nIter)])) # load model to get allNodes for parsePCMB
   mbList = readRDS(paste0(model, "/mb/iamb/", results[i]))
   mbList = symmetryCheck(names(cpts), mbList)
   
   saveRDS(mbList, paste0(model, "/mb/iamb sym/", results[i]))
   
 }
+
+
+# compte average 
+computeStats(model, "iamb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 computeStats(model, "iamb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+computeStats(model, "pcmb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
+computeStats(model, "pcmb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+computeStats(model, "cpt std", n, nIter = nIter, alpha = 0.05, nDigits = 2)
+computeStats(model, "cpt sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 
 ######################################################################################################## 
 # compute mb of each node using mmlCPT with 2 stages
