@@ -1,7 +1,7 @@
 
 #allNodes = names(data)
 
-varname = "V8"
+varname = "A"
 i = which(names(data) == varname)
 temp = data[, i]
 tempdata = cbind(temp, data[, -i])
