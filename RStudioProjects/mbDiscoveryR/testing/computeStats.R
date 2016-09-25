@@ -20,7 +20,7 @@ computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2)
       
       mbList = readRDS(paste0(model, "/mb/", method, "/", files[j])) # load learned mb
       
-      for (k in 1:length(cpts)) {
+      for (k in 1:length(cpts)) { # for each node compute the statistics
         
         mbTrue = bnlearn::mb(cpts, allNodes[k])
         
@@ -181,7 +181,7 @@ computeStats4 = function(cpts, model, method, n, alpha = 0.05, nDigits = 2) {
     
     mbList = readRDS(paste0(model, "/mb/", method, "/", files[i])) # load learned mb
     
-    for (j in 1:length(allNodes)) {
+    for (j in 1:length(allNodes)) { # for each node
       
       mbTrue = bnlearn::mb(cpts, allNodes[j])
       

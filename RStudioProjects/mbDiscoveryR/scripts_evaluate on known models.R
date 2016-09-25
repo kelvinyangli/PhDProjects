@@ -1,6 +1,6 @@
 # scripts on evaluating known models with build in parameters
-model = "insurance"
-n = 1000
+model = "hailfinder"
+n = 10000
 beta = 1
 nIter = 20
 
@@ -58,8 +58,6 @@ for (ii in 1:length(datasets)) {
   
 } # end for ii
 
-computeStats4(cpts, model, "cpt std", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "cpt sym", n, alpha = 0.05, nDigits = 2)
 
 ##############################################################################################################
 ##### pcmb from c++
@@ -87,6 +85,8 @@ for (ii in 1:length(datasets)) {
 }
 
 ##### iamb from c++
+file.remove("output.txt")
+
 for (ii in 1:length(datasets)) {
   
   file.copy(paste0("../", model, "/data/", datasets[ii]), paste0(model, ".data"), overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
@@ -105,8 +105,6 @@ for (ii in 1:length(datasets)) {
 }
 
 setwd("../")
-computeStats4(cpts, model, "pcmb", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "iamb", n, alpha = 0.05, nDigits = 2)
 
 # apply symmetry check for pcmb
 results = list.files(paste0(model, "/mb/pcmb/"), pattern = paste0("_", n, "_"))
@@ -118,7 +116,7 @@ for (i in 1:length(results)) {
   saveRDS(mbList, paste0(model, "/mb/pcmb sym/", results[i]))
   
 }
-computeStats4(cpts, model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
+
 
 # apply symmetry check for iamb
 results = list.files(paste0(model, "/mb/iamb/"), pattern = paste0("_", n, "_"))
@@ -130,9 +128,15 @@ for (i in 1:length(results)) {
   saveRDS(mbList, paste0(model, "/mb/iamb sym/", results[i]))
   
 }
+
+
+
+computeStats4(cpts, model, "iamb", n, alpha = 0.05, nDigits = 2)
 computeStats4(cpts, model, "iamb sym", n, alpha = 0.05, nDigits = 2)
-
-
+computeStats4(cpts, model, "pcmb", n, alpha = 0.05, nDigits = 2)
+computeStats4(cpts, model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
+computeStats4(cpts, model, "cpt std", n, alpha = 0.05, nDigits = 2)
+computeStats4(cpts, model, "cpt sym", n, alpha = 0.05, nDigits = 2)
 
 
 
