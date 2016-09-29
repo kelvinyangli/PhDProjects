@@ -28,10 +28,10 @@ sourceDir("mbMMLLogit/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 setwd("../")
 
-model = "insurance"
+model = "alarm"
 dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
 arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # read arities
-n = 10000
+n = 500
 beta = 1
 nIter = 10
 
@@ -142,7 +142,7 @@ for (ii in 1:length(datasets)) {
 datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
 allNodes = bnlearn::nodes(dag)
 
-setwd("pcmb2/") # set wd to pcmb folder
+setwd("pcmb/") # set wd to pcmb folder
 
 file.remove("output.txt")
 

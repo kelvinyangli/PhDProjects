@@ -105,12 +105,12 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
       
       parentsIndices = c(mb, unCheckedIndices[i])
       
-      if (!is.null(indicatorMatrix)) {
+      if (!is.null(indicatorMatrix)) {# for mml logit model
         
         res = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, interactData, 
                               completeIndicatorMatrix, sigma = 3)
         
-      } else {
+      } else {# for mml cpt
         
         res = score(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, base)
         msgLenCurrent = res$msgLen

@@ -61,7 +61,7 @@ computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2)
 
 
 # this is for kownn models such as alarm but with uniform prior
-computeStats2 = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2) {
+computeStats2 = function(model, method, n, alpha = 0.05, nDigits = 2) {
   
   dag = readRDS(paste0("Known BNs/", model, "Dag.rds"))
   allNodes = bnlearn::nodes(dag)

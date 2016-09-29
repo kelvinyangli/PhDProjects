@@ -30,12 +30,12 @@ sourceDir("testing/")
 
 setwd("../")
 
-nNodes = 50
+nNodes = 150
 maxNParents = 5
 maxArity = 6
 beta = 1 # concentration parameter
-n = 20000
-nIter = 10
+n = 1000
+nIter = 5
 model = paste(nNodes, maxNParents, maxArity, beta, sep = "_")
 
 # generate dag, cpts, dagMatrix, and save them into correponding directories
@@ -201,9 +201,9 @@ for (i in 1:length(results)) {
 
 # compte average 
 computeStats(model, "iamb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "iamb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+computeStats(model, "iamb sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 computeStats(model, "pcmb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "pcmb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+computeStats(model, "pcmb sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 computeStats(model, "cpt std", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 computeStats(model, "cpt sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 
