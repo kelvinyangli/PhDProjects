@@ -18,8 +18,9 @@ sourceDir("mbMMLCPT/")
 sourceDir("createBN/")
 sourceDir("testing/")
 sourceDir("mbMMLLogit/")
-
-
+#################################################################################################
+# training for optimal prior/critical value
+setwd("C:/mbDiscoveryExperimentalResults/")
 model = "alarm"
 dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
 arities = readRDS(paste0("Known BNs/", model, "Arity.rds"))
@@ -128,23 +129,108 @@ computeStats2(model, "cpt std 0.3", n, alpha = 0.05, nDigits = 2)
 computeStats2(model, "pcmb 0.03", n, alpha = 0.05, nDigits = 2)
 computeStats2(model, "iamb 5e-04", n, alpha = 0.05, nDigits = 2)
 
-
-
-
-setwd("../")
-for (i in 1:length(alpha)) print(computeStats2(model, paste0("pcmb ", alpha[i]), n, alpha = 0.05, nDigits = 2))
-
-results = list.files(paste0(model, "/mb/iamb 7e-04/"), pattern = paste0("_", n, "_"))
-for (i in 1:length(results)) {
+#################################################################################################
+# testing using optimized prior/critical value
+allNodes = bnlearn::nodes(dag)
+datasets = list.files(paste0(model, "/data testing rds/"), pattern = paste0("_", n, "_"))
+for (ii in 1:length(datasets)) {
   
-  mbList = readRDS(paste0(model, "/mb/iamb 7e-04/", results[i]))
+  data = readRDS(paste0(model, "/data testing rds/", datasets[ii]))
+
+  # prepare for mmlCPT
+  dataInfo = getDataInfo(data) 
+  mbList = list()
+  
+  # compute mb of each node using standard forward selection
+  for (i in 1:length(allNodes)) {
+    
+    targetNode = allNodes[i]
+    mbList[[i]] = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue, 
+                                          base = exp(1), debug = F)
+    #mbList[[i]] = mbForwardSelectionUsingMMLMultinomialDirichlet(data, targetNode, dataInfo$arities, dataInfo$indexListPerNodePerValue,
+    #                                                             conPar = 1, base = exp(1), debug = T)
+    
+  } # end for i 
+  
+  saveRDS(mbList, paste0(model, "/mb/cpt std 1 testing/", datasets[ii])) # save mbList into folder
+  
+  # use symmetry condition to re-check for mb candidate for each node
   mbList = symmetryCheck(allNodes, mbList)
   
-  saveRDS(mbList, paste0(model, "/mb/iamb 7e-04 sym/", results[i]))
+  saveRDS(mbList, paste0(model, "/mb/cpt sym 1 testing/", datasets[ii])) # save mbList into folder
+  
+} # end for ii
+
+
+datasets = list.files(paste0(model, "/data testing/"), pattern = paste0("_", n, "_"))
+setwd("pcmb/") # set wd to pcmb folder
+file.remove("output.txt")
+##### pcmb from c++
+for (ii in 1:length(datasets)) {
+  
+  file.copy(paste0("../", model, "/data testing/", datasets[ii]), paste0(model, ".data"), overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
+  
+  results = system(paste0("kmb4 ", model, ".data ", n, " ", length(allNodes), " -1 1.0 1 1 0.03"), intern = TRUE)
+  
+  output = read.table("output.txt")[, 1] # load output file from c++
+  
+  mbList = parsePCMB(output, length(allNodes), allNodes)
+  
+  saveRDS(mbList, paste0("../", model, "/mb/pcmb 0.03 testing/", datasets[ii], ".rds")) # save learned mb as .rds
+  
+  file.remove("output.txt")
+  
+}
+
+##### iamb from c++
+for (ii in 1:length(datasets)) {
+  
+  file.copy(paste0("../", model, "/data testing/", datasets[ii]), paste0(model, ".data"), overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
+  
+  results = system(paste0("kmb4 ", model, ".data ", n, " ", length(allNodes), " -1 1.0 1 0 0.001"), intern = TRUE)
+  
+  output = read.table("output.txt")[, 1] # load output file from c++
+  
+  mbList = parsePCMB(output, length(allNodes), allNodes)
+  
+  saveRDS(mbList, paste0("../", model, "/mb/iamb 0.001 testing/", datasets[ii], ".rds")) # save learned mb as .rds
+  
+  file.remove("output.txt")
+  
+}
+
+# apply symmetry check 
+setwd("../")
+results = list.files(paste0(model, "/mb/pcmb 0.03 testing/"), pattern = paste0("_", n, "_"))
+for (i in 1:length(results)) {
+  
+  mbList = readRDS(paste0(model, "/mb/pcmb 0.03 testing/", results[i]))
+  mbList = symmetryCheck(allNodes, mbList)
+  
+  saveRDS(mbList, paste0(model, "/mb/pcmb 0.03 sym testing/", results[i]))
+  
+}
+
+# apply symmetry check for iamb
+results = list.files(paste0(model, "/mb/iamb 0.001 testing/"), pattern = paste0("_", n, "_"))
+for (i in 1:length(results)) {
+  
+  mbList = readRDS(paste0(model, "/mb/iamb 0.001 testing/", results[i]))
+  mbList = symmetryCheck(allNodes, mbList)
+  
+  saveRDS(mbList, paste0(model, "/mb/iamb 0.001 sym testing/", results[i]))
   
 }
 
 
+
+
+computeStats2(model, "iamb 0.001 testing", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "iamb 0.001 sym testing", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "pcmb 0.03 testing", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "pcmb 0.03 sym testing", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "cpt std 1 testing", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "cpt sym 1 testing", n, alpha = 0.05, nDigits = 2)
 
 
 
