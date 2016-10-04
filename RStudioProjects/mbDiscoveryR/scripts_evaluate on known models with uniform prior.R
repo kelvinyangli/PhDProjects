@@ -28,12 +28,12 @@ sourceDir("mbMMLLogit/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 setwd("../")
 
-model = "alarm"
+model = "hailfinder"
 dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
 arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # read arities
-n = 500
+n = 10000
 beta = 1
-nIter = 10
+nIter = 5
 
 allNodes = bnlearn::nodes(dag)
 
@@ -53,7 +53,7 @@ for (i in 1:nIter) {
 
 
 # generate data 
-models = list.files(paste0(model, "/cpts/"))
+models = list.files(paste0(model, "/cpts/"), pattern = ".rds")
 for (i in 1:length(models)) {
   
   cpts = readRDS(paste0(model, "/cpts/", models[i]))
@@ -66,6 +66,7 @@ for (i in 1:length(models)) {
     data = rbn(cpts, n)
     
     fileName = paste(strsplit(models[i], ".rds")[[1]], n, seed, sep = "_")
+    saveRDS(data, paste0(model, "/data rds/", fileName, ".rds"))
     write.table(data, paste0(model, "/data/", fileName, ".data"), row.names = FALSE, col.names = FALSE) # save data
     
     Sys.sleep(0.01) # suspend execution for 0.01 seconds to avoid generating the same seed
@@ -76,11 +77,11 @@ for (i in 1:length(models)) {
 
 
 # apply mmlCPT 
-datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (ii in 1:length(datasets)) {
   
-  data = read.table(paste0(model, "/data/", datasets[ii]))
-  colnames(data) = allNodes
+  data = readRDS(paste0(model, "/data rds/", datasets[ii]))
+  #colnames(data) = allNodes
   
   # prepare for mmlCPT
   dataInfo = getDataInfo(data) 
@@ -102,9 +103,6 @@ for (ii in 1:length(datasets)) {
   saveRDS(mbList, paste0(model, "/mb/cpt sym/", datasets[ii], ".rds")) # save mbList into folder
   
 } # end for ii
-
-computeStats2(model, "cpt std", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats2(model, "cpt sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
 
 
 # apply mmlLogit
@@ -187,8 +185,6 @@ for (ii in 1:length(datasets)) {
 }
 
 setwd("../")
-computeStats2(model, "pcmb", n, nIter = 10, alpha = 0.05, nDigits = 2)
-computeStats2(model, "iamb", n, nIter = 10, alpha = 0.05, nDigits = 2)
 
 # apply symmetry check for pcmb
 results = list.files(paste0(model, "/mb/pcmb/"), pattern = paste0("_", n, "_"))
@@ -200,7 +196,7 @@ for (i in 1:length(results)) {
   saveRDS(mbList, paste0(model, "/mb/pcmb sym/", results[i]))
   
 }
-computeStats2(model, "pcmb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+
 
 # apply symmetry check for iamb
 results = list.files(paste0(model, "/mb/iamb/"), pattern = paste0("_", n, "_"))
@@ -212,7 +208,17 @@ for (i in 1:length(results)) {
   saveRDS(mbList, paste0(model, "/mb/iamb sym/", results[i]))
   
 }
-computeStats2(model, "iamb sym", n, nIter = 10, alpha = 0.05, nDigits = 2)
+
+
+
+computeStats2(model, "iamb", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "iamb sym", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "pcmb", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "cpt std", n, alpha = 0.05, nDigits = 2)
+computeStats2(model, "cpt sym", n, alpha = 0.05, nDigits = 2)
+
+
 
 
 

@@ -2,7 +2,7 @@
 model = "hailfinder"
 n = 10000
 beta = 1
-nIter = 20
+nIter = 5
 
 
 cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
@@ -63,7 +63,7 @@ for (ii in 1:length(datasets)) {
 ##### pcmb from c++
 datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
 
-setwd("pcmb/") # set wd to pcmb folder
+setwd("pcmb2/") # set wd to pcmb folder
 
 file.remove("output.txt")
 
@@ -131,12 +131,12 @@ for (i in 1:length(results)) {
 
 
 
-computeStats4(cpts, model, "iamb", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "iamb sym", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "pcmb", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "cpt std", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "cpt sym", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "iamb", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "iamb sym", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "pcmb", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "cpt std", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "cpt sym", n, alpha = 0.05, nDigits = 2)
 
 
 

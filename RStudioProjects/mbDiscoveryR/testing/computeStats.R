@@ -167,8 +167,9 @@ computeStats3 = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2
 }
 
 # this is for known models with the true parameter values
-computeStats4 = function(cpts, model, method, n, alpha = 0.05, nDigits = 2) {
+computeStats4 = function(model, method, n, alpha = 0.05, nDigits = 2) {
   
+  cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
   allNodes = names(cpts)
   files = list.files(paste0(model, "/mb/", method), pattern = paste0("_", n, "_"))
   
