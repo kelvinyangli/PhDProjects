@@ -20,7 +20,7 @@ computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2)
       
       mbList = readRDS(paste0(model, "/mb/", method, "/", files[j])) # load learned mb
       
-      for (k in 1:length(cpts)) {
+      for (k in 1:length(cpts)) { # for each node compute the statistics
         
         mbTrue = bnlearn::mb(cpts, allNodes[k])
         
@@ -61,7 +61,7 @@ computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2)
 
 
 # this is for kownn models such as alarm but with uniform prior
-computeStats2 = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2) {
+computeStats2 = function(model, method, n, alpha = 0.05, nDigits = 2) {
   
   dag = readRDS(paste0("Known BNs/", model, "Dag.rds"))
   allNodes = bnlearn::nodes(dag)
@@ -167,8 +167,9 @@ computeStats3 = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2
 }
 
 # this is for known models with the true parameter values
-computeStats4 = function(cpts, model, method, n, alpha = 0.05, nDigits = 2) {
+computeStats4 = function(model, method, n, alpha = 0.05, nDigits = 2) {
   
+  cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
   allNodes = names(cpts)
   files = list.files(paste0(model, "/mb/", method), pattern = paste0("_", n, "_"))
   
@@ -181,7 +182,7 @@ computeStats4 = function(cpts, model, method, n, alpha = 0.05, nDigits = 2) {
     
     mbList = readRDS(paste0(model, "/mb/", method, "/", files[i])) # load learned mb
     
-    for (j in 1:length(allNodes)) {
+    for (j in 1:length(allNodes)) { # for each node
       
       mbTrue = bnlearn::mb(cpts, allNodes[j])
       

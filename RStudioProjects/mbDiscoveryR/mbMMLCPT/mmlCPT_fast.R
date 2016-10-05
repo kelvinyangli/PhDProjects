@@ -80,6 +80,8 @@ msgLenWithParents.fast = function(nodeIndex, parentsIndices, indexListPerNodePer
       
       j = j + 1
       
+      #cat(nonFixedTerm, "\n")
+      
       } # end for ii
         
     } # end for i

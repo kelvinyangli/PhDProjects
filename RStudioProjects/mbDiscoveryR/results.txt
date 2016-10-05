@@ -1,4 +1,4 @@
-known model false prior: 
+﻿known model false prior: 
 
 insurance - iamb is the best across all sample sizes, pcmb becomes competitive to iamb under 10000 sample, mmlcpt is also very close to iamb
 but for small samples, pcmb and mmlcpt are not where close to iamb in general performance, although mmlcpt shows superior precision under 
@@ -9,9 +9,10 @@ alarm - iamb and mmlcpt are good under small samples; rpdmb and ipcmb are good u
 
 known model true prior: 
 
-asia - 
-
-insurance - 
+insurance - among all methods with symmetry check, mmlcpt is always the best across all sample sizes; it has the highest precision almost all time,
+ but recall lower recall than iamb; comparing with mml and pcmb, iamb does not converge well when increasing sample size; the symmetry check helps 
+mml increase overal perforamnce, however the results don't change for pcmb (maybe due to there is a symmetry check for pc in its algorithm), and 
+can even decrease for iamb under large sample, eg under 10000 samples case.  this is because iamb has a high recall but low precision. 
 
 alarm - after applying symmetry check, mmlcpt is always the best across all sample sizes; the precision is always the highest, but recall iamb is 
 always the highest; notice that iamb does not converge well when increasing sample size; also notice that pcmb doesn't change much after symmetry
@@ -26,4 +27,11 @@ artificial model true prior:
 
 7231 - both iamb and mml do well across all sample sizes; for large sample, all methods converge to the perfect scores. 
 
-34441 - as under small samples in the above case, both iamb and mml do well; but iamb doesn’t do well under large samples; pcmb and mml are better under large samples; in general, mml does well under all sample sizes and has a consistency performance. 
+34441 - as under small samples in the above case, both iamb and mml do well; but iamb doesn’t do well under large samples, although it occationally
+has very high recall rate, but with a low precision rate; pcmb and mml converge well in general. in general, mml does well under all sample sizes 
+and has a consistency performance. 
+
+50561 - as in small and medium models, mml and iamb do well under small samples; but iamb doesn't converge well when increasing sample size; 
+pcmb and mml converge well and are better under large samples. notice that pcmb has good overall performance, but no high precision nor recall, for
+example under 10000 samples, it indicates that pcmb has the similar rate for precision and recall, unlike mml or iamb, which has one score much 
+higher than the other. 

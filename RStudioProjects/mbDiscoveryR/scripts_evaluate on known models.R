@@ -1,8 +1,8 @@
 # scripts on evaluating known models with build in parameters
-model = "insurance"
-n = 1000
-beta = 1
-nIter = 20
+model = "asia"
+n = 10000
+#beta = 1
+nIter = 5
 
 
 cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
@@ -25,16 +25,18 @@ for (j in 1:nIter) {
   
 
 # apply mmlCPT 
-datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
+#datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
 for (ii in 1:length(datasets)) {
   
   #data = read.table(paste0(model, "/data/", datasets[ii]))
   # may need/need not this steps to convert variables into factors
-  temp = read.table(paste0(model, "/data/", datasets[ii]))
-  data = temp
-  for (k in 1:ncol(temp)) data[,k] = as.factor(temp[,k])
+  #temp = read.table(paste0(model, "/data/", datasets[ii]))
+  data = readRDS(paste0(model, "/data rds/", datasets[ii]))
+  #data = temp
+  #for (k in 1:ncol(temp)) data[,k] = as.factor(temp[,k])
   
-  colnames(data) = allNodes
+  #colnames(data) = allNodes
   
   # prepare for mmlCPT
   dataInfo = getDataInfo(data) 
@@ -48,24 +50,24 @@ for (ii in 1:length(datasets)) {
     
   } # end for i 
   
-  fileName = strsplit(datasets[ii], ".data")[[1]]
-  saveRDS(mbList, paste0(model, "/mb/cpt std/", fileName, ".rds")) # save mbList into folder
+  #fileName = strsplit(datasets[ii], ".data")[[1]]
+  #saveRDS(mbList, paste0(model, "/mb/cpt std/", fileName, ".rds")) # save mbList into folder
+  saveRDS(mbList, paste0(model, "/mb/cpt std/", datasets[ii]))
   
   # use symmetry condition to re-check for mb candidate for each node
   mbList = symmetryCheck(allNodes, mbList)
   
-  saveRDS(mbList, paste0(model, "/mb/cpt sym/", fileName, ".rds")) # save mbList into folder
+  #saveRDS(mbList, paste0(model, "/mb/cpt sym/", fileName, ".rds")) # save mbList into folder
+  saveRDS(mbList, paste0(model, "/mb/cpt sym/", datasets[ii]))
   
 } # end for ii
 
-computeStats4(cpts, model, "cpt std", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "cpt sym", n, alpha = 0.05, nDigits = 2)
 
 ##############################################################################################################
 ##### pcmb from c++
 datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
 
-setwd("pcmb/") # set wd to pcmb folder
+setwd("pcmb2/") # set wd to pcmb folder
 
 file.remove("output.txt")
 
@@ -87,6 +89,8 @@ for (ii in 1:length(datasets)) {
 }
 
 ##### iamb from c++
+file.remove("output.txt")
+
 for (ii in 1:length(datasets)) {
   
   file.copy(paste0("../", model, "/data/", datasets[ii]), paste0(model, ".data"), overwrite = TRUE) # copy data from "alarm data" to "pcmb" with new name "alarm.data"
@@ -105,8 +109,6 @@ for (ii in 1:length(datasets)) {
 }
 
 setwd("../")
-computeStats4(cpts, model, "pcmb", n, alpha = 0.05, nDigits = 2)
-computeStats4(cpts, model, "iamb", n, alpha = 0.05, nDigits = 2)
 
 # apply symmetry check for pcmb
 results = list.files(paste0(model, "/mb/pcmb/"), pattern = paste0("_", n, "_"))
@@ -118,7 +120,7 @@ for (i in 1:length(results)) {
   saveRDS(mbList, paste0(model, "/mb/pcmb sym/", results[i]))
   
 }
-computeStats4(cpts, model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
+
 
 # apply symmetry check for iamb
 results = list.files(paste0(model, "/mb/iamb/"), pattern = paste0("_", n, "_"))
@@ -130,9 +132,15 @@ for (i in 1:length(results)) {
   saveRDS(mbList, paste0(model, "/mb/iamb sym/", results[i]))
   
 }
-computeStats4(cpts, model, "iamb sym", n, alpha = 0.05, nDigits = 2)
 
 
+
+computeStats4(model, "iamb", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "iamb sym", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "pcmb", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "cpt std", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "cpt sym", n, alpha = 0.05, nDigits = 2)
 
 
 

@@ -1,41 +1,7 @@
 
-getDataInfo = function(data) {
-  
-  ##############################################################
-  # get the arity of each node 
-  # get the indices for each value of each node
-
-  arities = rep(0, ncol(data))
-  
-  indexListPerNodePerValue = list()
-  
-  for (i in 1:ncol(data)) {
-    
-    arities[i] = nlevels(data[, i])
-    
-    # get the indecides for each value of node i
-    indexListPerValue = list()
-    
-    for (j in 1:arities[i]) {
-      
-      indexListPerValue[[j]] = which(data[, i] == levels(data[, i])[j]) 
-      
-    } # end for arity j
-    
-    indexListPerNodePerValue[[i]] = indexListPerValue
-    
-  } # end for node i
-  
-  ls = list(arities = arities, indexListPerNodePerValue = indexListPerNodePerValue)
-  
-  return(ls)
-  
-}
-
-
 # MB discovery using 
-mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodePerValue,
-                               base = 2, indicatorMatrix = NULL, interactData = NULL, completeIndicatorMatrix = NULL, debug = FALSE) {
+mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, indexListPerNodePerValue, conPar, 
+                                                          base = exp(1), debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -56,30 +22,11 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
   
-  if (!is.null(indicatorMatrix)) {# case for using logit model
-    
-    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, interactData, completeIndicatorMatrix, sigma = 3)
-    
-  } else {# case for using cpt
-    
-    minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, c(), arities, 
-                      sampleSize, base)
-    
-  } # end if 
+  minMsgLen = mmlMultinomialDirichlet(nodeIndex, c(), indexListPerNodePerValue, c(), arities, sampleSize, conPar = conPar, base = base)
   
   if (debug) {
     
-    if (!is.null(indicatorMatrix)) {
-      
-      scoreName = "mmlLogit"
-      
-    } else {
-      
-      scoreName = "mmlCPT"
-      
-    }
-    
-    cat("Search: Greedy search --- Score:", scoreName, "\n")
+    cat("Search: Greedy search --- Score: mmlMultinomialDirichlet \n")
     cat("0 parent:", minMsgLen, "\n")
     
   }
@@ -105,19 +52,10 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
       
       parentsIndices = c(mb, unCheckedIndices[i])
       
-      if (!is.null(indicatorMatrix)) {# for mml logit model
-        
-        res = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, interactData, 
-                              completeIndicatorMatrix, sigma = 3)
-        
-      } else {# for mml cpt
-        
-        res = score(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, base)
-        msgLenCurrent = res$msgLen
-        #cachedIndicesList = res$cachedIndicesList
-        
-      }
-      
+      res = mmlMultinomialDirichlet(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, 
+                                    arities, sampleSize, conPar = conPar, base = base)
+      msgLenCurrent = res$msgLen
+
       if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       
       # if the current msg len is smaller then replace minMsgLen by the current 
@@ -128,7 +66,7 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
         minMsgLen = msgLenCurrent
         index = i
         tempCachedIndicesList = res$cachedIndicesList
-
+        
       } # end if 
       
     } # end for i 
