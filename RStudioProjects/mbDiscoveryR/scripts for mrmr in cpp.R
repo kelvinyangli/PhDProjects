@@ -6,11 +6,11 @@
 # the returned variables are indexed from 1 to nVar - 1, which is the same as indexing all variables from 0 to nVar - 1
 
 #setwd("realWorldModelWithTrueParameters/") # for using known models with real paremters 
-model = "alarm"
+model = "asia"
 cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
 allNodes = names(cpts)
-n = 100
-datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
+n = 10000
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 
 # determine the number of features in the true mb
 nFeaturesList = rep(0, length(allNodes))
@@ -21,8 +21,10 @@ setwd("mrmr")
 for (i in 1:length(datasets)) {# for each data 
   
   mbList = list()
-  data = read.table(paste0("../", model, "/data/", datasets[i]))
-  colnames(data) = allNodes # assign column names
+  #data = read.table(paste0("../", model, "/data/", datasets[i]))
+  data = readRDS(paste0("../", model, "/data rds/", datasets[i]))
+  data=data[1:10,]
+  #colnames(data) = allNodes # assign column names
   originalData = data # save data to elsewhere for furture re-order column use
   
   # for the 1st column, don't need to change its position, so just apply mrmr
@@ -36,16 +38,16 @@ for (i in 1:length(datasets)) {# for each data
   for (j in 2:ncol(originalData)) {# for each column from the 2nd column onwards
     
     # place the jth column into the 1st column 
-    indices = reOrderColumns(length(allNodes), j)
+    indices = reOrderColumns(ncol(originalData), j)
     data = originalData[, indices]
-    print(names(data))
-    write.csv(data, "data.csv", row.names = FALSE)
+    #print(indices)
+    write.csv(data, paste0("data", j, ".csv"), row.names = FALSE)
     
     nFeatures = nFeaturesList[j]
-    output = system(paste0("mrmr_win32 -i data.csv -n ", nFeatures, " -s ", maxSamples), intern = TRUE)
+    output = system(paste0("mrmr_win32 -i data.csv -n ", nFeatures, " -s ", maxSamples, " -v ", length(allNodes)), intern = TRUE)
     mbList[[j]] = parseMRMR(output, nFeatures)
     
-  }
+  } # end for j
   
   saveRDS(mbList, paste0("../", model, "/mb/mrmr/", datasets[i], ".rds"))
   
