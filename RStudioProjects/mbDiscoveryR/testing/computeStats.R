@@ -1,16 +1,26 @@
 # get the learned mb for each model and compute the avearge with confidence interval 
 
 # this is for synthetic models
-computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2) {
+# others can be set to "training", or "testing" when in optimization process
+computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2, others = NULL) {
   
-  models = list.files(paste0(model, "/cpts/"))
+  models = list.files(paste0(model, "/cpts ", others))
   files = list.files(paste0(model, "/mb/", method), pattern = paste0("_", n, "_"))
   
   mtx = matrix(0, nrow = length(files), ncol = 4)
   
   for (i in 1:length(models)) { # for each model
     
-    cpts = readRDS(paste0(model, "/cpts/", models[i])) # load true cpts
+    if (is.null(others)) {
+      
+      cpts = readRDS(paste0(model, "/cpts/", models[i])) # load true cpts
+      
+    } else {
+      
+      cpts = readRDS(paste0(model, "/cpts ", others, "/", models[i])) # load true cpts
+      
+    }
+    
     allNodes = names(cpts)
     
     for (j in ((i - 1) * nIter + 1):(i * nIter)) { # for each dataset
@@ -218,3 +228,5 @@ computeStats4 = function(model, method, n, alpha = 0.05, nDigits = 2) {
   return(round(computeCI(mtx, alpha = alpha), nDigits))
   
 }
+
+
