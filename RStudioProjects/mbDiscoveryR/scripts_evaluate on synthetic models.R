@@ -30,9 +30,9 @@ sourceDir("testing/")
 
 setwd("../")
 
-nNodes = 150
-maxNParents = 5
-maxArity = 6
+nNodes = 34
+maxNParents = 4
+maxArity = 4
 beta = 1 # concentration parameter
 n = 100
 nIter = 5
@@ -200,12 +200,12 @@ for (i in 1:length(results)) {
 
 
 # compte average 
-computeStats(model, "iamb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "iamb sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "pcmb", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "pcmb sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "cpt std", n, nIter = nIter, alpha = 0.05, nDigits = 2)
-computeStats(model, "cpt sym", n, nIter = nIter, alpha = 0.05, nDigits = 2)
+computeStats(model, "iamb", n, nIter = 5, alpha = 0.05, nDigits = 2)
+computeStats(model, "iamb sym", n, nIter = 5, alpha = 0.05, nDigits = 2)
+computeStats(model, "pcmb", n, nIter = 5, alpha = 0.05, nDigits = 2)
+computeStats(model, "pcmb sym", n, nIter = 5, alpha = 0.05, nDigits = 2)
+computeStats(model, "cpt std", n, nIter = 5, alpha = 0.05, nDigits = 2)
+computeStats(model, "cpt sym", n, nIter = 5, alpha = 0.05, nDigits = 2)
 
 ######################################################################################################## 
 # compute mb of each node using mmlCPT with 2 stages

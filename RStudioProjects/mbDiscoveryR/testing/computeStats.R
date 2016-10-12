@@ -4,7 +4,7 @@
 # others can be set to "training", or "testing" when in optimization process
 computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2, others = NULL) {
   
-  models = list.files(paste0(model, "/cpts ", others))
+  models = list.files(paste0(model, "/cpts ", others), pattern = ".rds")
   files = list.files(paste0(model, "/mb/", method), pattern = paste0("_", n, "_"))
   
   mtx = matrix(0, nrow = length(files), ncol = 4)
