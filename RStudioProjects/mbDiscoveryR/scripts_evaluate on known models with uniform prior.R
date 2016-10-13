@@ -28,10 +28,10 @@ sourceDir("mbMMLLogit/")
 # re-sample cpts for alarm using uniform prior i.e dirichlet beta = 1
 setwd("../")
 
-model = "hailfinder"
+model = "insurance"
 dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag
 arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # read arities
-n = 10000
+n = 100
 beta = 1
 nIter = 5
 
@@ -95,12 +95,12 @@ for (ii in 1:length(datasets)) {
     
   } # end for i 
   
-  saveRDS(mbList, paste0(model, "/mb/cpt std/", datasets[ii], ".rds")) # save mbList into folder
+  saveRDS(mbList, paste0(model, "/mb/cpt std/", datasets[ii])) # save mbList into folder
   
   # use symmetry condition to re-check for mb candidate for each node
   mbList = symmetryCheck(allNodes, mbList)
   
-  saveRDS(mbList, paste0(model, "/mb/cpt sym/", datasets[ii], ".rds")) # save mbList into folder
+  saveRDS(mbList, paste0(model, "/mb/cpt sym/", datasets[ii])) # save mbList into folder
   
 } # end for ii
 
@@ -158,7 +158,9 @@ for (ii in 1:length(datasets)) {
   
   mbList = parsePCMB(output, length(allNodes), allNodes)
   
-  saveRDS(mbList, paste0("../", model, "/mb/pcmb/", datasets[ii], ".rds")) # save learned mb as .rds
+  filename = strsplit(datasets[ii], ".data")[[1]]
+  
+  saveRDS(mbList, paste0("../", model, "/mb/pcmb/", filename, ".rds")) # save learned mb as .rds
   
   file.remove("output.txt")
   
@@ -178,7 +180,9 @@ for (ii in 1:length(datasets)) {
   
   mbList = parsePCMB(output, length(allNodes), allNodes)
   
-  saveRDS(mbList, paste0("../", model, "/mb/iamb/", datasets[ii], ".rds")) # save learned mb as .rds
+  filename = strsplit(datasets[ii], ".data")[[1]]
+  
+  saveRDS(mbList, paste0("../", model, "/mb/iamb/", filename, ".rds")) # save learned mb as .rds
   
   file.remove("output.txt")
   

@@ -27,22 +27,23 @@ model = "34_4_4_1"
 #dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag, for models with uniform parameters
 #arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # for models with uniform parameters
 #cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc")) # for models with real parameters
-n = 10000
+n = 100
 nIter = 5
 datasets = list.files(paste0(model, "/data training/"), pattern = paste0("_", n, "_"))
 #allNodes = bnlearn::nodes(dag)
 #allNodes = names(cpts)
 
 # optimize mml prior
-conPars = c(10, 100)
-datasets = list.files(paste0(model, "/data training rds/"), pattern = paste0("_", n, "_"))
+conPars = c(1, 10, 100)
+n = 10000
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (j in 1:length(conPars)) {
   
-  dir.create(paste0(model, "/mb/", "cpt std ", conPars[j]))
+  dir.create(paste0(model, "/mb/", "cpt std dir", conPars[j]))
 
   for (ii in 1:length(datasets)) {
     
-    data = readRDS(paste0(model, "/data training rds/", datasets[ii]))
+    data = readRDS(paste0(model, "/data rds/", datasets[ii]))
     allNodes = colnames(data)
     
     # prepare for mmlCPT
@@ -58,35 +59,38 @@ for (j in 1:length(conPars)) {
       
     } # end for i 
     
-    saveRDS(mbList, paste0(model, "/mb/cpt std ", conPars[j], "/", datasets[ii])) # save mbList into folder
+    saveRDS(mbList, paste0(model, "/mb/cpt std dir", conPars[j], "/", datasets[ii])) # save mbList into folder
   
   }
   
 }
 
-computeStats(model, "cpt std 100", n, nIter = 5, others = "training")
+for (j in 1:length(conPars)) print(computeStats(model, paste0("cpt std dir", conPars[j]), n, nIter = 5, others = NULL))
+
+
 
 # optimize critical value for pcmb
-alpha = c(0.25,0.3)
+alpha = c(0.01)
 #res = c()
-models = list.files(paste0(model, "/cpts training/"))
-datasets = list.files(paste0(model, "/data training/"), pattern = paste0("_", n, "_"))
+models = list.files(paste0(model, "/cpts asymDir testing/"))
+dags = list.files(paste0(model, "/dag asymDir testing/"))
+datasets = list.files(paste0(model, "/data asymDir testing/"), pattern = paste0("_", n, "_"))
 setwd("pcmb/")
 for (i in 1:length(alpha)) {
   
-  dir.create(paste0("../", model, "/mb/pcmb ", alpha[i]))
+  dir.create(paste0("../", model, "/mb/aymDir pcmb ", alpha[i]))
   #setwd("pcmb/")
   file.remove("output.txt")
   
   ##### pcmb from c++
   for (ii in 1:length(datasets)) {
     
-    file.copy(paste0("../", model, "/data training/", datasets[ii]), "synModel.data", overwrite = TRUE) 
+    file.copy(paste0("../", model, "/data asymDir testing/", datasets[ii]), "synModel.data", overwrite = TRUE) 
     fileName = strsplit(models[ceiling(ii / nIter)], ".rds")[[1]]
     fileName = paste0(fileName, ".data.net")
-    file.copy(paste0("../", model, "/dag/", fileName), "synModel.data.net", overwrite = TRUE)
+    file.copy(paste0("../", model, "/dag asymDir testing/", fileName), "synModel.data.net", overwrite = TRUE)
     
-    cpts = readRDS(paste0("../", model, "/cpts training/", models[ceiling(ii / nIter)]))
+    cpts = readRDS(paste0("../", model, "/cpts asymDir testing/", models[ceiling(ii / nIter)]))
     
     results = system(paste0("kmb4 synModel.data ", n, " ", length(cpts), " -1 1.0 1 1 ", alpha[i]), intern = TRUE)
     
@@ -94,7 +98,7 @@ for (i in 1:length(alpha)) {
     
     mbList = parsePCMB(output, length(cpts), names(cpts))
     
-    saveRDS(mbList, paste0("../", model, "/mb/pcmb ", alpha[i], "/", datasets[ii], ".rds")) # save learned mb as .rds
+    saveRDS(mbList, paste0("../", model, "/mb/asymDir pcmb ", alpha[i], "/", datasets[ii], ".rds")) # save learned mb as .rds
     
     file.remove("output.txt")
     
@@ -104,23 +108,23 @@ for (i in 1:length(alpha)) {
 
 
 # optimize critical value for iamb
-alpha = seq(0.0002, 0.0009, 0.0002)
+alpha = 0.01
 #res = c()
 setwd("pcmb/")
 for (i in 1:length(alpha)) {
   
-  dir.create(paste0("../", model, "/mb/iamb ", alpha[i]))
+  dir.create(paste0("../", model, "/mb/asymDir iamb ", alpha[i]))
   file.remove("output.txt")
   
   ##### pcmb from c++
   for (ii in 1:length(datasets)) {
     
-    file.copy(paste0("../", model, "/data training/", datasets[ii]), "synModel.data", overwrite = TRUE) 
+    file.copy(paste0("../", model, "/data asymDir testing/", datasets[ii]), "synModel.data", overwrite = TRUE) 
     fileName = strsplit(models[ceiling(ii / nIter)], ".rds")[[1]]
     fileName = paste0(fileName, ".data.net")
-    file.copy(paste0("../", model, "/dag/", fileName), "synModel.data.net", overwrite = TRUE)
+    file.copy(paste0("../", model, "/dag asymDir testing/", fileName), "synModel.data.net", overwrite = TRUE)
     
-    cpts = readRDS(paste0("../", model, "/cpts training/", models[ceiling(ii / nIter)]))
+    cpts = readRDS(paste0("../", model, "/cpts asymDir testing/", models[ceiling(ii / nIter)]))
     
     results = system(paste0("kmb4 synModel.data ", n, " ", length(cpts), " -1 1.0 1 0 ", alpha[i]), intern = TRUE)
     
@@ -128,7 +132,7 @@ for (i in 1:length(alpha)) {
     
     mbList = parsePCMB(output, length(cpts), names(cpts))
     
-    saveRDS(mbList, paste0("../", model, "/mb/iamb ", alpha[i], "/", datasets[ii], ".rds")) # save learned mb as .rds
+    saveRDS(mbList, paste0("../", model, "/mb/asymDir iamb ", alpha[i], "/", datasets[ii], ".rds")) # save learned mb as .rds
     
     file.remove("output.txt")
     
@@ -145,17 +149,20 @@ setwd("../")
 
 # check accuracy for models with real parameters
 #computeStats4(model, "cpt std 0.1", n, alpha = 0.05, nDigits = 2)
+
+computeStats(model, "asymDir iamb 0.01", n, nIter = 5, others = "asymDir testing")
+
 for (i in 1:length(alpha)) print(computeStats(model, paste0("iamb ", alpha[i]), n, nIter = 5, others = "training"))
 
 #################################################################################################
 # testing using optimized prior/critical value
 #allNodes = bnlearn::nodes(dag)
 #model = "alarm"
-n = 10000
-datasets = list.files(paste0(model, "/data testing rds/"), pattern = paste0("_", n, "_"))
+n = 100
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (ii in 1:length(datasets)) {
   
-  data = readRDS(paste0(model, "/data testing rds/", datasets[ii]))
+  data = readRDS(paste0(model, "/data rds/", datasets[ii]))
   allNodes = names(data)
   
   # prepare for mmlCPT

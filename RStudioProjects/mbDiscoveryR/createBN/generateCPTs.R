@@ -1,7 +1,11 @@
 ############################################################################################################
-# generate random CPT based on a random DAG with parameters
-# DAG, maximum number of values, concentration for Dirichelet distribution
-# when concentration  is large, dirichlet is equivalent to uniform distribution i.e concentration is weak
+# generate a CPT for each node of a given DAG
+# parameter values are sampled with symmetric Dirichlet distribution 
+# the input variables are: a directed acyclic graph (dag), the maximum number of values of each node (maxNumValues), 
+# and the concentration parameter for a symmetric Dirichelet distribution (concentration)
+# the range of concentration is (0, infinity)
+# the larger the concentration is, the closer to uniform the sampled parameters look like, and hence the more 
+# difficulty for any learner to discovery its dependency with the child node
 # library(gtools)
 ############################################################################################################
 
