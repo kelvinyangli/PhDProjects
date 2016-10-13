@@ -34,15 +34,16 @@ datasets = list.files(paste0(model, "/data training/"), pattern = paste0("_", n,
 #allNodes = names(cpts)
 
 # optimize mml prior
-conPars = 1
-datasets = list.files(paste0(model, "/data asymDir testing rds/"), pattern = paste0("_", n, "_"))
+conPars = c(1, 10, 100)
+n = 10000
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (j in 1:length(conPars)) {
   
-  dir.create(paste0(model, "/mb/", "asymDir cpt std ", conPars[j]))
+  dir.create(paste0(model, "/mb/", "cpt std dir", conPars[j]))
 
   for (ii in 1:length(datasets)) {
     
-    data = readRDS(paste0(model, "/data asymDir testing rds/", datasets[ii]))
+    data = readRDS(paste0(model, "/data rds/", datasets[ii]))
     allNodes = colnames(data)
     
     # prepare for mmlCPT
@@ -58,13 +59,13 @@ for (j in 1:length(conPars)) {
       
     } # end for i 
     
-    saveRDS(mbList, paste0(model, "/mb/asymDir cpt std ", conPars[j], "/", datasets[ii])) # save mbList into folder
+    saveRDS(mbList, paste0(model, "/mb/cpt std dir", conPars[j], "/", datasets[ii])) # save mbList into folder
   
   }
   
 }
 
-computeStats(model, "asymDir cpt std 1", n, nIter = 5, others = "asymDir testing")
+for (j in 1:length(conPars)) print(computeStats(model, paste0("cpt std dir", conPars[j]), n, nIter = 5, others = NULL))
 
 
 
@@ -157,11 +158,11 @@ for (i in 1:length(alpha)) print(computeStats(model, paste0("iamb ", alpha[i]), 
 # testing using optimized prior/critical value
 #allNodes = bnlearn::nodes(dag)
 #model = "alarm"
-n = 10000
-datasets = list.files(paste0(model, "/data testing rds/"), pattern = paste0("_", n, "_"))
+n = 100
+datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (ii in 1:length(datasets)) {
   
-  data = readRDS(paste0(model, "/data testing rds/", datasets[ii]))
+  data = readRDS(paste0(model, "/data rds/", datasets[ii]))
   allNodes = names(data)
   
   # prepare for mmlCPT
