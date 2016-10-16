@@ -23,11 +23,11 @@ sourceDir("mbMMLLogit/")
 # training for optimal prior/critical value
 # setwd("C:/PhDProjects/RStudioProjects/mbDiscoveryR/")
 setwd("C:/mbDiscoveryExperimentalResults/")
-model = "34_4_4_1"
+model = "34_4_4_10"
 #dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag, for models with uniform parameters
 #arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # for models with uniform parameters
 #cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc")) # for models with real parameters
-n = 100
+n = 100000
 nIter = 5
 datasets = list.files(paste0(model, "/data training/"), pattern = paste0("_", n, "_"))
 #allNodes = bnlearn::nodes(dag)
@@ -35,7 +35,7 @@ datasets = list.files(paste0(model, "/data training/"), pattern = paste0("_", n,
 
 # optimize mml prior
 conPars = c(1, 10, 100)
-n = 10000
+n = 100000
 datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (j in 1:length(conPars)) {
   
