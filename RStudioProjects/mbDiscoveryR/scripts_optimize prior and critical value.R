@@ -23,11 +23,11 @@ sourceDir("mbMMLLogit/")
 # training for optimal prior/critical value
 # setwd("C:/PhDProjects/RStudioProjects/mbDiscoveryR/")
 setwd("C:/mbDiscoveryExperimentalResults/")
-model = "34_4_4_10"
+model = "alarm"
 #dag = readRDS(paste0("Known BNs/", model, "Dag.rds")) # read dag, for models with uniform parameters
 #arities = readRDS(paste0("Known BNs/", model, "Arity.rds")) # for models with uniform parameters
 #cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc")) # for models with real parameters
-n = 100000
+n = 1000
 nIter = 5
 datasets = list.files(paste0(model, "/data training/"), pattern = paste0("_", n, "_"))
 #allNodes = bnlearn::nodes(dag)
@@ -67,6 +67,9 @@ for (j in 1:length(conPars)) {
 
 for (j in 1:length(conPars)) print(computeStats(model, paste0("cpt std dir", conPars[j]), n, nIter = 5, others = NULL))
 
+computeStats(model, "cpt std dir1", n, nIter = 5, others = NULL)
+computeStats(model, "cpt std dir10", n, nIter = 5, others = NULL)
+computeStats(model, "cpt std dir100", n, nIter = 5, others = NULL)
 
 
 # optimize critical value for pcmb
@@ -158,7 +161,7 @@ for (i in 1:length(alpha)) print(computeStats(model, paste0("iamb ", alpha[i]), 
 # testing using optimized prior/critical value
 #allNodes = bnlearn::nodes(dag)
 #model = "alarm"
-n = 100
+n = 500
 datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 for (ii in 1:length(datasets)) {
   
@@ -173,10 +176,10 @@ for (ii in 1:length(datasets)) {
   for (i in 1:length(allNodes)) {
     
     targetNode = allNodes[i]
-    mbList[[i]] = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue, 
-                                          base = exp(1), debug = F)
-    #mbList[[i]] = mbForwardSelectionUsingMMLMultinomialDirichlet(data, targetNode, dataInfo$arities, dataInfo$indexListPerNodePerValue,
-    #                                                             conPar = 0.7, base = exp(1), debug = F)
+    #mbList[[i]] = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue, 
+    #                                      base = exp(1), debug = F)
+    mbList[[i]] = mbForwardSelectionUsingMMLMultinomialDirichlet(data, targetNode, dataInfo$arities, dataInfo$indexListPerNodePerValue,
+                                                                 conPar = 1, base = exp(1), debug = F)
     
   } # end for i 
   

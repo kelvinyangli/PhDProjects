@@ -22,6 +22,7 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
   
+  #nTimes = 1 # track the number of times to compute a mml score 
   minMsgLen = mmlMultinomialDirichlet(nodeIndex, c(), indexListPerNodePerValue, c(), arities, sampleSize, conPar = conPar, base = base)
   
   if (debug) {
@@ -69,7 +70,9 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
         
       } # end if 
       
-    } # end for i 
+      #nTimes = nTimes + 1
+      
+    } # end for unCheckedIndices i 
     
     if (index == 0) {
       
@@ -93,6 +96,7 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
     
   } # end repeat
   
+  #print(nTimes)
   return(allNodes[mb])
   
 }
