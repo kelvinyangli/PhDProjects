@@ -6,10 +6,10 @@
 # the returned variables are indexed from 1 to nVar - 1, which is the same as indexing all variables from 0 to nVar - 1
 
 #setwd("realWorldModelWithTrueParameters/") # for using known models with real paremters 
-model = "asia"
+model = "alarm"
 cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
 allNodes = names(cpts)
-n = 10000
+n = 1000
 datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 
 # determine the number of features in the true mb

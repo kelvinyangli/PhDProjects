@@ -1,6 +1,7 @@
 # scripts on evaluating known models with build in parameters
-model = "asia"
-n = 10000
+setwd("realWorldModelWithTrueParameters")
+model = "alarm"
+n = 1000
 #beta = 1
 nIter = 5
 
