@@ -4,79 +4,6 @@
 # when our dataset contains values such as "A", "B", "C", ...  
 # should obtain same answer as using optim, because glm also use mle 
 
-# transform binary data into 0 and 1
-getIndicator = function(data) {
-  
-  indicatorMatrix = matrix(nrow = nrow(data), ncol = ncol(data), dimnames = list(NULL, colnames(data)))
-  
-  for (i in 1:ncol(data)) {
-    
-    # as.numeric convert categrical data values to 1, 2, 3, ...
-    # -1 transfers them to 0, 1, 2, ...
-    indicatorMatrix[, i] = as.numeric(data[, i]) - 1 
-    
-  }
-  
-  # add an extra column of 1s in front for the intercept of a logit model
-  #indicatorMatrix = cbind(1, indicatorMatrix)
-  
-  return(indicatorMatrix)
-  
-}
-
-# compute all pairs of interaction data, here data is indicatorMatrix
-getInteractData = function(data) {
-  
-  interact = matrix(0, nrow = nrow(data), ncol = choose(ncol(data), 2))
-  
-  interact = as.data.frame(interact)
-  
-  k = 1
-  
-  for (i in 1:(ncol(data) - 1)) {
-    
-    for (j in (i + 1):ncol(data)) {
-      
-      interact[, k] = data[, i] * data[, j]
-      
-      colnames(interact)[k] = paste0(colnames(data)[i], colnames(data)[j], collapse = "")
-      
-      k = k + 1
-      
-    } # end for j
-    
-  } # end for i
-  
-  return(interact)
-  
-}
-
-# create interact predictors according to 1st order predictors and return their column indices in interactData
-interactPredictors = function(interactData, allNodes, xIndices) {
-  
-  interactXs = rep(0, choose(length(xIndices), 2))
-  
-  k = 1 
-  
-  for (i in 1:(length(xIndices) - 1)) {
-    
-    for (j in (i + 1):length(xIndices)) {
-      
-      # since when compute the interactData, interactions are considered in the order of the column labels
-      # however, when adding node into predictor sets, nodes may be added in a different order
-      # hence when considering interaction terms, pair of nodes are ordered so that it align with the column names of interactData
-      interactXs[k] = which(colnames(interactData) == paste0(allNodes[xIndices[c(i, j)][order(xIndices[c(i, j)])]], collapse = ""))
-      
-      k = k + 1
-      
-    } # end for j
-    
-  } # end for i
-  
-  return(interactXs)
-  
-}
-
 # negative log likelihood of the 2nd order logit model for the entire dataset
 negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
   
@@ -84,7 +11,7 @@ negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
     
     logLike = -log(1 + exp(betaDotX)) * nrow(indicatorMatrix) + sum(indicatorMatrix[, yIndex]) * betaDotX
     
-  } else { # if there is at least one parent
+  } else {# if there is at least one parent
     
     logLike = sum(-log(1 + exp(betaDotX))) + indicatorMatrix[, yIndex] %*% betaDotX
     
@@ -188,41 +115,6 @@ msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, arities
   
 }
 
-makeFormula = function(allNodes, yIndex, xIndices) {
-  
-  if (length(xIndices) > 1) { # if there are more than 1 predictors
-    
-    # re-order xIndices to make it consistent with the colnames(interactData)
-    #tempIndices = xIndices[order(xIndices)]
-    
-    pairs = vector(length = sum(1:(length(xIndices) - 1)))
-    
-    k = 1
-    
-    for (i in 1:(length(xIndices) - 1)) {
-      
-      for (j in (i + 1):length(xIndices)) {
-        
-        pairs[k] = paste0(allNodes[xIndices[i]], "*", allNodes[xIndices[j]])  
-        
-        k = k + 1
-        
-      } # end for j
-      
-    } # end for i
-    
-    formula = paste(allNodes[yIndex], "~", paste0(c(allNodes[xIndices], pairs), collapse = "+"))
-    
-  } else {
-    
-    formula = paste(allNodes[yIndex], "~", allNodes[xIndices])
-    
-  }
-  
-  
-  return(formula)
-  
-}
 
 msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, 
                                         allNodes, interactData, completeIndicatorMatrix, sigma) {
@@ -241,6 +133,38 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
   # the reference can be changed by change the order of levels in data frame using relevel()
   beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
   
+  # compute the indices for all 1st and 2nd order terms
+  # predictors = c(1st order indices, 2nd order indices) in completeIndicatorMatrix
+  if (length(xIndices) > 1) { # only have interaction if there are more than 1 parent
+    
+    # interaction of predictors
+    interactionTermsIndices = getInteractionIndices(interactData, allNodes, xIndices) 
+    
+    # joint of 1st and 2nd order predictors
+    predictors = c(xIndices, ncol(indicatorMatrix) + interactionTermsIndices)
+    
+  } else {# if there is at most one parent, then the predictors contain only 1st order predictors
+    
+    predictors = xIndices
+    
+  }
+  
+  # notice that the fitted model may return NA as coefficinet of a variable due to 
+  # this variable has linear relation with the other variables in the model
+  # this happens on the interaction terms most of the time (so far didn't encounter
+  # such a problem on 1st order terms), hence the interaction term should be dropped
+  # without consideration. 
+  
+  # if there is NA in the fitted coefficients then 
+  # remove na from beta, also remove corresponding indices from predictors
+  if (any(is.na(beta))) {
+    
+    naIndices = which(is.na(beta))
+    beta = beta[-naIndices] # remove na from fitted coefficients
+    predictors = predictors[-(naIndices - 1)] # remove corresponding indices
+    
+  }
+  
   nFreePar = length(beta)
   
   if (nFreePar <= length(k)) {
@@ -252,32 +176,14 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
     
   }
   
-  
-  # compute the indices for all 1st and 2nd order terms
-  # predictors = c(1st order indices, 2nd order indices) in completeIndicatorMatrix
-  if (length(xIndices) > 1) { # only have interaction if there are more than 1 parent
-    
-    # interaction of predictors
-    interactXs = interactPredictors(interactData, allNodes, xIndices) 
-    
-    # joint of 1st and 2nd order predictors
-    predictors = c(xIndices, ncol(indicatorMatrix) + interactXs)
-    
-  } else { # if there is at most one parent, then the predictors contain only 1st order predictors
-    
-    predictors = xIndices
-    
-  }
-  
-  # pre-compute betaDotX for each row
   betaDotX = rep(0, nrow(indicatorMatrix))
-  
-  # pre-compute exp(beta*X)/(1 + exp(beta*X))^2 for reach row
   expConstants = rep(0, nrow(indicatorMatrix))
   
+  # pre-compute betaDotX for each row
+  # pre-compute exp(beta*X)/(1 + exp(beta*X))^2 for reach row
   for (i in 1:nrow(indicatorMatrix)) {
     
-    betaDotX[i] = beta[1] + beta[-1] %*% completeIndicatorMatrix[i, predictors]
+    betaDotX[i] = beta[1] + beta[-1] %*% as.numeric(completeIndicatorMatrix[i, predictors])
     
     expConstants[i] = (exp(betaDotX[i]) / (1 + exp(betaDotX[i])) ^ 2)
     
