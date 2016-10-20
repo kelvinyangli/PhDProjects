@@ -1,41 +1,7 @@
-
-getDataInfo = function(data) {
-  
-  ##############################################################
-  # get the arity of each node 
-  # get the indices for each value of each node
-
-  arities = rep(0, ncol(data))
-  
-  indexListPerNodePerValue = list()
-  
-  for (i in 1:ncol(data)) {
-    
-    arities[i] = nlevels(data[, i])
-    
-    # get the indecides for each value of node i
-    indexListPerValue = list()
-    
-    for (j in 1:arities[i]) {
-      
-      indexListPerValue[[j]] = which(data[, i] == levels(data[, i])[j]) 
-      
-    } # end for arity j
-    
-    indexListPerNodePerValue[[i]] = indexListPerValue
-    
-  } # end for node i
-  
-  ls = list(arities = arities, indexListPerNodePerValue = indexListPerNodePerValue)
-  
-  return(ls)
-  
-}
-
-
 # MB discovery using 
+# indicatorMatrix = getIndicator(data)
 mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodePerValue,
-                               base = 2, indicatorMatrix = NULL, interactData = NULL, completeIndicatorMatrix = NULL, debug = FALSE) {
+                               base = exp(1), indicatorMatrix = NULL, interactData = NULL, completeIndicatorMatrix = NULL, debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
