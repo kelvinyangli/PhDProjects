@@ -1,94 +1,11 @@
-# compute mml using glm
-# glm selects the 1st value of a variable as the reference when fitting a model, hence when dealing with binar data
-# an indicator matrix that contains 0 and 1 is required, where 0 -- A and 1 -- B, since "A" appears to be the 1st value
-# when our dataset contains values such as "A", "B", "C", ...  
-# should obtain same answer as using optim, because glm also use mle 
-
-# negative log likelihood of the 2nd order logit model for the entire dataset
-negLogLike2ndOrder = function(indicatorMatrix, yIndex, xIndices, betaDotX) {
-  
-  if (is.null(xIndices)) { # if there is no parent
-    
-    logLike = -log(1 + exp(betaDotX)) * nrow(indicatorMatrix) + sum(indicatorMatrix[, yIndex]) * betaDotX
-    
-  } else {# if there is at least one parent
-    
-    logLike = sum(-log(1 + exp(betaDotX))) + indicatorMatrix[, yIndex] %*% betaDotX
-    
-  }
-  
-  return(-logLike) 
-  
-}
-
-# computing entries of fisher information matrix when the target has at least 1 parent
-# where there is no parent, FIM is a 1x1 matrix, which is just a sigle value 
-# and hence can be computed easily without using this function
-fisherMatrix2ndOrder = function(indicatorMatrix, yIndex, predictors, expConstants, completeIndicatorMatrix) {
-  
-  # FIM is a square matrix, with dimensions = |beta| = |predictors| + 1
-  # where predictors = c(1st order terms, 2nd order terms)
-  FIM = matrix(NA, length(predictors) + 1, length(predictors) + 1) 
-  
-  #fill in the (1, 1) entry of FIM
-  FIM[1, 1] = sum(expConstants)
-  
-  # fill in the lower triangular FIM from the 2nd row
-  for (j in 2:nrow(FIM)) {
-    
-    # fill in the lower traingular FIM from the 2nd column 
-    # since the 1st column is idential to the diagnose
-    for (k in 2:j) {
-      
-      # x[, j] = indicatorMatrix[, xIndices[j - 1]] = indicatorMatrix[, xIndices][, j - 1]
-      # take j-1 instead of j is because the jth index in FIM corresponds to the (j-1)th index in xIndice
-      # since an integer 1 is added in front of the Xs for the intercept
-      # conduct vector multiplication x_ij * x_ik first, then inner product with expConstants
-      # notice that x_i here is the joint of the original data and interaction data
-      FIM[j, k] = expConstants %*% (completeIndicatorMatrix[, predictors[j - 1]] * completeIndicatorMatrix[, predictors[k - 1]])
-      
-    } # end for k
-    
-  } # end for j
-  
-  # the 1st column is identical to the diagnose of FIM
-  FIM[, 1] = diag(FIM)
-  
-  # the upper triangular is identical to the lower triangular FIM
-  FIM[upper.tri(FIM)] = t(FIM)[upper.tri(t(FIM))]
-  
-  return(FIM) # return the complete FIM
-  
-}
-
-# calculate log of the determinant of a matrix
-# matrix has to be symmetric positive definite
-# use cholesky decomposition to decompose matrix FIM = L*transpose(L)
-logDeterminant = function(matrix) {
-  
-  choleskeyUpper = chol(matrix)
-  
-  logDet = 0 
-  
-  for (i in 1:nrow(matrix)) {
-    
-    logDet = logDet + log(diag(choleskeyUpper)[i])
-    
-  }
-  
-  return(logDet)
-  
-}
-
-msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, arities, allNodes, sigma) {
+msgLenWithNoPredictors2ndOrder.noprior = function(data, indicatorMatrix, yIndex, arities, allNodes, sigma) {
   
   # formula for empty model
   formula = paste(allNodes[yIndex], "~ 1")
   
   # estimate parameter of logit model using glm
-  #beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
-  beta = bayesglm(formula, family = binomial(link = "logit"), data = data, prior.mean = 0, prior.scale = 2.5)$coefficients
-  
+  beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
+
   # if there is no parent, then beta*X = beta0 = beta
   betaDotX = beta
   
@@ -117,7 +34,7 @@ msgLenWithNoPredictors2ndOrder = function(data, indicatorMatrix, yIndex, arities
 }
 
 
-msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, 
+msgLenWithPredictors2ndOrder.noprior = function(data, indicatorMatrix, yIndex, xIndices, arities, 
                                         allNodes, interactData, completeIndicatorMatrix, sigma) {
   
   # arity of dependent variable y
@@ -132,9 +49,8 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
   # parameter estimation of negative log likelihood using GLM
   # glm always use the first level (in this case "A") for reference when estimating coefficients
   # the reference can be changed by change the order of levels in data frame using relevel()
-  #beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
-  beta = bayesglm(formula, family = binomial(link = "logit"), data = data, prior.mean = 0, prior.scale = 2.5)$coefficients
-  
+  beta = glm(formula, family = binomial(link = "logit"), data = data)$coefficients
+
   # compute the indices for all 1st and 2nd order terms
   # predictors = c(1st order indices, 2nd order indices) in completeIndicatorMatrix
   if (length(xIndices) > 1) { # only have interaction if there are more than 1 parent
@@ -222,15 +138,15 @@ msgLenWithPredictors2ndOrder = function(data, indicatorMatrix, yIndex, xIndices,
   
 }
 
-mmlLogit2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, completeIndicatorMatrix, sigma) {
+mmlLogit2ndOrder.noprior = function(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, completeIndicatorMatrix, sigma) {
   
   if (length(xIndices) < 1) {
     
-    msgLen = msgLenWithNoPredictors2ndOrder(data, indicatorMatrix, yIndex, arities, allNodes, sigma)$mml[[1]]
+    msgLen = msgLenWithNoPredictors2ndOrder.noprior(data, indicatorMatrix, yIndex, arities, allNodes, sigma)$mml[[1]]
     
   } else {
     
-    msgLen = msgLenWithPredictors2ndOrder(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, 
+    msgLen = msgLenWithPredictors2ndOrder.noprior(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, interactData, 
                                           completeIndicatorMatrix, sigma)$mml[[1]]
     
   }
@@ -238,5 +154,98 @@ mmlLogit2ndOrder = function(data, indicatorMatrix, yIndex, xIndices, arities, al
   return(msgLen)
   
 }
+
+# MB discovery using 
+# indicatorMatrix = getIndicator(data)
+mbForwardSelectionForMML2ndOrderLogit.noprior = function(data, node, arities, indexListPerNodePerValue,
+                                                 base = exp(1), indicatorMatrix = NULL, interactData = NULL, completeIndicatorMatrix = NULL, debug = FALSE) {
+  
+  ##############################################################
+  # get the basic information and 
+  # create empty vectors for storing mb
+  allNodes = names(data)
+  nodeIndex = which(allNodes == node) # get index of the target node
+  numNodes = ncol(data)
+  #sampleSize = nrow(data)
+  mb = c()
+  unCheckedIndices = (1:numNodes)[-nodeIndex]
+  #tempCachedIndicesList = list()
+  score = mmlLogit2ndOrder.noprior
+  ##############################################################
+  # msg len for a single node with no parents
+  # parentsIndices is given as an empty vector
+  minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, interactData, completeIndicatorMatrix, sigma = 3)
+  
+  if (debug) {
+    
+    cat("Search: Greedy search --- Score: mmlLogit \n")
+    cat("0 parent:", minMsgLen, "\n")
+    
+  }
+  
+  repeat {
+    
+    # repeat the process of computing mml for remaining unCheckedIndices
+    # if unCheckedIndices is empty or all msg len > min msg len then stop
+    index = 0 # initialize index to 0
+    #cachedIndicesList = tempCachedIndicesList
+    
+    if (length(unCheckedIndices) == 0) {
+      
+      if (debug) cat("BM is full! \n")
+      break
+      
+    }
+    
+    # compute msg len for the target given each unchecked node as its parents
+    for (i in 1:length(unCheckedIndices)) {
+      
+      parentsIndices = c(mb, unCheckedIndices[i])
+      
+      msgLenCurrent = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, interactData, 
+                            completeIndicatorMatrix, sigma = 3)
+      
+      if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
+      
+      # if the current msg len is smaller then replace minMsgLen by the current 
+      # and record the current index
+      # else go to the next available node
+      if (msgLenCurrent < minMsgLen) { 
+        
+        minMsgLen = msgLenCurrent
+        index = i
+        #tempCachedIndicesList = res$cachedIndicesList
+        
+      } # end if 
+      
+    } # end for i 
+    
+    if (index == 0) {
+      
+      if (debug) cat("Stop! No better choice for MB! \n")
+      
+      break 
+      
+    } else {
+      
+      if (debug) cat("add", allNodes[unCheckedIndices[index]], "into mb \n")
+      
+      # add the node index with the minimum msg len into mb and remove it from unCheckedIndices
+      mb = c(mb, unCheckedIndices[index])
+      
+      if (debug) cat("current mb is {", allNodes[mb], "} with msg len", minMsgLen, "\n")
+      if (debug) cat("------------------------------- \n")
+      
+      unCheckedIndices = unCheckedIndices[-index]
+      
+    } # end else 
+    
+  } # end repeat
+  
+  return(allNodes[mb])
+  
+}
+
+
 
 

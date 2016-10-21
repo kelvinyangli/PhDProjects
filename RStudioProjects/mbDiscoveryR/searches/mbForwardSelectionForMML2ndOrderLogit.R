@@ -21,7 +21,7 @@ mbForwardSelectionForMML2ndOrderLogit = function(data, node, arities, indexListP
     
   if (debug) {
     
-    cat("Search: Greedy search --- Score: mmlLogit \n")
+    cat("Search: Greedy search --- Score: mmlLogit2ndOrder \n")
     cat("0 parent:", minMsgLen, "\n")
     
   }

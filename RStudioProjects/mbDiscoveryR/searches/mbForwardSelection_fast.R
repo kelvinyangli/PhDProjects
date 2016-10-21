@@ -1,7 +1,6 @@
 # MB discovery using 
 # indicatorMatrix = getIndicator(data)
-mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodePerValue,
-                               base = exp(1), indicatorMatrix = NULL, interactData = NULL, completeIndicatorMatrix = NULL, debug = FALSE) {
+mbForwardSelection.fast = function(data, node, arities, indexListPerNodePerValue, base = exp(1), debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -9,43 +8,20 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
   
   allNodes = names(data)
   nodeIndex = which(allNodes == node) # get index of the target node
-  
   numNodes = ncol(data)
   sampleSize = nrow(data)
-  
   mb = c()
-  
   unCheckedIndices = (1:numNodes)[-nodeIndex]
-  
   tempCachedIndicesList = list()
+  score = mmlCPT.fast
   ##############################################################
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
-  
-  if (!is.null(indicatorMatrix)) {# case for using logit model
+  minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, c(), arities, sampleSize, base)
     
-    minMsgLen = score(data, indicatorMatrix, nodeIndex, c(), arities, allNodes, interactData, completeIndicatorMatrix, sigma = 3)
-    
-  } else {# case for using cpt
-    
-    minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, c(), arities, 
-                      sampleSize, base)
-    
-  } # end if 
-  
   if (debug) {
     
-    if (!is.null(indicatorMatrix)) {
-      
-      scoreName = "mmlLogit"
-      
-    } else {
-      
-      scoreName = "mmlCPT"
-      
-    }
-    
-    cat("Search: Greedy search --- Score:", scoreName, "\n")
+    cat("Search: Greedy search --- Score: mmlCPT \n")
     cat("0 parent:", minMsgLen, "\n")
     
   }
@@ -54,9 +30,7 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
     
     # repeat the process of computing mml for remaining unCheckedIndices
     # if unCheckedIndices is empty or all msg len > min msg len then stop
-    
     index = 0 # initialize index to 0
-    
     cachedIndicesList = tempCachedIndicesList
     
     if (length(unCheckedIndices) == 0) {
@@ -70,20 +44,10 @@ mbForwardSelection.fast = function(data, node, score, arities, indexListPerNodeP
     for (i in 1:length(unCheckedIndices)) {
       
       parentsIndices = c(mb, unCheckedIndices[i])
-      
-      if (!is.null(indicatorMatrix)) {# for mml logit model
+      res = score(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, base)
+      msgLenCurrent = res$msgLen
+      #cachedIndicesList = res$cachedIndicesList
         
-        res = score(data, indicatorMatrix, nodeIndex, parentsIndices, arities, allNodes, interactData, 
-                              completeIndicatorMatrix, sigma = 3)
-        
-      } else {# for mml cpt
-        
-        res = score(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, base)
-        msgLenCurrent = res$msgLen
-        #cachedIndicesList = res$cachedIndicesList
-        
-      }
-      
       if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       
       # if the current msg len is smaller then replace minMsgLen by the current 

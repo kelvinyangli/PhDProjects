@@ -1,4 +1,4 @@
-libraries = c("bnlearn", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz")
+libraries = c("bnlearn", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz", "arm")
 lapply(libraries, require, character.only = TRUE)
 
 library(bnlearn)
