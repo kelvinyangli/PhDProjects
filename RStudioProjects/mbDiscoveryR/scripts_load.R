@@ -19,3 +19,5 @@ sourceDir("createBN/")
 sourceDir("testing/")
 sourceDir("mbMMLLogit/")
 sourceDir("searches/")
+sourceDir("learnBN/")
+
