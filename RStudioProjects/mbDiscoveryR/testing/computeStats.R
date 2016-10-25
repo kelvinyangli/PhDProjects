@@ -2,7 +2,7 @@
 
 # this is for synthetic models
 # others can be set to "training", or "testing" when in optimization process
-computeStats = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2, others = NULL) {
+computeStats = function(model, method, n, nIter = 5, alpha = 0.05, nDigits = 2, others = NULL) {
   
   models = list.files(paste0(model, "/cpts ", others), pattern = ".rds")
   files = list.files(paste0(model, "/mb/", method), pattern = paste0("_", n, "_"))
@@ -124,7 +124,7 @@ computeStats2 = function(model, method, n, alpha = 0.05, nDigits = 2) {
 }
 
 # this is for known models with non-uniform prior
-computeStats3 = function(model, method, n, nIter = 10, alpha = 0.05, nDigits = 2) {
+computeStats3 = function(model, method, n, nIter = 5, alpha = 0.05, nDigits = 2) {
   
   dag = readRDS(paste0("Known BNs/", model, "Dag.rds"))
   allNodes = bnlearn::nodes(dag)

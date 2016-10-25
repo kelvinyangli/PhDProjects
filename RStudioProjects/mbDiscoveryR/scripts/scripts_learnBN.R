@@ -4,9 +4,11 @@ data = rbn(cpts, 1000)
 par(mfrow=c(1, 2))
 graphviz.plot(dag)
 
+data = numeric2Nominal(data)
 dataInfo = getDataInfo(data)
-debug = F
-allNodes = names(cpts)
+debug = T
+allNodes = names(data)
+
 
 mbList = list()
 for (i in 1:length(allNodes)) {
