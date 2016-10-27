@@ -1,7 +1,7 @@
 # scripts on evaluating known models with build in parameters
 setwd("realWorldModelWithTrueParameters")
-model = "alarm"
-n = 1000
+model = "hailfinder"
+n = 10000
 #beta = 1
 nIter = 5
 
@@ -47,7 +47,7 @@ for (ii in 1:length(datasets)) {
   for (i in 1:length(allNodes)) {
     
     targetNode = allNodes[i]
-    mbList[[i]] = mbForwardSelection.fast(data, targetNode, mmlCPT.fast, dataInfo$arities, dataInfo$indexListPerNodePerValue)
+    mbList[[i]] = mbForwardSelection.fast(data, targetNode, dataInfo$arities, dataInfo$indexListPerNodePerValue)
     
   } # end for i 
   
