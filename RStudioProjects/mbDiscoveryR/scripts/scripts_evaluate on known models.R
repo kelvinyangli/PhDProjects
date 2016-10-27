@@ -1,7 +1,7 @@
 # scripts on evaluating known models with build in parameters
 setwd("realWorldModelWithTrueParameters")
 model = "hailfinder"
-n = 10000
+n = 1000
 #beta = 1
 nIter = 5
 
