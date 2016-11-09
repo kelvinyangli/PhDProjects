@@ -1,6 +1,6 @@
-dag = generateDag(17, 3)
-cpts = generateCPTs(dag, 4, 1)
-data = rbn(cpts, 10000)
+dag = generateDag(5, 2)
+cpts = generateCPTs(dag, 2, 1)
+data = rbn(cpts, 1000)
 graphviz.plot(dag)
 
 #data = asia
@@ -13,7 +13,7 @@ indicatorMatrix = getIndicator(data)
 interactData = getInteractData(indicatorMatrix)
 completeIndicatorMatrix = cbind(indicatorMatrix, interactData)
 
-debug = F
+debug = T
 allNodes = names(cpts)
 
 ls0 = ls1 = ls2 = ls3 = list()

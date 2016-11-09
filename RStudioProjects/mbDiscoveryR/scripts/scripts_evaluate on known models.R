@@ -1,9 +1,9 @@
 # scripts on evaluating known models with build in parameters
 setwd("realWorldModelWithTrueParameters")
 model = "hailfinder"
-n = 1000
+n = 10000
 #beta = 1
-nIter = 5
+nIter = 20
 
 
 cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
@@ -18,9 +18,10 @@ for (j in 1:nIter) {
   data = rbn(cpts, n)
   
   fileName = paste(model, n, seed, sep = "_")
+  saveRDS(data, paste0(model, "/data rds/", fileName, ".rds"))
   write.table(data, paste0(model, "/data/", fileName, ".data"), row.names = FALSE, col.names = FALSE) # save data
   
-  Sys.sleep(0.01) # suspend execution for 0.01 seconds to avoid generating the same seed
+  #Sys.sleep(0.01) # suspend execution for 0.01 seconds to avoid generating the same seed
   
 } # end for j
   
@@ -83,7 +84,7 @@ for (ii in 1:length(datasets)) {
   mbList = parsePCMB(output, length(allNodes), allNodes)
   
   fileName = strsplit(datasets[ii], ".data")[[1]]
-  saveRDS(mbList, paste0("../", model, "/mb/pcmb/", fileName, ".rds")) # save learned mb as .rds
+  saveRDS(mbList, paste0("../", model, "/mb/pcmb test/", fileName, ".rds")) # save learned mb as .rds
   
   file.remove("output.txt")
   
@@ -138,7 +139,7 @@ for (i in 1:length(results)) {
 
 computeStats4(model, "iamb", n, alpha = 0.05, nDigits = 2)
 computeStats4(model, "iamb sym", n, alpha = 0.05, nDigits = 2)
-computeStats4(model, "pcmb", n, alpha = 0.05, nDigits = 2)
+computeStats4(model, "pcmb test", n, alpha = 0.05, nDigits = 2)
 computeStats4(model, "pcmb sym", n, alpha = 0.05, nDigits = 2)
 computeStats4(model, "cpt std", n, alpha = 0.05, nDigits = 2)
 computeStats4(model, "cpt sym", n, alpha = 0.05, nDigits = 2)

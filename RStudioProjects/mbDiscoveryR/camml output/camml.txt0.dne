@@ -1,0 +1,124 @@
+// ~->[DNET-1]->~
+// Network : cammlNet
+// File created by CaMML2, Version : 1.0
+
+bnet Reconstructed_Learned_Network {
+autoupdate = TRUE;
+node V1 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = (  );
+	probs = 
+		(0.03164683531646835, 0.9683531646835316);
+	};
+node V2 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V5 );
+	probs = 
+		((0.07600732600732599, 0.923992673992674),
+		(0.2457170050761421, 0.7542829949238579));
+	};
+node V3 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = (  );
+	probs = 
+		(0.33481651834816517, 0.6651834816518348);
+	};
+node V6 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V3 );
+	probs = 
+		((0.07629143027769482, 0.9237085697223052),
+		(0.5898842627386142, 0.41011573726138584));
+	};
+node V9 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V1 );
+	probs = 
+		((0.7681388012618297, 0.23186119873817032),
+		(0.3644295302013423, 0.6355704697986577));
+	};
+node V4 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = (  );
+	probs = 
+		(0.9526547345265474, 0.04734526547345265);
+	};
+node V5 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = (  );
+	probs = 
+		(0.054544545545445466, 0.9454554544545546);
+	};
+node V7 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V2 );
+	probs = 
+		((0.10253699788583508, 0.8974630021141649),
+		(0.5781720570904806, 0.42182794290951947));
+	};
+node V8 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = (  );
+	probs = 
+		(0.026247375262473747, 0.9737526247375262);
+	};
+node V10 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V3 );
+	probs = 
+		((0.03627948641385489, 0.9637205135861451),
+		(0.5638809559597174, 0.43611904404028257));
+	};
+node V11 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V5 );
+	probs = 
+		((0.9551282051282052, 0.04487179487179488),
+		(0.6629124365482234, 0.33708756345177665));
+	};
+node V12 {
+	kind = NATURE;
+	discrete = TRUE;
+	numstates = 2;
+	states = (A, B);
+	parents = ( V9, V10 );
+	probs = 
+		(((0.10636114911080712, 0.8936388508891929),
+		(0.2921712802768166, 0.7078287197231834)),
+		((0.3824626865671642, 0.6175373134328358),
+		(0.7342849659507595, 0.26571503404924046)));
+	};
+};

@@ -1,78 +1,143 @@
-dag = generateDag(9, 3)
-cpts = generateCPTs(dag, 3, 1)
-data = rbn(cpts, 1000)
-par(mfrow=c(1, 2))
-graphviz.plot(dag)
+####################################################################
+# generate random dag, cpts, and data
+par(mfrow = c(2, 2))
+dag = generateDag(50, 3)
+graphviz.plot(dag, main = "dag")
+cpts = generateCPTs(dag, 4, 1)
+data = rbn(cpts, 10000)
 
-data = numeric2Nominal(data)
+graphviz.plot(mmhc(data), main = "mmhc")
+####################################################################
+# learn mbs for each varaible using mmlCPT
 dataInfo = getDataInfo(data)
-debug = T
 allNodes = names(data)
-
-
 mbList = list()
+debug = F
 for (i in 1:length(allNodes)) {
   
-  mbList[[i]] = mbForwardSelection.fast(data, allNodes[i], dataInfo$arities, dataInfo$indexListPerNodePerValue, base = exp(1), debug)
-
+  if (debug) cat("For", allNodes[i], ": \n")
+  mbList[[i]] = mbForwardSelection.fast(data, allNodes[i], dataInfo$arities, 
+                                                                    dataInfo$indexListPerNodePerValue, base = exp(1), debug)
+  if (debug) cat("################################################################# \n")
+  
 }
 
+# apply symmetry check for each learned mb
+# i.e if a node x is in mb of y, and y is not in the mb of x, then add y into mb of x
+# because mmlCPT has higher precision than recall
 mbList = symmetryCheck(allNodes, mbList)
 names(mbList) = allNodes
+accuracies = matrix(nrow = length(allNodes), ncol = 2)
+for (i in 1:length(allNodes)) {
+  res = mbAccuracy(mb(dag, allNodes[i]), mbList[[i]], allNodes[i], allNodes)
+  accuracies[i, 1] = res$precision
+  accuracies[i, 2] = res$recall
+}
+colMeans(accuracies)
+####################################################################
+# 1st step is to connect each variable with the first found variable in its mb
+# since the 1st found variable has a very high chance of being either parent or child of the target variable
+dagLearned = empty.graph(allNodes) #empty dag
 
-dagLearned = learnBN(mbList, allNodes)
+# connect each variable with the 1st found variable in its learned mb
+# because the 1st found variable has a very high chance of being in the pc(target)
+# but no direction can be inferred due to statistical equivalence b/w x -> y and x <- y
+for (i in 1:length(allNodes)) if (length(mbList[[i]]) > 0) dagLearned = set.edge(dagLearned, allNodes[i], mbList[[i]][1])
+
+graphviz.plot(dagLearned, main = "initial skeleton")
+####################################################################
+# find collider in each mb using interaction information (i.e. the chance of conditional mutual information)
+potentialInteractions = threeWayInteraction(allNodes, mbList)
+colliderIndices = findCollider(potentialInteractions, data)
+colliders = matrix(nrow = nrow(colliderIndices), ncol = 3)
+for (i in 1:nrow(colliderIndices)) colliders[i, ] = allNodes[colliderIndices[i, ]]
+colliders
+
+####################################################################
+# assess three possible collider structures using mmlCPT
+for (i in 1:nrow(colliders)) {
+  
+  x = colliders[i, 1]
+  y = colliders[i, 2]
+  z = colliders[i, 3]
+  
+  xIndex = which(allNodes == x)
+  yIndex = which(allNodes == y)
+  zIndex = which(allNodes == z)
+  
+  n = nrow(data)
+  mmlCPT(xIndex, c(zIndex, yIndex), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)-
+  mmlCPT(xIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+  
+  mmlCPT(yIndex, c(xIndex, zIndex), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)-
+  mmlCPT(yIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+  
+  mmlCPT(zIndex, c(xIndex, yIndex), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)-
+  mmlCPT(zIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+  
+  
+  
+  # x->z<-y
+  len1 = mmlCPT(xIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n) + 
+    mmlCPT(yIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n) + 
+    mmlCPT(zIndex, c(xIndex, yIndex), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+  
+  # x->y<-z
+  len2 = mmlCPT(xIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n) + 
+    mmlCPT(zIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n) + 
+    mmlCPT(yIndex, c(xIndex, zIndex), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+  
+  # z->x<-y
+  len3 = mmlCPT(zIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n) + 
+    mmlCPT(yIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n) + 
+    mmlCPT(xIndex, c(zIndex, yIndex), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+  
+  index = which.min(c(len1, len2, len3))
+  
+  if (index == 1) {
+    
+    dagLearned = set.arc(dagLearned, x, z)
+    dagLearned = set.arc(dagLearned, y, z)
+    
+  } else if (index == 2) {
+    
+    dagLearned = set.arc(dagLearned, x, y)
+    dagLearned = set.arc(dagLearned, z, y)
+    
+  } else if (index == 3) {
+    
+    dagLearned = set.arc(dagLearned, z, x)
+    dagLearned = set.arc(dagLearned, y, x)
+    
+  } # end else if
+  
+}
 
 graphviz.plot(dagLearned)
 
-hamming(dagLearned, dag, debug = T)
-
-#ci.test("V1", "V2", data = data)$statistic
-#ci.test("V1", "V2", "V7", data = data)$statistic
-
-for (i in 1:length(allNodes)) {
+####################################################################
+# dependency strength measured in terms of mi
+v = w = c()
+for (i in 1:(length(allNodes) - 1)) {
   
-  cat(allNodes[i], "\n")
-  if (length(mbList[[i]]) > 1) computeRatio(allNodes[i], mbList[[i]], data)
-  
-}
-
-cpts = generateCPTs(dag, 2, 1)
-data = rbn(cpts, 1000)
-ci.test("V1", "V2", "V8", data=data[101:200,])$statistic / ci.test("V1", "V2", data=data[101:200,])$statistic
-ci.test("V1", "V3", "V2", data=data)$statistic - ci.test("V1", "V3", data=data)$statistic
-ci.test("V2", "V3", "V1", data=data)$statistic - ci.test("V3", "V2", data=data)$statistic
-
-missed = list()
-for (i in 1:length(allNodes)) {
-  
-  mbTrue = mb(dag, allNodes[i])
-  missed[[i]] = mbTrue[which(!mbTrue %in% mbList[[i]])]
+  for (j in (i + 1):length(allNodes)) {
+    
+    v = c(v, ci.test(allNodes[i], allNodes[j], data = data)$statistic[[1]])
+    w = c(w, paste0(allNodes[i], "-", allNodes[j]))
+    
+  }
   
 }
-names(missed) = allNodes
+newOrder = order(v, decreasing = TRUE)
+v[newOrder]
+w[newOrder]
 
-temp = data[, c("V3", "V4", "V6")]
-ci.test("V3", "V4", "V2", data=data)$statistic / ci.test("V3", "V4", data=data)$statistic
-ci.test("V3", "V4", "V6", data=temp)$statistic / ci.test("V3", "V4", data=temp)$statistic
+ci.test("V9", "V1", data = data)$statistic - ci.test("V9", "V1", "V5", data = data)$statistic
 
-values = levels(data[, "V6"])
-cmi = 0
-for (i in 1:length(values)) {
-  
-  indices = which(data[,"V6"] == values[i])
-  temp = data[indices, c("V3", "V4")]
-  dataInfo = getDataInfo(temp)
-  mbForwardSelection.fast(temp, "V3", dataInfo$arities, 
-                          dataInfo$indexListPerNodePerValue, base = exp(1), T)
-  #cmi = cmi + ci.test("V3", "V4", data=temp[, c("V3","V4")])$statistic  
-  
-}
-
-temp = data[, c("V3", "V4")]
-dataInfo = getDataInfo(temp)
-mbForwardSelection.fast(temp, "V3", dataInfo$arities, dataInfo$indexListPerNodePerValue, base = exp(1), T)
-
-
+ci.test("V1", "V3", "V7", data = data)$statistic 
+ci.test("V1", "V7", "V3", data = data2)$statistic - ci.test("V1", "V7", data = data2)$statistic
+ci.test("V7", "V3", "V1", data = data)$statistic
+ci.test("V1", "V3", data = data)$statistic
 
 
 
