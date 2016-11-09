@@ -8,7 +8,7 @@ dag = set.arc(dag, "V4", "V5")
 n = 1000
 v1 = rbinom(n, 1, runif(1))
 v2 = rbinom(n, 1, runif(1))
-y = 1 + 0.2 * v1 + 0.5 * v2 + 4 * v1 * v2
+y = 1 + 0.2 * v1 + 0.5 * v2 + 3 * v1 ^ 2 + 4 * v1 * v2
 pr = 1 / (1 + exp(-y))
 v3 = rbinom(n, 1, pr)
 

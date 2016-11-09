@@ -4,24 +4,6 @@
 # there is an extra error term 0.5*log(pi*e/6) being added to each parameter of a CPT
 # this version works good, but the speed is slightly slower than the version which cach indices
 #############################################################################################
-
-
-logFactorial = function(n, base) {
-
-  # if n = 0 then log of 0 factorial is 0
-  ss = 0 
-  
-  if (n > 0) {
-    
-    for (i in 1:n) ss = ss + log(i, base = base)
-    
-  }
-  
-  return(ss)
-  
-}
-
-
 getParentsInstantiationIndices = function(arities, numParents, parentsIndices, numParentsInstantiations, index) {
   
   if (index <= numParentsInstantiations) {
@@ -139,7 +121,7 @@ msgLenWithoutParents = function(nodeIndex, indexListPerNodePerValue, arities, sa
 }
 
 
-mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base) {
+mmlCPT = function(nodeIndex, parentsIndices, indexListPerNodePerValue, arities, sampleSize, base = exp(1)) {
   
   if (length(parentsIndices) < 1) {
     
