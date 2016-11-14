@@ -1,0 +1,18 @@
+* arcs between MINVOLSET and VENTMACH do not match (reversion). 
+> the learned network contains VENTMACH -> MINVOLSET . 
+> the true network contains MINVOLSET -> VENTMACH . 
+* arcs between DISCONNECT and VENTTUBE do not match (reversion). 
+> the learned network contains VENTTUBE -> DISCONNECT . 
+> the true network contains DISCONNECT -> VENTTUBE . 
+* arcs between VENTMACH and VENTTUBE do not match (reversion). 
+> the learned network contains VENTTUBE -> VENTMACH . 
+> the true network contains VENTMACH -> VENTTUBE . 
+* arcs between INSUFFANESTH and CATECHOL do not match (addition). 
+> the learned network contains no arc between INSUFFANESTH and CATECHOL . 
+> the true network contains INSUFFANESTH -> CATECHOL . 
+* arcs between SAO2 and CATECHOL do not match (addition). 
+> the learned network contains no arc between SAO2 and CATECHOL . 
+> the true network contains SAO2 -> CATECHOL . 
+* arcs between VENTLUNG and EXPCO2 do not match (deletion). 
+> the learned network contains VENTLUNG -> EXPCO2 . 
+> the true network contains no arc between VENTLUNG and EXPCO2 .

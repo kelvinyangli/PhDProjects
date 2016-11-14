@@ -116,28 +116,8 @@ for (i in 1:nrow(colliders)) {
 graphviz.plot(dagLearned)
 
 ####################################################################
-# dependency strength measured in terms of mi
-v = w = c()
-for (i in 1:(length(allNodes) - 1)) {
-  
-  for (j in (i + 1):length(allNodes)) {
-    
-    v = c(v, ci.test(allNodes[i], allNodes[j], data = data)$statistic[[1]])
-    w = c(w, paste0(allNodes[i], "-", allNodes[j]))
-    
-  }
-  
-}
-newOrder = order(v, decreasing = TRUE)
-v[newOrder]
-w[newOrder]
 
-ci.test("V9", "V1", data = data)$statistic - ci.test("V9", "V1", "V5", data = data)$statistic
-
-ci.test("V1", "V3", "V7", data = data)$statistic 
-ci.test("V1", "V7", "V3", data = data2)$statistic - ci.test("V1", "V7", data = data2)$statistic
-ci.test("V7", "V3", "V1", data = data)$statistic
-ci.test("V1", "V3", data = data)$statistic
+  
 
 
 
