@@ -1,7 +1,9 @@
 ####################################################################
 # generate random dag, cpts, and data
 par(mfrow = c(2, 2))
-dag = generateDag(50, 3)
+seed = generateSeed()
+set.seed(seed)
+dag = generateDag(20, 3)
 graphviz.plot(dag, main = "dag")
 cpts = generateCPTs(dag, 4, 1)
 data = rbn(cpts, 10000)

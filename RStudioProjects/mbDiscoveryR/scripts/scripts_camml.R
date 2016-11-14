@@ -1,8 +1,14 @@
-cptsTrue = read.dsc("alarm.dsc")
+cptsTrue = read.dsc("asia.dsc")
 dagTrue = cpts2dag(cptsTrue)
 
-data = rbn(cptsTrue, 10000)
-write.arff(data, "camml data/alarm10k.arff") # save data in .arff for camml
+#dagTrue = readRDS("wShapeDag.rds")
+#cptsTrue = generateCPTs(dagTrue, 3, 1)
+n = c(100, 300, 900)
+for (i in 1:length(n)) {
+  data = rbn(cptsTrue, n[i])
+  write.arff(data, paste0("../../../Documents/CaMML-master/Camml/asia_", n[i], ".arff")) # save data in .arff for camml
+  
+}
 
 # learn mb using data
 dataInfo = getDataInfo(data)
@@ -33,7 +39,7 @@ colMeans(accuracies)
 
 
 # apply mb results to camml
-res = netica2bnlearn("camml output/alarm10k0.dne")
+res = netica2bnlearn("../../../Documents/CaMML-master/Camml/asia_100_0.dne")
 dag_camml = parentsList2BN(res)
 # graphviz.plot(dag_camml)
 
@@ -50,7 +56,7 @@ for (i in 1:length(allNodes)) if (length(mbList[[i]]) > 0) initialSkeleton = set
 # graphviz.plot(dagLearned, main = "initial skeleton")
 
 # create prior for camml
-prob = 0.6
+prob = 0.9
 path = "camml prior/prior.txt"
 text = "arcs {"
 for (i in seq(1, nrow(initialSkeleton$arcs), 2)) {
@@ -63,7 +69,7 @@ write_file(text, path)
 
 # evaluate
 # apply mb results to camml
-res_withPrior = netica2bnlearn("camml output/alarm10kprior0.60.dne")
+res_withPrior = netica2bnlearn("../../../Documents/CaMML-master/Camml/asia_100_prior0.9_0.dne")
 dag_camml_withPrior = parentsList2BN(res_withPrior)
 # graphviz.plot(dag_camml)
 

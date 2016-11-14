@@ -1,30 +1,8 @@
 arcs { 
- HISTORY -- LVFAILURE 0.6 ; 
- CVP -- LVEDVOLUME 0.6 ; 
- PCWP -- LVEDVOLUME 0.6 ; 
- HYPOVOLEMIA -- LVEDVOLUME 0.6 ; 
- STROKEVOLUME -- CO 0.6 ; 
- ERRLOWOUTPUT -- HRBP 0.6 ; 
- HRBP -- HR 0.6 ; 
- HREKG -- HRSAT 0.6 ; 
- ERRCAUTER -- HRSAT 0.6 ; 
- ANAPHYLAXIS -- TPR 0.6 ; 
- TPR -- BP 0.6 ; 
- EXPCO2 -- VENTLUNG 0.6 ; 
- KINKEDTUBE -- PRESS 0.6 ; 
- MINVOL -- VENTALV 0.6 ; 
- FIO2 -- PVSAT 0.6 ; 
- PVSAT -- VENTALV 0.6 ; 
- SAO2 -- PVSAT 0.6 ; 
- PAP -- PULMEMBOLUS 0.6 ; 
- PULMEMBOLUS -- SHUNT 0.6 ; 
- SHUNT -- INTUBATION 0.6 ; 
- INTUBATION -- VENTALV 0.6 ; 
- PRESS -- VENTTUBE 0.6 ; 
- DISCONNECT -- VENTTUBE 0.6 ; 
- MINVOLSET -- VENTMACH 0.6 ; 
- VENTMACH -- VENTTUBE 0.6 ; 
- VENTLUNG -- VENTALV 0.6 ; 
- VENTALV -- ARTCO2 0.6 ; 
- CATECHOL -- HR 0.6 ; 
+ asia -- lung 0.9 ; 
+ tub -- either 0.9 ; 
+ smoke -- bronc 0.9 ; 
+ lung -- either 0.9 ; 
+ bronc -- dysp 0.9 ; 
+ xray -- either 0.9 ; 
  }
