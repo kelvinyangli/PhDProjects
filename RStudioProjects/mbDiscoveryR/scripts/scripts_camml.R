@@ -3,14 +3,17 @@ dagTrue = cpts2dag(cptsTrue)
 
 #dagTrue = readRDS("wShapeDag.rds")
 #cptsTrue = generateCPTs(dagTrue, 3, 1)
-n = c(100, 300, 900)
+n = c(100, 500, 2500)
 for (i in 1:length(n)) {
+  seed = generateSeed()
+  set.seed(seed)
   data = rbn(cptsTrue, n[i])
-  write.arff(data, paste0("../../../Documents/CaMML-master/Camml/asia_", n[i], ".arff")) # save data in .arff for camml
-  
+  #write.arff(data, paste0("../../../Documents/CaMML-master/Camml/asia_", n[i], ".arff")) # save data in .arff for camml
+  write.arff(data, paste0("camml data/asia_", n[i], "_", seed, ".arff"))
 }
 
 # learn mb using data
+data = read.arff("camml data/asia_100_832307.arff")
 dataInfo = getDataInfo(data)
 allNodes = names(data)
 mbList = list()
@@ -53,10 +56,10 @@ editDistDags(learned = dag_camml, true = dagTrue, debug = T)
 # build initial skeleton based on the 1st found variable in each mb
 initialSkeleton = empty.graph(allNodes) #empty dag
 for (i in 1:length(allNodes)) if (length(mbList[[i]]) > 0) initialSkeleton = set.edge(initialSkeleton, allNodes[i], mbList[[i]][1])
-# graphviz.plot(dagLearned, main = "initial skeleton")
+graphviz.plot(initialSkeleton, main = "initial skeleton")
 
 # create prior for camml
-prob = 0.9
+prob = 1
 path = "camml prior/prior.txt"
 text = "arcs {"
 for (i in seq(1, nrow(initialSkeleton$arcs), 2)) {

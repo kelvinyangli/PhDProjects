@@ -1,8 +1,8 @@
 arcs { 
- asia -- lung 0.9 ; 
- tub -- either 0.9 ; 
- smoke -- bronc 0.9 ; 
- lung -- either 0.9 ; 
- bronc -- dysp 0.9 ; 
- xray -- either 0.9 ; 
+ asia -- smoke 1 ; 
+ tub -- either 1 ; 
+ smoke -- bronc 1 ; 
+ lung -- either 1 ; 
+ bronc -- dysp 1 ; 
+ either -- xray 1 ; 
  }
