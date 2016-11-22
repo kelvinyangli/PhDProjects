@@ -42,9 +42,9 @@ colMeans(accuracies)
 
 
 # apply mb results to camml
-res = netica2bnlearn("../../../Documents/CaMML-master/Camml/asia_100_0.dne")
+res = netica2bnlearn("camml output/asia_100_0.dne")
 dag_camml = parentsList2BN(res)
-# graphviz.plot(dag_camml)
+graphviz.plot(dag_camml)
 
 # shd for cpdags
 bnlearn::shd(learned = dag_camml, true = dagTrue)
@@ -72,9 +72,9 @@ write_file(text, path)
 
 # evaluate
 # apply mb results to camml
-res_withPrior = netica2bnlearn("../../../Documents/CaMML-master/Camml/asia_100_prior0.9_0.dne")
+res_withPrior = netica2bnlearn("camml output/asia_100_prior0.8_0.dne")
 dag_camml_withPrior = parentsList2BN(res_withPrior)
-# graphviz.plot(dag_camml)
+graphviz.plot(dag_camml_withPrior)
 
 # shd for cpdags
 bnlearn::shd(learned = dag_camml_withPrior, true = dagTrue)
