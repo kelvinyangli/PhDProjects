@@ -6,10 +6,10 @@
 # the returned variables are indexed from 1 to nVar - 1, which is the same as indexing all variables from 0 to nVar - 1
 
 #setwd("realWorldModelWithTrueParameters/") # for using known models with real paremters 
-model = "150_5_6_1"
+model = "34_4_4_1"
 #cpts = read.dsc(paste0(model, "/cpts/", model, ".dsc"))
 #allNodes = names(cpts)
-n = 1000
+n = 10000
 nIter = 5
 #datasets = list.files(paste0(model, "/data rds/"), pattern = paste0("_", n, "_"))
 datasets = list.files(paste0(model, "/data/"), pattern = paste0("_", n, "_"))
