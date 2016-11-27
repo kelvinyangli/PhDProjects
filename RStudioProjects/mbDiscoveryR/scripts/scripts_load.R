@@ -1,6 +1,7 @@
 #setwd("C:/PhDProjects/RStudioProjects/mbDiscoveryR/")
 
-libraries = c("bnlearn", "readr", "foreign", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz", "arm")
+#libraries = c("bnlearn", "readr", "foreign", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz", "arm")
+libraries = c("bnlearn", "entropy", "reshape2", "ggplot2", "Rgraphviz")
 lapply(libraries, require, character.only = TRUE)
 
 library(bnlearn)
@@ -19,7 +20,7 @@ sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
 sourceDir("mbMMLCPT/")
 sourceDir("createBN/")
 sourceDir("testing/")
-sourceDir("mbMMLLogit/")
+#sourceDir("mbMMLLogit/")
 sourceDir("searches/")
 sourceDir("learnBN/")
 
