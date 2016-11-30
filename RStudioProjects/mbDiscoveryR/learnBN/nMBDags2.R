@@ -1,3 +1,4 @@
+# this is a better way of count the number of mb dags but still with duplications
 f1 = function(n) {
   
   count = 0 
