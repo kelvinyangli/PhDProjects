@@ -1,25 +1,20 @@
-# dag isomorphism check
-# x and y are dags in the format of bnlearn
-dagIsom = function(x, y) {
+dagIsom = function(dagList) {
   
-  allNodes = nodes(x)
-  for (nodeIndex in 1:length(allNodes)) {
+  dup = c() # store duplicated collider dag indices
+  for (i in 1:(length(dagList) - 1)) {
     
-    parents(x, allNodes[nodeIndex]) == parents(y, allNodes[nodeIndex])
+    for (j in (i + 1):length(dagList)) {
+      
+      if (all.equal(dagList[[i]], dagList[[j]]) == TRUE) {
+        
+        dup = c(dup, j)
+        
+      } # end if 
+      
+    } # end for j
     
-  } # end for each node nodeIndex
+  } # end for i
   
-}
-
-
-ls = readRDS("all mb dags/mbDags6.rds")
-count = 0
-dup = matrix(nrow = 180, ncol = 2)
-for (i in 1:(length(ls) - 1)) {
-  for (j in (i+1):length(ls)) {
-    if (all.equal(ls[[i]], ls[[j]]) == TRUE) {
-      count = count + 1
-      dup[count, ] = c(i, j)
-    }
-  }
+  return(dup)
+  
 }

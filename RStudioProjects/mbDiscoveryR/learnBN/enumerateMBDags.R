@@ -11,7 +11,15 @@ enumerateMBDags = function(x, y) {
     
   } else {
     
-    dagList = c(noColliderDag(x, y), colliderDag(x, y))
+    noColliderDagList = noColliderDag(x, y)
+    colliderDagList = colliderDag(x, y)
+    
+    # conduct a dag isomorphic check to remove any duplicated collider dag
+    dup = dagIsom(colliderDagList)
+    
+    if (length(dup) > 0) colliderDagList = colliderDagList[-dup]
+    
+    dagList = c(noColliderDagList, colliderDagList)
     
   } # end else 
   
@@ -90,7 +98,6 @@ colliderDag = function(x, y) {
   
 }
 
-ls = enumerateMBDags(paste0("V", 1:7), "T")
 
 
 
