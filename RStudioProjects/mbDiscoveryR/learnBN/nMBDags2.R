@@ -30,7 +30,11 @@ f2 = function(n, m, k) {
       
       for (k_dash in 1:min((n - k - 2), k)) {
         
-        sum_count = sum_count + f2(n - k - 1, m - 1, k_dash)
+        sub_count = f2(n - k - 1, m - 1, k_dash)
+        
+        if (k_dash == k) sub_count = (1 / m) * sub_count
+        
+        sum_count = sum_count + sub_count
         
       } # end for k_dash
       
@@ -47,14 +51,24 @@ f2 = function(n, m, k) {
 f = function(n) {
   
   sum_count = f1(n) 
+  cat("-----------------------------------\n")
+  cat("|mb|=", n, "\n")
+  cat("|spouses|=", 0, "=> |mbDags|=", sum_count, "\n")
+  cat("-------------------------------------------------\n")
   
   for (m in 1:floor(n / 2)) {
     
+    cat("|colliders|=", m, "\n")
+    
     for (k in 1:(n - 2 * m + 1)) {
       
-      sum_count = sum_count + f2(n, m, k)
+      sub_count = f2(n, m, k)
+      sum_count = sum_count + sub_count 
+      cat("|spouses|=", k, "=> |mbDags|=", sub_count, "\n")
       
     } # end for k 
+    
+    cat("-------------------------------------------------\n")
     
   } # end for m
   
