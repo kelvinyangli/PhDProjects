@@ -3,7 +3,7 @@
 # their names should follow the order of n_m_k, where n = |mb|, m = |colliders|, k = |spouses|
 # for the case when there is no colliders and hence no spouses, the file will be named n_0_0
 
-dir = "all mb dags/"
+dir = "mbDags/"
 #x=c()
 x = paste0("V", 1:7)
 y = "T"
@@ -15,7 +15,9 @@ saveRDS(dagList, paste0(dir, n, "_0_0.rds"))
 cat(n, "_0_0 :", length(dagList), "\n")
 
 # generate mb dags with spouses
-dag = empty.graph(c(x, y))
+dag = matrix(0, nrow = length(x) + 1, ncol = length(x) + 1)
+dimnames(dag) = list(c(x, y), c(x, y))
+
 if (n > 1) {
   
   for (m in 1:floor(n / 2)) {
@@ -27,16 +29,16 @@ if (n > 1) {
         subDagList = readRDS(paste0(dir, n - k - 1, "_0_0.rds"))
         dagList = subEnumeration(x, y, m, k, subDagList)
         
-        if (is.null(dagIsom(dagList))) {# apply dag isomorphism check, if pass then save into drive
+        #if (is.null(dagIsom(dagList))) {# apply dag isomorphism check, if pass then save into drive
           
           saveRDS(dagList, paste0(dir, n, "_", m, "_", k, ".rds"))
           cat(n, "_", m, "_", k, ":", length(dagList), "\n")
           
-        } else {
+        #} else {
           
-          print("There are duplicated dags!")
+         # print("There are duplicated dags!")
           
-        }
+        #}
         
       } else {# when m >= 2
         
@@ -59,16 +61,16 @@ if (n > 1) {
           
         } # end for each k_dash
         
-        if (is.null(dagIsom(dagList))) {# apply dag isomorphism check, if pass then save into drive
+        #if (is.null(dagIsom(dagList))) {# apply dag isomorphism check, if pass then save into drive
           
           saveRDS(dagList, paste0(dir, n, "_", m, "_", k, ".rds"))
           cat(n, "_", m, "_", k, ":", length(dagList), "\n")
           
-        } else {
+        #} else {
           
-          print("There are duplicated dags!")
+         # print("There are duplicated dags!")
           
-        }
+        #}
         
       } # end else when m >= 2
       

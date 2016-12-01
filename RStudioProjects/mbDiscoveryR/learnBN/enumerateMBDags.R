@@ -30,7 +30,7 @@ enumerateMBDags = function(x, y) {
 # y is a target variable
 # x = mb(y), where x is non-empty
 # this function does not produce duplicated dags, so no need to apply dag isomorphic check
-enumWithNoSp = function(x, y) {
+enumWithNoSp_bnfit = function(x, y) {
   
   dagList = list()
   dag = empty.graph(c(x, y))

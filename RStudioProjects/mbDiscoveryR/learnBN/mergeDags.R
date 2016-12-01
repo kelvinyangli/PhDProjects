@@ -4,8 +4,11 @@
 # each variable in z will be considered as a common child iteratively
 buildBranch = function(z, index) {
   
-  dag = empty.graph(z)
-  parents(dag, z[index]) = z[-index]
+  dag = matrix(0, ncol = length(z), nrow = length(z))
+  dimnames(dag) = list(z, z)
+  #dag = empty.graph(z)
+  #parents(dag, z[index]) = z[-index]
+  dag[-index, index] = 1
   
   return(dag)
   
@@ -14,9 +17,11 @@ buildBranch = function(z, index) {
 # merge two dags x and y into a new dag that retains structures of x and y and connects them by a arc from one node to another
 mergeDags = function(x, y, from, to) {
   
-  z = empty.graph(c(nodes(x), nodes(y)))
-  arcs(z) = rbind(arcs(x), arcs(y))
-  z = set.arc(z, from, to)
+  z = adiag(x, y)
+  z[from, to] = 1
+  #z = empty.graph(c(nodes(x), nodes(y)))
+  #arcs(z) = rbind(arcs(x), arcs(y))
+  #z = set.arc(z, from, to)
   return(z)
   
 }
@@ -25,9 +30,13 @@ mergeDags = function(x, y, from, to) {
 # y is the target variable
 substituteVar = function(ls, y, z) {
   
+  yIndex = ncol(ls[[1]])
+  
   for (i in 1:length(ls)) {
     
-    nodes(ls[[i]])[nodes(ls[[i]]) != y][order(nodes(ls[[i]])[nodes(ls[[i]]) != y])] = z
+    #nodes(ls[[i]])[nodes(ls[[i]]) != y][order(nodes(ls[[i]])[nodes(ls[[i]]) != y])] = z
+    colnames(ls[[i]])[-yIndex][order(colnames(ls[[i]])[-yIndex])] = z
+    rownames(ls[[i]]) = colnames(ls[[i]])
     
   } # end for i 
   

@@ -9,7 +9,7 @@ dagIsom = function(dagList) {
       
       if (!i %in% dup[, 2]) {
         
-        if (all.equal(dagList[[i]], dagList[[j]]) == TRUE) {
+        if (matrixIdentical(dagList[[i]], dagList[[j]])) {
           
           dup[count, ] = c(i, j)
           count = count + 1
@@ -34,3 +34,14 @@ dagIsom = function(dagList) {
   }
   
 }
+
+matrixIdentical = function(x, y) {
+  
+  var = colnames(x)
+  return(all(x == y[var, var]))
+  
+}
+
+
+
+
