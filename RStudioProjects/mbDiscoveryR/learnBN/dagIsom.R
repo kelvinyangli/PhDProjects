@@ -1,20 +1,36 @@
 dagIsom = function(dagList) {
   
-  dup = c() # store duplicated collider dag indices
+  dup = matrix(0, nrow = length(dagList) - 1, ncol = 2) # store duplicated collider dag indices
+  count = 1
+  
   for (i in 1:(length(dagList) - 1)) {
     
     for (j in (i + 1):length(dagList)) {
       
-      if (all.equal(dagList[[i]], dagList[[j]]) == TRUE) {
+      if (!i %in% dup[, 2]) {
         
-        dup = c(dup, j)
+        if (all.equal(dagList[[i]], dagList[[j]]) == TRUE) {
+          
+          dup[count, ] = c(i, j)
+          count = count + 1
+          
+        } # end if 
         
-      } # end if 
+      } # end if i not in dup[, 2]
       
     } # end for j
     
   } # end for i
   
-  return(dup)
+  if (all(dup == 0)) {
+    
+    return(NULL)
+    
+  } else {
+    
+    dup = dup[-which(dup[, 1] == 0), ]
+    return(dup)
+    
+  }
   
 }

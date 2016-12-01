@@ -29,35 +29,51 @@ enumerateMBDags = function(x, y) {
 
 # y is a target variable
 # x = mb(y), where x is non-empty
-noColliderDag = function(x, y) {
+# this function does not produce duplicated dags, so no need to apply dag isomorphic check
+enumWithNoSp = function(x, y) {
   
+  dagList = list()
   dag = empty.graph(c(x, y))
-  parents(dag, y) = x
-  dagList = list() 
-  dagList[[1]] = dag
-  #size = nLinearDags(length(x))
-  count = 2
-  # for each parent set size starting from 1
-  for (numPa in 1:length(x)) {
+  
+  if (length(x) > 0) {
     
-    childSetComb = combn(x, numPa)
+    parents(dag, y) = x # add x as parents of y first
+    dagList[[1]] = dag
+    count = 2
     
-    for (i in 1:ncol(childSetComb)) {# for each possible children set combination
+    if (length(x) > 1) {
       
-      potentialDag = dag
-      children(potentialDag, y) = childSetComb[, i]
-      dagList[[count]] = potentialDag
-      count = count + 1
+      for (numChild in 1:(length(x) - 1)) {# for each parent set size starting from 1 till |x|-1
+        
+        childComb = combn(x, numChild)
+        
+        for (i in 1:ncol(childComb)) {# for each possible children combination
+          
+          dagList[[count]] = dag
+          children(dagList[[count]], y) = childComb[, i]
+          count = count + 1
+          
+        } # end for i
+        
+      } # end for numChild
       
-    } # end for i
+    } # end if length(x) > 1
     
-  } # end for numPa
+    dagList[[count]] = empty.graph(c(x, y))
+    children(dagList[[count]], y) = x
+    
+  } else {
+    
+    dagList[[1]] = dag
+    
+  } # end else 
+  
   
   return(dagList)
   
 } 
 
-colliderDag = function(x, y) {
+enumWithSp = function(x, y) {
   
   dagList = list()
   count = 1

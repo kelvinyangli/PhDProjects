@@ -1,79 +1,82 @@
 # the number of DAGs that could be formed by MB(x) \cup x
 # this formula has been manually verified by drawing all dags in a mb with up to 6 variables in a mb
-# there should be no need for further justification
-# linear dag is defined as a dag that has no collider
-nLinearDags = function(n) {
+# nWithNoSp is a function to computes the number of mb dags with no spouses, i.e., there is no collider
+# n is the total number of variables in mb
+nWithNoSp = function(n) {
   
-  count = 0 # initialize count
+  count = 0 
   
-  for (i in 0:n) count = count + sum(choose(n, i))
-  
-  return(count)
-  
-}
-
-# collider dag is defined as a dag that has at least one collider 
-nColliderDags = function(n) {
-  
-  count = 0 # initialize count
-  
-  # when there is less than or equal to one variable in mb
-  # there is no way to have a collider
-    
-  if (n > 1) {# when there are more than one variables in mb
-    # it is possible to have collider
-    
-    for (i in 1:(n - 1)) {
-      
-      count = count + choose(n, i + 1) * choose(i + 1, 1) * (nLinearDags(n - 1 - i) + nColliderDags(n - 1 - i))
-      
-    } # end for i
-    
-  } # end else
+  for (i in 0:n) count = count + choose(n, i)
   
   return(count)
   
 }
 
-# there exists some duplicated dags when considering collider dags
-# for example when there are 5 nodes is a mb, then adding a collider of size 2 to an existing dag with a collider of size 3
-# will result in isomorphic dags as adding a collider of size 3 to an existing dag with a collider of size 2
-# for large n, the number of duplicated dags are more
-nDuplicatedColliderDags = function(n) {
+# nWithSp is a function to computes the number of mb dags with spouses, i.e., there exists colliders
+# n is the total number of variables, m is the number of colliders, and k is the number of spouses
+nWithSp = function(n, m, k) {
   
-  count = 0
-  
-  for (i in 2:floor(n / 2)) {
+  if (n < 2) {
     
-    j = i + 1
-    
-    while (i + j <= n) {
-      
-      count = count + choose(n, i) * choose(i, 1) * choose(n - i, j) * choose(j, 1) * nMBDags(n - i - j)
-      
-      j = j + 1
-      
-    } # end while
-    
-  } # end for i
-  
-  return(count)
-  
-}
-
-# the total number of DAGs that could be formed by using variable mb(x) \cup x
-# it equals the sum of the number of linear dags and the number of collider dags minus the duplicated collider dags
-nMBDags = function(n) {
-  
-  if (n < 5) {
-    
-    return(nLinearDags(n) + nColliderDags(n)) 
+    count = 0    
     
   } else {
     
-    return(nLinearDags(n) + nColliderDags(n) - nDuplicatedColliderDags(n)) 
+    count = choose(n, k + 1) * (k + 1) 
+    
+    if (m < 2) {
+      
+      count = count * nWithNoSp(n - k - 1)
+      
+    } else {
+      
+      sum_count = 0 
+      
+      for (k_dash in 1:min((n - k - 2), k)) {
+        
+        sub_count = nWithSp(n - k - 1, m - 1, k_dash)
+        
+        if (k_dash == k) sub_count = (1 / m) * sub_count
+        
+        sum_count = sum_count + sub_count
+        
+      } # end for k_dash
+      
+      count = count * sum_count
+      
+    } # end else
     
   } # end else
+  
+  return(count)
+  
+}
+
+nMBDags = function(n) {
+  
+  sum_count = nWithNoSp(n) 
+  cat("-------------------------------\n")
+  cat("|mb|=", n, "\n")
+  cat("|spouses|=", 0, "=> |mbDags|=", sum_count, "\n")
+  cat("-------------------------------\n")
+  
+  for (m in 1:floor(n / 2)) {
+    
+    cat("|colliders|=", m, "\n")
+    
+    for (k in 1:(n - 2 * m + 1)) {
+      
+      sub_count = nWithSp(n, m, k)
+      sum_count = sum_count + sub_count 
+      cat("|spouses|=", k, "=> |mbDags|=", sub_count, "\n")
+      
+    } # end for k 
+    
+    cat("-------------------------------\n")
+    
+  } # end for m
+  
+  return(sum_count)
   
 }
 
@@ -100,15 +103,6 @@ nDags = function(n) {
   return(count)
   
 }
-
-
-
-
-
-
-
-
-
 
 
 

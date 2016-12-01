@@ -7,7 +7,7 @@ lapply(libraries, require, character.only = TRUE)
 library(bnlearn)
 library(gtools)
 options(scipen = 10)
-sourceDir <- function(path, fileName = NULL, trace = TRUE, ...) {
+sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
   allFiles = list.files(path, pattern = fileName)
   for (file in allFiles) {
     if(trace) cat(file,":")
