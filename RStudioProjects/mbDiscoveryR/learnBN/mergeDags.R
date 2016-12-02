@@ -36,8 +36,10 @@ substituteVar = function(ls, y, z) {
     
     #nodes(ls[[i]])[nodes(ls[[i]]) != y][order(nodes(ls[[i]])[nodes(ls[[i]]) != y])] = z
     colnames(ls[[i]])[-yIndex][order(colnames(ls[[i]])[-yIndex])] = z
+    colnames(ls[[i]])[yIndex] = y
     rownames(ls[[i]]) = colnames(ls[[i]])
     
+
   } # end for i 
   
   return(ls)

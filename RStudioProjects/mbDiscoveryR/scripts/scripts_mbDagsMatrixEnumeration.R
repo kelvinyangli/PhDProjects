@@ -44,7 +44,7 @@ if (n > 1) {
         
         dagList = c()
         
-        for (k_dash in 1:min(k, n - k - 2)) {
+        for (k_dash in 1:min(k, n - k - 2 * m + 2)) {
           
           subDagList = readRDS(paste0(dir, n - k - 1, "_", m - 1, "_", k_dash, ".rds"))
           subList = subEnumeration(x, y, m, k, subDagList)
