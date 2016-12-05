@@ -1,11 +1,12 @@
-#dag3 = set.arc(dag1,"V2", "T")
+dag3 = set.arc(dag1,"V2", "T")
 #dag4 = set.arc(dag2, "T", "V1")
-
-n = 10000
+dag3 = empty.graph(c("V1","V2","V3"))
+dag3 = set.arc(dag3, "V1","V2")
+n = 1000
 count = 0
 for (i in 1:100) {
   
-  cpts3 = generateCPTs(dag3, 4, 1)
+  cpts3 = generateCPTs(dag3, 2, 1)
   #cpts4 = generateCPTs(dag4, 3, 1)
   
   data3 = rbn(cpts3, n)
@@ -14,12 +15,12 @@ for (i in 1:100) {
   dataInfo3 = getDataInfo(data3)
   #dataInfo4 = getDataInfo(data4)
   
-  mml3 = mmlCPT(1, c(2,3), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) + 
-    mmlCPT(2, c(), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) + 
+    mmlCPT(1, c(2), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) 
+    mmlCPT(2, c(), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) 
     mmlCPT(3, c(), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n)
   
-  mml4 = mmlCPT(1, c(), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) + 
-    mmlCPT(2, c(1,3), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) + 
+    mmlCPT(1, c(), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n)
+    mmlCPT(2, c(1), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n) 
     mmlCPT(3, c(), dataInfo3$indexListPerNodePerValue, dataInfo3$arities, n)
   
   if (mml3 < mml4) count = count + 1
