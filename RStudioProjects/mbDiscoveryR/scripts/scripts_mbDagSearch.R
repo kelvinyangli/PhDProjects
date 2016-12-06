@@ -36,29 +36,35 @@ n = 10000
 data = rbn(cpts, n)
 dataInfo = getDataInfo(data)
 
-y = "V11"
-x = mb(dag, y)
-length(x)
-x
-files = list.files("mbDags/", paste0(length(x), "_"))
+y = "V12"
+(x = mb(dag, y))
+(files = list.files("mbDags/", paste0(length(x), "_")))
 (files = files[1:3])
 dagList = list()
 for (i in 1:length(files)) {
   dagList = c(dagList, readRDS(paste0("mbDags/", files[i])))
 }
 length(dagList)
-dagList[[1]]
+#dagList[[1]]
 dagList = substituteVar(dagList, y, x)
+#dagList[[1]]
 scores = rep(0, length(dagList))
 for (i in 1:length(dagList)) {
   scores[i] = mmlDag(dagList[[i]], dataInfo, n)
 }
-scores
-
-graphviz.plot(matrix2dag(dagList[[which.min(scores)]]))
 graphviz.plot(dag)
-
-
+minIndex = which.min(scores)
+graphviz.plot(matrix2dag(dagList[[minIndex]]))
+mtx = dag2matrix(dag)
+dimnames(mtx) = list(nodes(dag), nodes(dag))
+mbMatrix = mtx[c(x, y), c(x, y)]
+index = c()
+for (i in 1:length(dagList)) {
+  if (matrixIdentical(mbMatrix, dagList[[i]])) index = c(index, i)
+}
+index
+#scores[order(scores)]
+scores[c(minIndex, index)]
 
 
 
