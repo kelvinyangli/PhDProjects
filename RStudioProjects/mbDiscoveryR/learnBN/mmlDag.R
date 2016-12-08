@@ -1,4 +1,4 @@
-mmlDag = function(dagMatrix, dataInfo, vars, n) {
+mmlDag = function(dagMatrix, vars, dataInfo, n, mmlMatrix = NULL) {
   
   #vars = colnames(dagMatrix)
   mml = 0 
@@ -6,18 +6,19 @@ mmlDag = function(dagMatrix, dataInfo, vars, n) {
   for (j in 1:ncol(dagMatrix)) {
     
     pa = which(dagMatrix[, j] == 1)
-    nodeIndex = which(vars == colnames(dagMatrix)[j])
+    varIndex = which(vars == colnames(dagMatrix)[j])
+    
     if (length(pa) > 0) {
       
-      parentsIndices = which(vars %in% colnames(dagMatrix)[pa])
+      paIndices = which(vars %in% colnames(dagMatrix)[pa])
     
     } else {
       
-      parentsIndices = c()
+      paIndices = c()
       
     }
     
-    mml = mml + mmlCPT(nodeIndex, parentsIndices, dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+    mml = mml + mmlCPT(varIndex, paIndices, dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
     
   }
   

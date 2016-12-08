@@ -29,22 +29,23 @@ for (i in 1:100) {
 cat(count)
 
 nFiles = c(1, 1, 2, 3, 5, 7, 10, 13) # n files for each value n \in [0, 7]
-#dag = generateDag(7,3)
-#graphviz.plot(dag)
+dag = generateDag(7,3)
+graphviz.plot(dag, main = "true dag")
 
 # for polytrees
-mtx = polytree(7, 3)
-graphviz.plot(matrix2dag(mtx))
+#mtx = polytree(7, 3)
+#graphviz.plot(matrix2dag(mtx))
+#dag = matrix2dag(mtx)
 
-dag = matrix2dag(mtx)
 cpts = generateCPTs(dag, 3, 1)
 n = 1000
 data = rbn(cpts, n)
-graphviz.plot(mmhc(data))
+vars = colnames(data)
+graphviz.plot(mmhc(data), main = "mmch")
 dataInfo = getDataInfo(data)
 par(mfrow = c(1, 2))
 
-y = "V7"
+y = "V2"
 graphviz.plot(dag, main = "true dag", highlight = list(nodes = y))
 (x = mb(dag, y))
 (files = list.files("mbDags/", paste0(length(x), "_"))[1:nFiles[length(x) + 1]])
@@ -53,12 +54,11 @@ for (i in 1:length(files)) {
   dagList = c(dagList, readRDS(paste0("mbDags/", files[i])))
 }
 length(dagList)
-#dagList[[1]]
 dagList = substituteVar(dagList, y, x)
-#dagList[[1]]
+computeMMLMatrix(x, y, vars, dataInfo, n)
 scores = rep(0, length(dagList))
 for (i in 1:length(dagList)) {
-  scores[i] = mmlDag(dagList[[i]], dataInfo, colnames(data), n)
+  scores[i] = mmlDag(dagList[[i]], dataInfo, vars, n)
 }
 minIndex = which.min(scores)
 graphviz.plot(matrix2dag(dagList[[minIndex]]), main = "learned mb", highlight = list(nodes = y))
