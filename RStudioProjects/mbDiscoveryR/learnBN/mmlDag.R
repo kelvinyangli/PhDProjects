@@ -1,4 +1,6 @@
-mmlDag = function(dagMatrix, vars, dataInfo, n, mmlMatrix = NULL) {
+# this version of computing mml score for an entire dag does not require mml scores for each var to be pre-computed
+# hence this function is slower when score for the same var has to be computed many times
+mmlDag = function(dagMatrix, vars, dataInfo, n) {
   
   #vars = colnames(dagMatrix)
   mml = 0 
