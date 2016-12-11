@@ -1,7 +1,7 @@
 # compute mml score for valid entries
 # notice that not all entries in mmlMatrix are valid, for example
 # if v1, v2 \in mb(T), then v1 cannot have v2 as its parent alone. 
-computeMMLMatrix = function(x, y, vars, dataInfo, n) {
+computeMMLMatrix = function(vars, x, y, dataInfo, n) {
   
   # generate a matrix to store mml score for each node given eligible parents 
   mmlMatrix = matrix(0, nrow = length(x) + 1, ncol = 2 ^ (length(x) + 1) - 1)
