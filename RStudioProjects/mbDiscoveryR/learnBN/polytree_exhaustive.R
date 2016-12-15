@@ -26,3 +26,9 @@ polytree_exhaustive = function(dagList, vars, x, y, dataInfo, mmlmtx, n) {
   return(dagList[[minIndex]])
   
 }
+
+mtx = dagList[[4]]
+dag = matrix2dag(mtx)
+cpts = generateCPTs(dag, 2, 1)
+data = rbn(cpts, 1000)
+table(data)
