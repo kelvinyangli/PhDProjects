@@ -4,12 +4,12 @@
 
 dag2matrix = function(dag) {
   
-  allNodes = bnlearn::nodes(dag)
-  nNodes = length(allNodes)
+  vars = bnlearn::nodes(dag)
+  nvars = length(vars)
   
-  mtx = matrix(0, nrow = nNodes, ncol = nNodes)
+  mtx = matrix(0, nrow = nvars, ncol = nvars, dimnames = list(vars, vars))
   
-  for (i in 1:nNodes) {
+  for (i in 1:nvars) {
     
     children = dag$nodes[[i]]$children # set of children of node i
     
@@ -17,7 +17,7 @@ dag2matrix = function(dag) {
       
       for (j in 1:length(children)) {
         
-        mtx[i, which(allNodes == children[j])] = 1
+        mtx[i, which(vars == children[j])] = 1
         
       } # end for j
       
