@@ -5,7 +5,7 @@ dag = generateDag(9, 2)
 graphviz.plot(dag, main = "true dag")
 
 cpts = generateCPTs(dag, 2, 1)
-n = 1000
+n = 10000
 data = rbn(cpts, n)
 data = data[, sample(1:ncol(data))]
 vars = colnames(data)
