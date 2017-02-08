@@ -1,8 +1,15 @@
 #(vars = names(data))
 #(y = vars[3])
 #(candidates = vars[-3])
-y = "V1"
-x = c()
+dag = generateDag(9,2)
+graphviz.plot(dag)
+cpts=generateCPTs(dag,2,1)
+n=10000
+data=rbn(cpts,n)
+dataInfo=getDataInfo(data)
+vars=names(data)
+y = "V9"
+x = c("V6")
 candidates = vars[!vars %in% c(x, y)]
 v = rep(0, length(candidates))
 files = list.files(dir, paste0(length(x)+1, "_"))[1:nFiles[length(x)+1 + 1]]
@@ -28,7 +35,7 @@ for (i in 1:length(candidates)) {
   
   j = which(vars == candidates[i])
   w[i] = 
-    8398.038 + 
+    6975.09 + 
     #mmlCPT(which(vars == y),c(),dataInfo$indexListPerNodePerValue,dataInfo$arities,n)+
     mmlCPT(j,c(),dataInfo$indexListPerNodePerValue,dataInfo$arities,n)
   
