@@ -1,5 +1,5 @@
 # y is the target node, x is mb(y)
-enumerateMBDags = function(x, y) {
+enumerateMBPTs = function(x, y) {
   
   if (length(x) == 0) {
     

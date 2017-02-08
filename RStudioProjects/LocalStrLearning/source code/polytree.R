@@ -28,7 +28,8 @@ ancestor = function(mtx, var) {
   
 }
 
-
+# this function takes the number of variables and the maximum number of parents as inputs 
+# and generate a random polytree 
 polytree = function(nVars, maxNPa) {
   
   vars = paste0("V", 1:nVars)

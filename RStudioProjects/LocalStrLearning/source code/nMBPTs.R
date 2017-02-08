@@ -1,4 +1,5 @@
-# the number of DAGs that could be formed by MB(x) \cup x
+# the polytrees that satisfiy the MB adjacencies is denoted by MBPTs
+# nMBPTs is the function that computes the number of MBPTs in a function of mb size
 # this formula has been manually verified by drawing all dags in a mb with up to 6 variables in a mb
 # nWithNoSp is a function to computes the number of mb dags with no spouses, i.e., there is no collider
 # n is the total number of variables in mb
@@ -32,8 +33,10 @@ nWithSp = function(n, m, k) {
       
       sum_count = 0 
       
-      for (k_dash in 1:min((n - k - 2), k)) {
-        
+      for (k_dash in 1:min((n - k - 2 * m + 2), k)) {
+      # the maximum that k_dash can be is (n-k-1)-2(m-2)-1, where (n-k-1) is # remaining
+      # vars after removing k spouses and 1 common child, 2(m-2) is the minimum # vars
+      # needed for having m-2 v-structures, and -1 removes another child
         sub_count = nWithSp(n - k - 1, m - 1, k_dash)
         
         if (k_dash == k) sub_count = (1 / m) * sub_count
@@ -52,7 +55,7 @@ nWithSp = function(n, m, k) {
   
 }
 
-nMBDags = function(n) {
+nMBPTs = function(n) {
   
   sum_count = nWithNoSp(n) 
   cat("-------------------------------\n")
