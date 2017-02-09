@@ -18,7 +18,7 @@ sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
 
 # source from local repository
 #sourceDir("mbMMLCPT/")
-sourceDir("../mbDiscoveryR/createBN/")
+sourceDir("../mbDiscoveryR/randBN/")
 sourceDir("../mbDiscoveryR/learnBN/")
 #sourceDir("testing/")
 #sourceDir("mbMMLLogit/")

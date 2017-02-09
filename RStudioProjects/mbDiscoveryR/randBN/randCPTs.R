@@ -1,5 +1,5 @@
 ############################################################################################################
-# generate a CPT for each node of a given DAG
+# generate a random CPT for each node of a given DAG
 # parameter values are sampled with symmetric Dirichlet distribution 
 # the input variables are: a directed acyclic graph (dag), the maximum number of values of each node (maxNumValues), 
 # and the concentration parameter for a symmetric Dirichelet distribution (concentration)
@@ -9,7 +9,7 @@
 # library(gtools)
 ############################################################################################################
 
-generateCPTs = function(dag, maxNumValues, concentration, debug = FALSE) {
+randCPTs = function(dag, maxNumValues, concentration, debug = FALSE) {
   # the larger concentration is, the more concentration the distribution is, hence values are more close to the middle point 
   
   allNodes = bnlearn::nodes(dag)
@@ -67,4 +67,5 @@ generateCPTs = function(dag, maxNumValues, concentration, debug = FALSE) {
   bnFit = custom.fit(dag, cpts) # convert cpts into bn.fit format
   
   return(bnFit)
+  
 }

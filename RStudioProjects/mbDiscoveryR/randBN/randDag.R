@@ -1,4 +1,6 @@
-generateDag = function(numNodes, maxNumParents) {
+# this function generate a random dag based on the number of variables and the maximum number of parents given 
+
+randDag = function(numNodes, maxNumParents) {
   
   allNodes = paste0("V", 1:numNodes)
   
@@ -25,4 +27,5 @@ generateDag = function(numNodes, maxNumParents) {
   # re-order allNodes to keep the ordering consistent when generating cpts and data
   nodes(dag) = node.ordering(dag)
   return(dag)
+  
 }
