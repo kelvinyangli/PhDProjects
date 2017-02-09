@@ -1,4 +1,7 @@
-randomAdjmtx = function(nvars, maxNPa, adjList = NULL) {
+# this function is the same as the randDag function, except it generates adjacency matrix rather than a graph
+# the resulting adj matrix can then be transfered into bnlearn format dag using the self-written matrix2dag function
+
+randAdjmtx = function(nvars, maxNPa, adjList = NULL) {
   
   vars = paste0("V", 1:nvars)
   mtx = matrix(0, nvars, nvars, dimnames = list(vars, vars))

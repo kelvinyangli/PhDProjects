@@ -26,26 +26,6 @@ mergeDags = function(x, y, from, to) {
   
 }
 
-# ls is a list of dags whose variable names will be changed into variable names in z
-# y is the target variable
-substituteVar = function(ls, y, z) {
-  
-  yIndex = ncol(ls[[1]])
-  
-  for (i in 1:length(ls)) {
-    
-    #nodes(ls[[i]])[nodes(ls[[i]]) != y][order(nodes(ls[[i]])[nodes(ls[[i]]) != y])] = z
-    colnames(ls[[i]])[-yIndex][order(colnames(ls[[i]])[-yIndex])] = z
-    colnames(ls[[i]])[yIndex] = y
-    rownames(ls[[i]]) = colnames(ls[[i]])
-    
-
-  } # end for i 
-  
-  return(ls)
-  
-}
-
 
 subEnumeration = function(x, y, m, k, subDagList) {
   
