@@ -30,11 +30,11 @@ sourceDir("testing/")
 
 setwd("../")
 
-nNodes = 7
-maxNParents = 2
-maxArity = 3
+nNodes = 50
+maxNParents = 5
+maxArity = 6
 beta = 1 # concentration parameter
-n = 1000
+n = 100
 nIter = 5
 model = paste(nNodes, maxNParents, maxArity, beta, sep = "_")
 
