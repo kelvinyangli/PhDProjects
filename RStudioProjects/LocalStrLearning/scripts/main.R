@@ -14,11 +14,11 @@ data = rbn(cpts, 1000)
 
 # extract mb(x) from the true model
 x = "V2"
-y = mBlkt(adjmtx, x)
-n = length(y) # size of mb
+mbVars = mBlkt(adjmtx, x)
+n = length(mbVars) # size of mb
 mbpts = readRDS(paste0("MBPTs/", n, ".rds")) # load pre-saved mbpts for mb size n
+mbpts = substituteVar(mbpts, x, mbVars) # replace default vars with mb vars
 
-# 
 
 
 
