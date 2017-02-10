@@ -9,13 +9,13 @@
 # and saved into the matrix mmlmtx for faster computing the entire score of each polytree
 # because several polytrees could share the same substructures so mml scores don't need
 # to be re-computed 
-polytree_exhaustive = function(dagList, vars, x, y, dataInfo, mmlmtx, n) {
+polytree_exhaustive = function(mbpts, vars, dataInfo, mmlmtx, n) {
   
-  scores = rep(0, length(dagList))
+  scores = rep(0, length(mbpts))
   
-  for (i in 1:length(dagList)) {
+  for (i in 1:length(mbpts)) {
     
-    scores[i] = mmlDag_fast(dagList[[i]], vars, dataInfo, mmlmtx, n)
+    scores[i] = mmlDag_fast(mbpts[[i]], vars, dataInfo, mmlmtx, n)
     
   }
   
@@ -23,7 +23,7 @@ polytree_exhaustive = function(dagList, vars, x, y, dataInfo, mmlmtx, n) {
   
   #ls = list("dag" = dagList[[minIndex]], "mml" = scores[minIndex])
   
-  return(dagList[[minIndex]])
+  return(mbpts[[minIndex]])
   
 }
 

@@ -1,4 +1,6 @@
-# identify occurance of each variable state and save into a list for future use
+# this function couts the number of occurence of each var state and save information into a list
+# it also extracts the arity of each var 
+# this function helps speed up computing mmlcpt 
 getDataInfo = function(data) {
   
   ##############################################################

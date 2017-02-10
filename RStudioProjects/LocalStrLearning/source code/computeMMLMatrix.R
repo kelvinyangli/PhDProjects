@@ -1,11 +1,14 @@
-# compute mml score for valid entries
-# notice that not all entries in mmlMatrix are valid, for example
-# if v1, v2 \in mb(T), then v1 cannot have v2 as its parent alone. 
-computeMMLMatrix = function(vars, x, y, dataInfo, n) {
+# this function takes all vars, mb candidates, target var, dataInfo that pre-computed by getDataInfo(), and sample size 
+# as inputs, it computes mmlcpt for each var in c(mbVars, target) given its parents
+# there are certain vars or var combinations that cannot be parents of a var
+# for example, the var itself, or any combination includes itself, other vars without the target, because this will become
+# grandparents of the target
+# this function helps speed up computing mmlcpt for an entire mbpt
+computeMMLMatrix = function(vars, mbVars, target, dataInfo, n) {
   
   # generate a matrix to store mml score for each node given eligible parents 
-  mmlMatrix = matrix(0, nrow = length(x) + 1, ncol = 2 ^ (length(x) + 1) - 1)
-  dimnames(mmlMatrix) = list(c(y, x), powerset(c(y, x)))
+  mmlMatrix = matrix(0, nrow = length(mbVars) + 1, ncol = 2 ^ (length(mbVars) + 1) - 1)
+  dimnames(mmlMatrix) = list(c(target, mbVars), powerset(c(target, mbVars)))
 
   for (i in 1:nrow(mmlMatrix)) {
     
@@ -22,7 +25,7 @@ computeMMLMatrix = function(vars, x, y, dataInfo, n) {
       
       if (!var %in% pa) {# when pa(var) doesn't involve itself
         
-        if ((var == y) || (y %in% pa)) {
+        if ((var == target) || (target %in% pa)) {
           
           mmlMatrix[i, j] = mmlCPT(varIndex, paIndices, dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
           
