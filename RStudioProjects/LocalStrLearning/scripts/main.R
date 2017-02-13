@@ -13,17 +13,22 @@ cpts = randCPTs(dag, 2, 1)
 data = rbn(cpts, 1000)
 
 # extract mb(x) from the true model
-x = "V2"
+x = "V6"
 mbVars = mBlkt(adjmtx, x)
 n = length(mbVars) # size of mb
 mbpts = readRDS(paste0("MBPTs/", n, ".rds")) # load pre-saved mbpts for mb size n
 mbpts = substituteVar(mbpts, x, mbVars) # replace default vars with mb vars
 
-
-
-
 # a function to extract the bn of a var and its local str
 
+# once the optimal mbpt is learned, we use this result as the start of the next step
+# which is completing the remaining arcs.
+# this can be achieved in various ways, but the most straightfoward method is to 
+# use greedy search, i.e. iteratively adding different edges and compare the mml
+# socre for the entire structure, if the score is decreased, then the edge is 
+# accepted, otherwise just keep going.
+# by the end of this process, we hope that the resulting str is as close to the 
+# true local str as possible. 
 
 par(mfrow = c(1, 2))
 graphviz.plot(dag)
