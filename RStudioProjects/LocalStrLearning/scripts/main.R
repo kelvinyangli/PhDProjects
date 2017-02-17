@@ -6,7 +6,7 @@
 # polytree, we may want to compare our method with polytree learning algorithm without
 # considering true and false negatives.
 
-adjmtx = randAdjmtx(12, 3)
+adjmtx = randAdjmtx(5, 2)
 dag = matrix2dag(adjmtx)
 graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
