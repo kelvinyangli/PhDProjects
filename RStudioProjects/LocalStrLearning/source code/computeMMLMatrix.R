@@ -8,7 +8,15 @@ computeMMLMatrix = function(vars, mbVars, target, dataInfo, n) {
   
   # generate a matrix to store mml score for each node given eligible parents 
   mmlMatrix = matrix(0, nrow = length(mbVars) + 1, ncol = 2 ^ (length(mbVars) + 1) - 1)
-  dimnames(mmlMatrix) = list(c(target, mbVars), powerset(c(target, mbVars)))
+  if (length(mbVars) == 0) {
+    
+    dimnames(mmlMatrix) = list(target, "NULL")
+    
+  } else {
+    
+    dimnames(mmlMatrix) = list(c(target, mbVars), powerset(c(target, mbVars)))
+    
+  }
 
   for (i in 1:nrow(mmlMatrix)) {
     
@@ -17,23 +25,27 @@ computeMMLMatrix = function(vars, mbVars, target, dataInfo, n) {
     
     mmlMatrix[i, 1] = mmlCPT(varIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
     
-    for (j in 2:ncol(mmlMatrix)) {
+    if (length(mbVars) > 1) {
       
-      pa = colnames(mmlMatrix)[j]
-      pa = strsplit(pa, "_")[[1]]
-      paIndices = which(vars %in% pa)
-      
-      if (!var %in% pa) {# when pa(var) doesn't involve itself
+      for (j in 2:ncol(mmlMatrix)) {
         
-        if ((var == target) || (target %in% pa)) {
-          
-          mmlMatrix[i, j] = mmlCPT(varIndex, paIndices, dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
-          
-        } # end if 
+        pa = colnames(mmlMatrix)[j]
+        pa = strsplit(pa, "_")[[1]]
+        paIndices = which(vars %in% pa)
         
-      } # end else if 
+        if (!var %in% pa) {# when pa(var) doesn't involve itself
+          
+          if ((var == target) || (target %in% pa)) {
+            
+            mmlMatrix[i, j] = mmlCPT(varIndex, paIndices, dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
+            
+          } # end if 
+          
+        } # end else if 
+        
+      } # end for j 
       
-    } # end for j 
+    } # end if 
     
   } # end for each var i 
   
