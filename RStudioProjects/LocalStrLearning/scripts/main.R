@@ -6,14 +6,11 @@
 # polytree, we may want to compare our method with polytree learning algorithm without
 # considering true and false negatives.
 
-<<<<<<< HEAD
-adjmtx = randAdjmtx(5, 2)
-=======
-adjmtx = randAdjmtx(9, 3)
->>>>>>> master
-dag = matrix2dag(adjmtx)
-graphviz.plot(dag)
-cpts = randCPTs(dag, 2, 1)
+
+adjmtx = randPolytree(12, 3)
+pt = matrix2dag(adjmtx)
+graphviz.plot(pt)
+cpts = randCPTs(pt, 2, 1)
 n = 1000
 data = rbn(cpts, n)
 dataInfo = getDataInfo(data)
@@ -44,7 +41,7 @@ for (i in 1:length(vars)) { # iterate through all vars
 }
 
 # visulize learned mbpt and the true mb
-par(mfrow = c(1, 2))
+par(mfrow = c(2, 2))
 graphviz.plot(matrix2dag(mbLocalStr(adjmtx, vars, vars[i], mbVars)), main = "true")
 graphviz.plot(matrix2dag(mbptLearned), main = "learned")
 # once the optimal mbpt is learned, we use this result as the start of the next step

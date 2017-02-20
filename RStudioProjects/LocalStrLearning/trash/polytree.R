@@ -88,8 +88,6 @@ polytree = function(nVars, maxNPa) {
 }
 
 
-pt = polytree(7, 3)
-graphviz.plot(matrix2dag(pt))
 
 
 
