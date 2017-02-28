@@ -1,57 +1,118 @@
-# In this script, we use full search for MBPTs and compare against others
-#
-# Test 1: compare with polytree search algorithms. The objective is to demonstarte that
-# by searching through all possible MBPTs, we are able to find the MBPT that is
-# a sub-graph of the true local structure within the MB. Since the returned str is a
-# polytree, we may want to compare our method with polytree learning algorithm without
-# considering true and false negatives.
+# this scripts conduct the following processes: 
+# 1. generate random polytrees with given number of vars and max number of parents
+# 2. generate random parameter values with give maximum arity and concentration parameter
+# 3. learn mb for each var using mmlCPT with symmtry correction 
+# 4. apply exhaustive polytree search within each mb according to mmlCPT
+# 5. merge all learned local structures into a global structure, if an arc is bidirected 
+#    then we make it undirected, if an arc is both unexisted and directed then we drop
+#    the entire arc
+# 6. compute edit distances for cpdags, skeletons, and dags for our mml method, 
+#    mmhc, chow.liu and arance (notice the last two methods only return undirected polytrees)
+# 7. use bootstrap to measure arc uncertainty (this step is optional, need to be further 
+#    confirmed for its accuracy)
 
-
-adjmtx = randPolytree(12, 3)
+# 1. generate random polytree structure
+adjmtx = randPolytree(20, 3)
 pt = matrix2dag(adjmtx)
-graphviz.plot(pt)
-cpts = randCPTs(pt, 2, 1)
-n = 1000
-data = rbn(cpts, n)
+graphviz.plot(pt, main = "true")
+
+# 2. generate random parameter values
+cpts = randCPTs(pt, 4, 1)
+n = 100000
+data = rbn(cpts, n) 
 dataInfo = getDataInfo(data)
 vars = colnames(adjmtx)
-for (i in 1:length(vars)) { # iterate through all vars 
+
+# 3. learn mb using mmlCPT
+mbList = list()
+# learn mb(x), for all x \in vars
+for (i in 1:length(vars)) mbList[[i]] = mbForwardSelection.fast(data, vars[i], dataInfo$arities, dataInfo$indexListPerNodePerValue)
+mbList = symmetryCorrection(vars, mbList) # apply symmetry correction 
+
+# 4. learn local str for each var based on its learned mb 
+strList = list()
+for (i in 1:length(vars)) {
   
-  target = vars[i]
-  cat(target, ": \n")
-  mbVars = mBlkt(adjmtx, target) # extract mb(x) from the true model
-  mbpts = readRDS(paste0("MBPTs/", length(mbVars), ".rds")) # load pre-saved mbpts for mb size n
-  mbpts = substituteVar(mbpts, target, mbVars) # replace default vars with mb vars
-  mmlmtx = computeMMLMatrix(vars, mbVars, target, dataInfo, n) # compute mmlcpt for each node in mbVars given its possible parents
-  # compute mmlcpt for each mbpt 
-  scores = rep(0, length(mbpts))
+  mbpts = readRDS(paste0("MBPTs/", length(mbList[[i]]), ".rds")) # load pre-saved mbpts for mb size n
+  mbpts = substituteVar(mbpts, vars[i], mbList[[i]]) # replace default vars with mb vars
+  mmlmtx = computeMMLMatrix(vars, mbList[[i]], vars[i], dataInfo, n) # compute mmlcpt for each node in mbVars given its possible parents
+  scores = rep(0, length(mbpts)) # compute mmlcpt for each mbpt 
   for (j in 1:length(mbpts)) scores[j] = mmlDag_fast(mbpts[[j]], vars, dataInfo, mmlmtx, n)
   index = which.min(scores) # find the minimum score's index
-  mbptLearned = mbpts[index][[1]][c(target, mbVars),c(target,mbVars)] # the learned mbpt
-  mbTrue = adjmtx[c(target, mbVars),c(target,mbVars)] # extract local str within mb(x) and compare with the learned mbpt
-  print(mbptLearned)
-  cat("---------------- \n")
-  # compare the learnd mbpt with the true mb
-  # at the moment we don't care about false negatives, because mbpt is a sub-graph of mb's local str
-  # we only care about false positives, i.e., those arcs that are learned but not in the true local str
-  (acc = strAccuracy(mbTrue, mbptLearned))
-  (precision = (sum(mbptLearned) - acc$delete - acc$reverse) / sum(mbptLearned))
-  (recall = (sum(mbptLearned) - acc$delete - acc$reverse) / sum(mbTrue))
+  strList[[i]] = mbpts[[index]] # the learned mbpt
   
 }
 
-# visulize learned mbpt and the true mb
-par(mfrow = c(2, 2))
-graphviz.plot(matrix2dag(mbLocalStr(adjmtx, vars, vars[i], mbVars)), main = "true")
-graphviz.plot(matrix2dag(mbptLearned), main = "learned")
-# once the optimal mbpt is learned, we use this result as the start of the next step
-# which is completing the remaining arcs.
-# this can be achieved in various ways, but the most straightfoward method is to 
-# use greedy search, i.e. iteratively adding different edges and compare the mml
-# socre for the entire structure, if the score is decreased, then the edge is 
-# accepted, otherwise just keep going.
-# by the end of this process, we hope that the resulting str is as close to the 
-# true local str as possible. 
+# 5. merging local structures into global structure
+(mbpt_global = mergeMBPTs(strList, vars))
+(mbpt_global = refineMergedMBPT(mbpt_global))
+
+# 6. edit distance 
+x = c(shd(matrix2dag(mbpt_global), pt), shd(mmhc(data), pt), shd(chow.liu(data), pt), shd(aracne(data), pt)) # cpdags
+y = c(hamming(matrix2dag(mbpt_global), pt), hamming(mmhc(data), pt), hamming(chow.liu(data), pt), hamming(aracne(data), pt)) # skeletons
+z = c(editDistDags(matrix2dag(mbpt_global), pt), editDistDags(mmhc(data), pt), editDistDags(chow.liu(data), pt), editDistDags(aracne(data), pt)) # dags
+data.frame("cpdags" = x, "skeletons" = y, "dags" = z, row.names = c("mml", "mmhc", "chow.liu", "arance"))
+
+# greedy search for better global str
+mmlDag(mbpt_global, vars, dataInfo, n)
+mmlDag(adjmtx, vars, dataInfo, n)
+
+# ploting
+graphviz.plot(matrix2dag(mbpt_global), main = "mml")
+graphviz.plot(mmhc(data), main = "mmhc")
+graphviz.plot(chow.liu(data), main = "chow.liu")
+#graphviz.plot(aracne(data), main = "aracne")
+
+##########################################################################################
+# 7. using bootstrapping to measure the uncertainty of a feature in a local str
+str_resampled = list()
+r = 100
+for (i in 1:r) {
+  
+  indices = sample(1:n, n, replace = TRUE)
+  data_resampled = data[indices, ]
+  dataInfo_resampled = getDataInfo(data_resampled)
+  mmlmtx = computeMMLMatrix(vars, mbList[[2]], vars[2], dataInfo_resampled, n)
+  scores = rep(0, length(mbpts))
+  for (j in 1:length(mbpts)) scores[j] = mmlDag_fast(mbpts[[j]], vars, dataInfo_resampled, mmlmtx, n)
+  index = which.min(scores)
+  str_resampled[[i]] = mbpts[[index]]
+  
+}
+
+g(str_resampled, "V2", "V9")
+
+g = function(str_resampled, x, y) {
+  
+  u = v = w = 0 
+  
+  for (k in 1:length(str_resampled)) {
+    
+    if (str_resampled[[k]][x, y] == 1) {
+      u = u + 1
+    } else if (str_resampled[[k]][y, x] == 1) {
+      v = v + 1
+    } else {
+      w = w + 1
+    }
+    
+  } # end for k
+  
+  df = data.frame(u, v, w)
+  colnames(df) = c(paste0(x, "->", y), paste0(x, "<-", y), paste0(x, "..", y))
+  return(df)
+  
+}
+##########################################################################################
+
+
+
+
+
+
+
+
+
 
 
 
