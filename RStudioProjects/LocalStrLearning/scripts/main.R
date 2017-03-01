@@ -11,14 +11,22 @@
 # 7. use bootstrap to measure arc uncertainty (this step is optional, need to be further 
 #    confirmed for its accuracy)
 
+##############
+# observations: 
+# 1. random generated polytrees are all connected, but learned via mml could have 
+#    isolated vars, fix this 
+# 2. outstanding results for small samples, so we definitely test on small samples
+#    against the others
+##############
+
 # 1. generate random polytree structure
-adjmtx = randPolytree(20, 3)
+adjmtx = randPolytree(13, 2)
 pt = matrix2dag(adjmtx)
 graphviz.plot(pt, main = "true")
 
 # 2. generate random parameter values
 cpts = randCPTs(pt, 4, 1)
-n = 100000
+n = 1000
 data = rbn(cpts, n) 
 dataInfo = getDataInfo(data)
 vars = colnames(adjmtx)
@@ -45,13 +53,14 @@ for (i in 1:length(vars)) {
 
 # 5. merging local structures into global structure
 (mbpt_global = mergeMBPTs(strList, vars))
+sum(mbpt_global == 3)
 (mbpt_global = refineMergedMBPT(mbpt_global))
 
 # 6. edit distance 
-x = c(shd(matrix2dag(mbpt_global), pt), shd(mmhc(data), pt), shd(chow.liu(data), pt), shd(aracne(data), pt)) # cpdags
-y = c(hamming(matrix2dag(mbpt_global), pt), hamming(mmhc(data), pt), hamming(chow.liu(data), pt), hamming(aracne(data), pt)) # skeletons
-z = c(editDistDags(matrix2dag(mbpt_global), pt), editDistDags(mmhc(data), pt), editDistDags(chow.liu(data), pt), editDistDags(aracne(data), pt)) # dags
-data.frame("cpdags" = x, "skeletons" = y, "dags" = z, row.names = c("mml", "mmhc", "chow.liu", "arance"))
+x = c(shd(matrix2dag(mbpt_global), pt), shd(mmhc(data), pt), shd(chow.liu(data), pt)) # cpdags
+y = c(hamming(matrix2dag(mbpt_global), pt), hamming(mmhc(data), pt), hamming(chow.liu(data), pt)) # skeletons
+z = c(editDistDags(matrix2dag(mbpt_global), pt), editDistDags(mmhc(data), pt), editDistDags(chow.liu(data), pt)) # dags
+data.frame("cpdags" = x, "skeletons" = y, "dags" = z, row.names = c("mml", "mmhc", "chow.liu"))
 
 # greedy search for better global str
 mmlDag(mbpt_global, vars, dataInfo, n)
