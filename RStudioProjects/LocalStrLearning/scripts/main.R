@@ -19,48 +19,55 @@
 #    against the others
 ##############
 
+# read pre-saved mbpts into memory 
+mbptsList = list()
+for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
+
+# log factorial sheet
+logFactorialSheet = read.csv("logFactorial_1to10000.csv")
+
 # 1. generate random polytree structure
-adjmtx = randPolytree(13, 2)
+adjmtx = randPolytree(9, 2)
 pt = matrix2dag(adjmtx)
 graphviz.plot(pt, main = "true")
 
+#real_model = read.dsc("../mbDiscoveryR/insurance.dsc")
+#graphviz.plot(real_model)
+#data = rbn(real_model, 1000)
+#vars = colnames(data)
+#pt = model2network(modelstring(alarm_network))
+
 # 2. generate random parameter values
-cpts = randCPTs(pt, 4, 1)
-n = 1000
+cpts = randCPTs(pt, 3, 1)
+n = 10000
 data = rbn(cpts, n) 
 dataInfo = getDataInfo(data)
 vars = colnames(adjmtx)
 
 # 3. learn mb using mmlCPT
+#Rprof("mml.out")
 mbList = list()
 # learn mb(x), for all x \in vars
-for (i in 1:length(vars)) mbList[[i]] = mbForwardSelection.fast(data, vars[i], dataInfo$arities, dataInfo$indexListPerNodePerValue)
+for (i in 1:length(vars)) mbList[[i]] = mbForwardSelection.fast(data, vars[i], dataInfo$arities, dataInfo$indexListPerNodePerValue, base = exp(1))
 mbList = symmetryCorrection(vars, mbList) # apply symmetry correction 
 
-# 4. learn local str for each var based on its learned mb 
-strList = list()
-for (i in 1:length(vars)) {
-  
-  mbpts = readRDS(paste0("MBPTs/", length(mbList[[i]]), ".rds")) # load pre-saved mbpts for mb size n
-  mbpts = substituteVar(mbpts, vars[i], mbList[[i]]) # replace default vars with mb vars
-  mmlmtx = computeMMLMatrix(vars, mbList[[i]], vars[i], dataInfo, n) # compute mmlcpt for each node in mbVars given its possible parents
-  scores = rep(0, length(mbpts)) # compute mmlcpt for each mbpt 
-  for (j in 1:length(mbpts)) scores[j] = mmlDag_fast(mbpts[[j]], vars, dataInfo, mmlmtx, n)
-  index = which.min(scores) # find the minimum score's index
-  strList[[i]] = mbpts[[index]] # the learned mbpt
-  
-}
+# maxMB is the maximum size of mb, by default it is 7 because we don't want to search with
+# the space of 1 million polytrees
+maxMB = 7 
+for (i in 1:length(vars)) if (length(mbList[[i]]) > maxMB) mbList[[i]] = mbList[[i]][1:maxMB]
 
+# 4. learn local str for each var based on its learned mb 
 # 5. merging local structures into global structure
-(mbpt_global = mergeMBPTs(strList, vars))
-sum(mbpt_global == 3)
-(mbpt_global = refineMergedMBPT(mbpt_global))
+mbpt_global = learnMBPT(vars, mbList, mbptsList, dataInfo, n)
+#Rprof(NULL)
+#proftable("mml.out")
 
 # 6. edit distance 
 x = c(shd(matrix2dag(mbpt_global), pt), shd(mmhc(data), pt), shd(chow.liu(data), pt)) # cpdags
 y = c(hamming(matrix2dag(mbpt_global), pt), hamming(mmhc(data), pt), hamming(chow.liu(data), pt)) # skeletons
 z = c(editDistDags(matrix2dag(mbpt_global), pt), editDistDags(mmhc(data), pt), editDistDags(chow.liu(data), pt)) # dags
 data.frame("cpdags" = x, "skeletons" = y, "dags" = z, row.names = c("mml", "mmhc", "chow.liu"))
+
 
 # greedy search for better global str
 mmlDag(mbpt_global, vars, dataInfo, n)
