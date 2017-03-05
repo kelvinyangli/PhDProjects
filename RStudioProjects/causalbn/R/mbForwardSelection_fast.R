@@ -1,7 +1,6 @@
-
 # MB discovery using 
-mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, indexListPerNodePerValue, conPar, 
-                                                          base = exp(1), debug = FALSE) {
+# indicatorMatrix = getIndicator(data)
+mbForwardSelection.fast = function(data, node, arities, indexListPerNodePerValue, base = exp(1), debug = FALSE) {
   
   ##############################################################
   # get the basic information and 
@@ -9,25 +8,20 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
   
   allNodes = names(data)
   nodeIndex = which(allNodes == node) # get index of the target node
-  
   numNodes = ncol(data)
   sampleSize = nrow(data)
-  
   mb = c()
-  
   unCheckedIndices = (1:numNodes)[-nodeIndex]
-  
   tempCachedIndicesList = list()
+  score = mmlCPT.fast
   ##############################################################
   # msg len for a single node with no parents
   # parentsIndices is given as an empty vector
-  
-  #nTimes = 1 # track the number of times to compute a mml score 
-  minMsgLen = mmlMultinomialDirichlet(nodeIndex, c(), indexListPerNodePerValue, c(), arities, sampleSize, conPar = conPar, base = base)
-  
+  minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, c(), arities, sampleSize, base)
+    
   if (debug) {
     
-    cat("Search: Greedy search --- Score: mmlMultinomialDirichlet \n")
+    cat("Search: Greedy search --- Score: mmlCPT \n")
     cat("0 parent:", minMsgLen, "\n")
     
   }
@@ -36,9 +30,7 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
     
     # repeat the process of computing mml for remaining unCheckedIndices
     # if unCheckedIndices is empty or all msg len > min msg len then stop
-    
     index = 0 # initialize index to 0
-    
     cachedIndicesList = tempCachedIndicesList
     
     if (length(unCheckedIndices) == 0) {
@@ -52,11 +44,10 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
     for (i in 1:length(unCheckedIndices)) {
       
       parentsIndices = c(mb, unCheckedIndices[i])
-      
-      res = mmlMultinomialDirichlet(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, 
-                                    arities, sampleSize, conPar = conPar, base = base)
+      res = score(nodeIndex, parentsIndices, indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, base)
       msgLenCurrent = res$msgLen
-
+      #cachedIndicesList = res$cachedIndicesList
+        
       if (debug) cat("parents =", allNodes[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       
       # if the current msg len is smaller then replace minMsgLen by the current 
@@ -67,12 +58,10 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
         minMsgLen = msgLenCurrent
         index = i
         tempCachedIndicesList = res$cachedIndicesList
-        
+
       } # end if 
       
-      #nTimes = nTimes + 1
-      
-    } # end for unCheckedIndices i 
+    } # end for i 
     
     if (index == 0) {
       
@@ -96,7 +85,6 @@ mbForwardSelectionUsingMMLMultinomialDirichlet = function(data, node, arities, i
     
   } # end repeat
   
-  #print(nTimes)
   return(allNodes[mb])
   
 }
