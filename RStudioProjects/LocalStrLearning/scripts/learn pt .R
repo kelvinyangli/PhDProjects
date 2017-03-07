@@ -19,7 +19,7 @@ datasets = list.files(paste0(dir, "data/"))
 
 for (nData in 1:length(datasets)) {
   
-  cat(nData, " ")
+  cat(nData, "\n")
   
   data = readRDS(paste0(dir, "data/", datasets[nData]))
   dataInfo = getDataInfo(data)
