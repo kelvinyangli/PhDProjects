@@ -1,5 +1,5 @@
-# this script randomly generate pt adjmtx and cpts then sample data from these 
-# models 
+# generating random polytree adjmtx and cpts at the given specification
+# sampling data from polytree models for given sample sizes 
 nVars = c(20, 40, 60, 80)
 maxNPas = 2:5
 maxArity = 3:6
