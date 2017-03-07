@@ -13,7 +13,7 @@ document()
 # 5. install
 setwd("../")
 install("causalbn/")
-# 6. make the package a github repo
-install_github("causalbn", "kelvinyangli/causalbn", subrdir = "PhDProjects/RStudioProjects")
+# 6. install the package from github on other devices 
+install_github("kelvinyangli/PhDProjects/causalbn", auth_token = "getThisFromMyGithub")
 # check packages info 
 devtools::session_info()

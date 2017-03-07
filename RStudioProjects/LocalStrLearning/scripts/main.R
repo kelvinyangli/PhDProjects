@@ -27,9 +27,9 @@ for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))
 logFactorialSheet = read.csv("logFactorial_1to10000.csv")
 
 # model specifications
-nVars = 15?
-maxNPas = 3
-maxArity = 3
+nVars = 25
+maxNPas = 4
+maxArity = 5
 beta = 1
 n = 1000
 maxMB = 7 
@@ -78,7 +78,7 @@ for (ii in 1:nExp) { # repeat the process of learning nExp times for pt with the
   
   # 6. evaluate learners using edit distance for dag, pattern and skeleton
   ed_dag[ii, ] = c(editDistDags(pt_mml, pt), editDistDags(mmhc_bnlearn, pt), editDistDags(chow_bnlearn, pt))
-  ed_pattern[ii, ] = c(shd(pt_mml, pt), shd(mmhc_bnlearn, pt), shd(chow_bnlearn, pt))
+  ed_pattern[ii, ] = c(bnlearn::shd(pt_mml, pt), bnlearn::shd(mmhc_bnlearn, pt), bnlearn::shd(chow_bnlearn, pt))
   ed_sklt[ii, ] = c(hamming(pt_mml, pt), hamming(mmhc_bnlearn, pt), hamming(chow_bnlearn, pt))
   
 } # end for ii

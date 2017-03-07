@@ -1,0 +1,1085 @@
+factorial(2)
+x
+factorial(x)
+mml.est = function(A, x){#
+	alpha.mml = (sum(x) + 0.5)/(length(x) + 1/A)#
+	mml_len = -log2(A) + alpha.mml/A + L + 0.5*log2(FI) + (-log2(12) + 1)/2#
+	print(alpha.mml)#
+	print(mml_len)#
+}
+x
+a
+A
+mml.est(A,x)
+mml.est = function(A, x){#
+	alpha.mml = (sum(x) + 0.5)/(length(x) + 1/A)#
+	L = length(x)*alpha.mml - sum(x)*log2(alpha.mml) + log2(sum(factorial(x)))#
+	mml_len = -log2(A) + alpha.mml/A + L + 0.5*log2(FI) + (-log2(12) + 1)/2#
+	print(alpha.mml)#
+	print(mml_len)#
+}
+mml.est(A,x)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log2(alpha.mml) + log2(sum(factorial(x)))#
+	FI = n/alpha.mml#
+	mml_len = -log2(A) + alpha.mml/A + L + 0.5*log2(FI) + (-log2(12) + 1)/2#
+	print(alpha.mml)#
+	print(mml_len)#
+}
+mml.est(A,x)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log2(alpha.mml) + log2(sum(factorial(x)))#
+	FI = n/alpha.mml#
+	mml_len = -log2(A) + alpha.mml/A + L + 0.5*log2(FI) + (-log2(12) + 1)/2#
+	print(x)#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+}
+mml.est(A,x)
+exp(1)
+exp(0)
+exp0
+print("this: ")
+print(cat(this: ),x)
+print(cat("this:" ),x)
+x
+print(cat("this:" ),1)
+print(cat("this:" ),1)prin
+print(cat("this: ", 11))
+print(paste0("this: ", 11))
+print(paste0(this: , 11))
+print(paste0(this , 11))
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log2(alpha.mml) + log2(sum(factorial(x)))#
+	F.alpha = n/alpha.mml#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	mml_len = -log2(h.alpha) + L + 0.5*log2(F.alpha) + (-log2(12) + 1)/2#
+	print(paste0("x = ", x))#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(log2(F.alpha))#
+}
+mml.est(A,x)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log2(alpha.mml) + log2(sum(factorial(x)))#
+	F.alpha = n/alpha.mml#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	mml_len = -log2(h.alpha) + L + 0.5*log2(F.alpha) + (-log2(12) + 1)/2#
+	print(x)#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(h.alpha)#
+	print(log2(F.alpha))#
+}
+mml.est(A,x)
+alpha.mml
+a=alpha.mml(A,x)
+a
+f=sum(x)/a
+f
+log2(f)
+f
+13/6.93
+log2(13/6.93)
+log2(13/5)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log2(alpha.mml) + log2(sum(factorial(x)))#
+	F.alpha = n/alpha.mml#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	mml_len = -log2(h.alpha) + L + 0.5*0.63 + (-log2(12) + 1)/2#
+	print(x)#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(h.alpha)#
+	print(log2(F.alpha))#
+}
+A
+x
+mml.est(A.x)
+mml.est(A,x)
+h.alpha = (1/A)*exp(-alpha.mml/A)
+h.alpha = (1/A)*exp(-6.931818/A)
+h.alpha
+log2
+log(2)
+log(10)
+log(2)
+log(1)
+?log
+log10(10)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + log10(sum(factorial(x)))#
+	F.alpha = n/alpha.mml#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(h.alpha)#
+	print(log2(F.alpha))#
+}
+A
+x
+mml.est(A,x)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + log10(sum(factorial(x)))#
+	F.alpha = n/alpha.mml#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(h.alpha)#
+	print(log10(F.alpha))#
+}
+mml.est(A,x)
+-log10(0.05)
+x
+length(x)
+n
+a
+a=6.9318181818181825
+13/a
+log10*(13/a)
+a
+13/a
+log10(13/a)
+log2(13/a)
+log10(13)-log10(a)
+log2(13)-log2(a)
+13/a
+(13/a)^(1/0.63)
+x
+factorial(x)
+sum(factorial(x))
+A=2
+x=1:3
+A
+x
+mml.est(A,x)
+sum(factorial(x))
+sum(x)
+a=1.8571428571428572
+3*a-6*log10(a)+
+)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + sum(log10((factorial(x))))#
+	F.alpha = n/alpha.mml#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(n)#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(h.alpha)#
+	print(log10(F.alpha))#
+}
+mml.est(A,x)
+log10(3/a)
+log2(3/a)
+-log10(0.2)
+(-log10(12)+1)/2
+(-log2(12)+1)/2
+(-log10(12)+1)/2
+0.5*0.48
+0.5*0.48-log10(0.2)+(-log10(12)+1)/2
+a
+3*a-6*log10(a)+sum(log10(factorial(x)))
+3*a-6*log10(a)+sum(log10(factorial(x)))+(-log10(12)+1)/2
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	# mml estimate of alpha #
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	# negative log likelihood#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + sum(log10((factorial(x))))#
+	# fisher information#
+	F.alpha = n/alpha.mml#
+	# pre-assumed parameter prior#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	# mml length#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(paste0("N = ", n))#
+	print(sum.x)#
+	print(alpha.mml)#
+	print(mml_len)#
+	print(h.alpha)#
+	print(log10(F.alpha))#
+}
+mml.est(A,x)
+log10(2)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	# mml estimate of alpha #
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	# negative log likelihood#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + sum(log10((factorial(x))))#
+	# fisher information#
+	F.alpha = n/alpha.mml#
+	# pre-assumed parameter prior#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	# mml length#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(paste0("N = ", n))#
+	print(paste0("sum = ", sum.x))#
+	print(paste0("alpha_mml = ", alpha.mml))#
+	print(paste0("mml_len = ", mml_len))#
+	print(paste0("h(alpha_mml) = ", h.alpha))#
+	print(paste0("logF = ", log10(F.alpha)))#
+	print(paste0("alpha_maxLH = ", sum.x/n))#
+}
+A
+x
+A
+A==2
+mml.est(A,x)
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	# mml estimate of alpha #
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	# negative log likelihood#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + sum(log10((factorial(x))))#
+	# fisher information#
+	F.alpha = n/alpha.mml#
+	# pre-assumed parameter prior#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	# mml length#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(paste0("N = ", n))#
+	print(paste0("sum = ", sum.x))#
+	print(paste0("alpha_mml = ", alpha.mml))#
+	print(paste0("mml_len = ", mml_len))#
+	print(paste0("h(alpha_mml) = ", round(h.alpha,2))#
+	print(paste0("logF = ", round(log10(F.alpha),2))#
+	print(paste0("alpha_maxLH = ", sum.x/n))#
+}
+pi
+round(pi,2)
+pi
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	# mml estimate of alpha #
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	# negative log likelihood#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + sum(log10((factorial(x))))#
+	# fisher information#
+	F.alpha = n/alpha.mml#
+	# pre-assumed parameter prior#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	# mml length#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(paste0("N = ", n))#
+	print(paste0("sum = ", sum.x))#
+	print(paste0("alpha_mml = ", alpha.mml))#
+	print(paste0("mml_len = ", mml_len))#
+	print(paste0("h(alpha_mml) = ", round(h.alpha,2)))#
+	print(paste0("logF = ", round(log10(F.alpha),2))#
+	print(paste0("alpha_maxLH = ", sum.x/n))#
+}
+mml.est = function(A, x){#
+	n = length(x)#
+	sum.x = sum(x)#
+	# mml estimate of alpha #
+	alpha.mml = (sum.x + 0.5)/(n + 1/A)#
+	# negative log likelihood#
+	L = n*alpha.mml - sum.x*log10(alpha.mml) + sum(log10((factorial(x))))#
+	# fisher information#
+	F.alpha = n/alpha.mml#
+	# pre-assumed parameter prior#
+	h.alpha = (1/A)*exp(-alpha.mml/A)#
+	# mml length#
+	mml_len = -log10(h.alpha) + L + 0.5*log10(F.alpha) + (-log10(12) + 1)/2#
+	print(x)#
+	print(paste0("N = ", n))#
+	print(paste0("sum = ", sum.x))#
+	print(paste0("alpha_mml = ", alpha.mml))#
+	print(paste0("mml_len = ", mml_len))#
+	print(paste0("h(alpha_mml) = ", round(h.alpha,2)))#
+	print(paste0("logF = ", round(log10(F.alpha),2)))#
+	print(paste0("alpha_maxLH = ", sum.x/n))#
+}
+mml.est(A,x)
+russell
+# use 5 pages from Russell's paper The problems of philosophy#
+# use an article from National Geographic - Saving salmon in California#
+# disregard punctuations, numbers and others#
+# load saved work#
+# change wd#
+# setwd()#
+# getwd()#
+# load("Letter distribution R code")#
+library(stringr)#
+# count the total number of each letter in two samples#
+countle=str_count(russell,letters)+str_count(salmon,letters)#
+# count the total number of spaces in two samples#
+countsp=str_count(russell," ")+str_count(salmon," ")#
+# total number of letters and spaces#
+total=sum(countle)+countsp#
+# frequency of letters#
+lefreq=round((countle/total)*100,2)#
+# frequency of space#
+spfreq=round((countsp/total)*100,2)#
+# frequency of estimate distribution#
+lefreq[27]=spfreq#
+freq.est=lefreq#
+# frequency of uniform distribution#
+freq.uni=rep(round((1/27)*100,2),27)#
+lesp = c(letters," ")
+# est. distribution#
+est.dist = c(" ", "e", "t", "a", "o", "i", "s", "n", "h", "r", "l", "d", "c", "u", "w", "m", "f", "b", "g", "p", "y", "v", "k", "x", "j", "q", "z")#
+# guess function takes into 1st-order letter estimation only from estimate distribution#
+guess.est=function(x){#
+  char.split=strsplit(x,"")#
+  len=length(char.split[[1]])#
+  num.guess=rep(0,len)#
+  for(i in 1:len){#
+  	num.guess[i]=match(char.split[[1]][i],est.dist) #
+  }#
+  print(num.guess)#
+  #print(sum(num.guess))#
+}#
+# guess function takes into 1st-order letter estimation only from uniform distribution#
+guess.uni=function(x){#
+  char.split=strsplit(x,"")#
+  len=length(char.split[[1]])#
+  num.guess=rep(0,len)#
+  for(i in 1:len){#
+    count=0#
+    pool=c(letters," ") # reset pool#
+    sample.prob=freq.uni # reset prob#
+    success=FALSE#
+    while(!success){#
+      guess=sample(pool,1,prob=sample.prob)#
+      pool=pool[pool!=guess] # delete guessed letter from pool#
+      sample.prob=sample.prob[-1] # delete the first prob as this is uniform#
+      success=guess==char.split[[1]][i]#
+      count=count+1#
+    }#
+    num.guess[i]=count#
+  }#
+  print(num.guess)#
+  print(sum(num.guess))#
+}#
+#############################################################################################################
+pool.t=c("h"," ","o","e","i","a","r","s","t","u","y","l","c","w","f","m","b",#
+"d","g","j","k","n","p","q","v","x","z")#
+pool.space=c("t","a","i","s","w","o","b","c","h","m","f","d","p","r","n","e","l","u",#
+      "g","v","k","j","q","y","x","z")#
+# guess.est takes into account the 2nd-order letter estimation #
+guess.est2=function(x){#
+  char.split=strsplit(x,"")#
+  len=length(char.split[[1]])#
+  num.guess=rep(0,len)#
+  sym.guess=rep(0,len) # create empty vector for storing correct guessed symbol#
+  # guess "t" for 1st index, never guess "space"#
+  for(i in 1){#
+    num.guess[i]=match(char.split[[1]][i],pool.space)#
+    sym.guess[i]=pool.space[match(char.split[[1]][i],pool.space)]#
+  }#
+  # from 2nd index onward #
+  for(i in 2:len){#
+    if(sym.guess[i-1]=="t"){#
+      num.guess[i]=match(char.split[[1]][i],pool.t)#
+      sym.guess[i]=pool.t[match(char.split[[1]][i],pool.t)]#
+    } else if(sym.guess[i-1]==" "){#
+      num.guess[i]=match(char.split[[1]][i],pool.space)#
+      sym.guess[i]=pool.space[match(char.split[[1]][i],pool.space)]#
+    } else  {#
+      num.guess[i]=match(char.split[[1]][i],est.dist)#
+      sym.guess[i]=est.dist[match(char.split[[1]][i],est.dist)]#
+    }#
+  }#
+ # print(sym.guess)#
+  print(num.guess)#
+  #print(sum(num.guess))#
+}
+head(russell)
+salmon
+x
+x="today is thuesday"
+x
+letters
+countle
+sample1.eng=c("human beings were more intelligent than the other animals but were not accorded a mention of soul",#
+"the early days at bletchley resembled the arrangements of a displaced senior common room obliged through domestic catastrophe to dine with another college but nobly doing its best not to complain",#
+"two thousand years later the idea of modular addition by a fixed number would hardly be adequate but there was nothing out of date about the general idea", #
+"alternatively a cipher system might be based upon the substitution idea",#
+"in its simplest form this was used for puzzle page cryptograms such as they had solved in princeton treasure hunts", #
+"in this respect britain and germany were running a symmetrical was using very similar machines", #
+"the most recent machines are electrical in operation and in many cases the period is a tremendously large number",#
+"the more import complicating feature however was the attachment of a plugboard", #
+"their method was to collect each day from their radio intercepts a list of these initial six letter sequences", #
+"they knew that in this list there would be a pattern")
+guess.est=function(x){#
+  char.split=strsplit(x,"")#
+  len=length(char.split[[1]])#
+  num.guess=rep(0,len)#
+  for(i in 1:len){#
+  	num.guess[i]=match(char.split[[1]][i],est.dist) #
+  }#
+  print(num.guess)#
+  #print(sum(num.guess))#
+}
+lapply(sample1.eng,guess.uni)
+engGuessed.uni=lapply(sample1.eng,guess.uni)
+# est. distribution#
+est.dist = c(" ", "e", "t", "a", "o", "i", "s", "n", "h", "r", "l", "d", "c", "u", "w", "m", "f", "b", "g", "p", "y", "v", "k", "x", "j", "q", "z")#
+# guess function takes into 1st-order letter estimation only from estimate distribution#
+guess.est=function(x){#
+  char.split=strsplit(x,"")#
+  len=length(char.split[[1]])#
+  num.guess=rep(0,len)#
+  for(i in 1:len){#
+  	num.guess[i]=match(char.split[[1]][i],est.dist) #
+  }#
+  #print(num.guess)#
+  print(sum(num.guess))#
+}#
+# guess function takes into 1st-order letter estimation only from uniform distribution#
+guess.uni=function(x){#
+  char.split=strsplit(x,"")#
+  len=length(char.split[[1]])#
+  num.guess=rep(0,len)#
+  for(i in 1:len){#
+    count=0#
+    pool=c(letters," ") # reset pool#
+    sample.prob=freq.uni # reset prob#
+    success=FALSE#
+    while(!success){#
+      guess=sample(pool,1,prob=sample.prob)#
+      pool=pool[pool!=guess] # delete guessed letter from pool#
+      sample.prob=sample.prob[-1] # delete the first prob as this is uniform#
+      success=guess==char.split[[1]][i]#
+      count=count+1#
+    }#
+    num.guess[i]=count#
+  }#
+  #print(num.guess)#
+  print(sum(num.guess))#
+}
+lapply(sample1.eng,guess.est)
+engGuessed.est=lapply(sample1.eng,guess.est)#
+# compute the total # guessed based on uni dist for each sentence#
+engGuessed.uni=lapply(sample1.eng,guess.uni)
+1
+1/27
+log2(23)
+alarm.mb
+getwd
+getwd()
+load(workspace1)
+load("workspace1")
+alarm.mb
+mb.a1.40
+#############################################################################################################
+# random seed generator using lower clock digit#
+get.digit = function() {#
+  op = options(digits.secs = 6)#
+  x = gsub("[: -]", "" , Sys.time(), perl = TRUE) # remove - and : #
+  x = strsplit(x, split = "[.]")[[1]][2] # get lower digits#
+  x = as.numeric(x) # convert char to numeric #
+  print(x)#
+}#
+#
+#############################################################################################################
+# generate random structure with parameters#
+# number of variables, maximum number of parents#
+#############################################################################################################
+ran.dag = function(nVar, maxNParents, seed = get.digit(), plot = FALSE) {#
+  #set.seed(seed)#
+  vertices = paste0("V", sample(1:nVar))#
+  dag = empty.graph(vertices)#
+  for (x in vertices[-1]) {#
+    positionX = which(vertices %in% x)#
+    nParents = min(sample(0:(positionX - 1), 1), maxNParents)#
+    parentsX = sample(vertices[1:(positionX - 1)], nParents)#
+    if (nParents > 0) for (i in 1:nParents) dag = set.arc(dag, parentsX[i], x)#
+  }#
+  # re-order vertices to keep the ordering consistent when generate cpt and data#
+  nodes(dag) = node.ordering(dag)#
+  if (plot) plot(dag)#
+  return(dag)#
+}#
+#
+#############################################################################################################
+# generate random CPT based on a random DAG with parameters#
+# DAG, maximum number of values, associationStrength for Dirichelet distribution#
+# when associationStrength  is large, dirichlet is equivalent to uniform distribution i.e associationStrength is weak#
+# library(gtools)#
+#############################################################################################################
+ran.cpt = function(dag, maxNValues, associationStrength, seed = get.digit()) {#
+  #set.seed(seed)#
+  vertices = nodes(dag)#
+  if (maxNValues == 2) nValues = rep(2, length(vertices))#
+  else nValues = sample(2:maxNValues, length(vertices), replace = TRUE)  #
+  lst = list()#
+  # generate cpt for each node#
+  for (i in 1:length(vertices)) {#
+    nValueX = nValues[i]#
+    parentsX = parents(dag, vertices[i])#
+    position.parents = c()#
+    for (ii in 1:length(parentsX)) position.parents = c(position.parents, which(vertices %in% parentsX[ii]))#
+    nValues.parents = nValues[position.parents] #
+    dim.ary = c(nValueX, nValues.parents)#
+    # generate conditional probability from dirichlet distribution #
+    if (length(parentsX) < 1) {#
+      ary = matrix(rdirichlet(1, rep(associationStrength, dim.ary)), ncol = dim.ary, dimnames = list(NULL, LETTERS[1:nValueX]))#
+    } else {#
+      ary = t(rdirichlet(prod(dim.ary[-1]), rep(associationStrength, dim.ary[1]))) # take the transpose#
+      dim(ary) = dim.ary #
+      aryNames = list()#
+      aryNames[[1]] = LETTERS[1:nValueX]#
+      names(aryNames)[1] = vertices[i]#
+      for (j in 1:length(parentsX)) {#
+        aryNames[[j+1]] = LETTERS[1:nValues.parents[j]]#
+        names(aryNames)[j+1] = parentsX[j]#
+      }#
+      dimnames(ary) = aryNames#
+    }#
+    lst[[i]] = ary#
+    names(lst)[i] = vertices[i]#
+  }#
+  bnFit = custom.fit(dag, lst)#
+  return(bnFit)#
+}#
+#############################################################################################################
+# generate random data based on a random DAG and associated CPT#
+# when associationStrength of Dirichlet is small#
+# some columns have only one value#
+# this becomes a problem when learning networks using build-in method#
+# such as mmhc #
+#############################################################################################################
+ran.data = function(dag, cpt, nInstances, seed = get.digit()) {#
+  #set.seed(seed)#
+  vertices = nodes(dag)#
+  df = data.frame(z = 1:nInstances)#
+  for (i in 1:length(vertices)) {#
+    parentsX = parents(dag, vertices[i])#
+    cptX = cpt[[i]]$prob#
+    nValuesX = dim(cptX)[1]#
+    # split into two cases#
+    if (length(parentsX) < 1) { # when x has no parents#
+      dataX = sample(LETTERS[1:nValuesX], nInstances, replace = TRUE, prob = cptX)#
+      df[,i] = dataX  #
+    } else { # when x has parents#
+      parents.inst = (unique(df[,parentsX]))#
+      nPaInst = ifelse(length(parentsX) < 2, length(parents.inst) , nrow(parents.inst))#
+      for (j in 1:nPaInst) {#
+        if (length(parentsX) < 2) {#
+          paInst = parents.inst[j]#
+        } else {#
+          paInst = parents.inst[j,]#
+        }#
+        index = c()#
+        for (k in 1:nrow(df)) if (prod(df[k, parentsX] == paInst) == 1) index = c(index, k)#
+        prob = c()#
+        for (ii in 1:nValuesX) prob = c(prob, do.call(`[`, c(list(x = cptX), as.list(c(ii, paInst)))))#
+        dataX = sample(LETTERS[1:nValuesX], length(index), replace = TRUE, prob = prob)#
+        df[index, i] = dataX#
+      }   #
+    } # end else#
+    df[,i] = factor(df[,i])#
+    colnames(df)[i] = vertices[i]#
+  } # end for #
+  return(df)#
+}#
+#
+#############################################################################################################
+# generate dag, cpt, and data using one function#
+##
+##
+##
+#############################################################################################################
+ranNet = function(nVar, maxNParents, maxNValues, associationStrength, nInstances, seed = get.digit()) {#
+  set.seed(seed)#
+  dag = ran.dag(nVar = nVar, maxNParents = maxNParents) #
+  cpt = ran.cpt(dag = dag, maxNValues = maxNValues, associationStrength = associationStrength)#
+  data = rbn(x = cpt, n = nInstances) # generate data using build-in function rbn#
+  lst = list(dag = dag, cpt = cpt, data = data, seed = seed)#
+#
+  return(lst)#
+}
+########################################## MAP estimation of the parameters ####################################
+# first find the negative log posterior #
+# second find the 1st derivation of the negative log posterior #
+# in order to get fast and more accurate estimation when using optim in R#
+# #
+#################################################################################################################
+mapEst = function(dependVar, independVar, sigma, nPar) {#
+  # log prior#
+  logPrior = function(beta) {#
+    -sum(beta^2)/(2*sigma^2)#
+  }#
+  # log likelihood singler term#
+  logLikeSingle = function(beta, i) {#
+    betaDotX = sum(beta*independVar[i,])#
+    -log(1 + exp(betaDotX)) + dependVar[i]*betaDotX#
+  }#
+  # log likelihood for entire dataset#
+  logLike = function(beta) {#
+    LL = 0 #
+    for (i in 1:length(dependVar)) LL = LL + logLikeSingle(beta, i)#
+    return(LL)#
+  }#
+  # log posterior is the sum of log prior and log likelihood#
+  # take negative log posterior in order to find minimum#
+  negLogPost = function(beta) {#
+    -logLike(beta) - logPrior(beta)#
+  }#
+  # 1st derivative of log piror wrt beta_j#
+  logPriorDeri = function(beta) {#
+    -beta/sigma^2#
+  }#
+  # 1st derivative of log likelihood wrt beta_j#
+  logLikeSingleDeri = function(beta, i) {#
+    expBetaDotX = exp(sum(beta*independVar[i,]))#
+    -independVar[i,]*expBetaDotX/(1 + expBetaDotX) + dependVar[i]*independVar[i,]#
+  }#
+  # for entire dataset#
+  logLikeDeri = function(beta) {#
+    LL = 0 #
+    for (i in 1:length(dependVar)) LL = LL + logLikeSingleDeri(beta, i)#
+    return(LL)#
+  }#
+  # derivative of negative log posterior#
+  negLogPostDeri = function(beta) {#
+    -logPriorDeri(beta) - logLikeDeri(beta)#
+  }#
+  estimation = optim(par = rep(0, nPar), fn = negLogPost, gr = negLogPostDeri, method = "BFGS")#
+  lst = list(estimation$par, estimation$value)#
+  names(lst) = c("par", "value")#
+  return(lst)#
+}#
+#
+############################################## Fisher information ####################################################
+# given MAP estimation of parameter beta#
+# compute determinant of expected FIM#
+# #
+##
+#######################################################################################################################
+detFisher = function(dependVar, independVar, beta, nFreePar = nFreePar) {#
+  # 2nd derivative of single term of nll#
+  secondDeriSingle = function(beta, i, j, k) {#
+    expBetaDotX = exp(sum(beta*independVar[i,]))#
+    independVar[i, j]*independVar[i, k]*expBetaDotX/(1 + expBetaDotX)^2  #
+  }#
+  # 2nd derivative of the negative log likelihood#
+  secondDeri = function(beta, j, k) {#
+    LL = 0 #
+    for (i in 1:length(dependVar)) LL = LL + secondDeriSingle(beta, i, j, k)#
+    return(LL)#
+  }#
+  FIM = matrix(NA, nFreePar, nFreePar) #
+  for (j in 1:nFreePar) {#
+    for (k in 1:nFreePar) {#
+      FIM[j, k] = secondDeri(beta, j, k)#
+    }#
+  }#
+  return(det(FIM))#
+}#
+#
+################################################## pre process data ############################################\#
+# get all the second order pairs for logit model#
+getPairs = function(x, valueIndependVar) {#
+  nPairs = sum(1:(length(x)-1))#
+  allPairs = c()#
+  for (i in 1:(length(x)-1)) {#
+    for (j in (i+1):length(x)) {#
+      allPairs = rbind(allPairs, c(i, j))#
+    }#
+  }  #
+  allComb = list()#
+  for (i in 1:nPairs) {#
+    allComb[[i]] = expand.grid(valueIndependVar[[allPairs[i,1]]],valueIndependVar[[allPairs[i,2]]])#
+  }#
+  lst = list(allPairs = allPairs, allComb = allComb)#
+  return(lst)#
+}#
+#
+# when secondOrder = TRUE compute all second order terms#
+# when secondOrder = FALSE compute only first order terms#
+dataPreprocess = function(data, y, x, secondOrder = FALSE) {#
+  # format X and Y for function NLL and Fisher to be used#
+  dependVar = data[,y]#
+  valueDependVar = unique(dependVar)#
+  tempDepend = c()#
+  for (i in 1:(length(valueDependVar)-1)) tempDepend = c(tempDepend, dependVar == valueDependVar[i])#
+  dependVar = as.numeric(tempDepend)#
+  arityDependVar = length(valueDependVar)#
+  valueIndependVar = list()#
+  arityIndependVar = c()#
+  for (i in 1:length(x)) {#
+    valueIndependVar[[i]] = unique(data[,x[i]])#
+    arityIndependVar = c(arityIndependVar, length(valueIndependVar[[i]]))#
+    names(valueIndependVar)[i] = x[i]#
+  }#
+  if (secondOrder && (length(x) > 1)) {#
+    res = getPairs(x, valueIndependVar)#
+    secondOrderPair = res$allPairs#
+    secondOrderValueComb = res$allComb#
+    newArity = c()#
+    for (i in 1:length(secondOrderValueComb)) newArity = c(newArity, nrow(secondOrderValueComb[[i]]))#
+    arityIndependVar = c(arityIndependVar, newArity)#
+  }#
+  # make a column for each value of an independent variable#
+  independVar = data[,x]#
+  if (length(x) < 2) independVar = as.matrix(independVar)#
+  tempIndepend = c()#
+  for (i in 1:length(x)) {#
+    for (j in 1:(length(valueIndependVar[[i]]))) {#
+      tempIndepend = cbind(tempIndepend, independVar[,i] == valueIndependVar[[i]][j])#
+    }#
+  }#
+  if (secondOrder && (length(x) > 1)) {#
+    for (i in 1:length(secondOrderValueComb)) {#
+      pairIndex = secondOrderPair[i,]#
+      for (j in 1:nrow(secondOrderValueComb[[i]])) {#
+        match = c()#
+        for (k in 1:nrow(independVar)) {#
+          match = c(match, prod(independVar[k, pairIndex] == secondOrderValueComb[[i]][j,]))#
+        }#
+        tempIndepend = cbind(tempIndepend, match)  #
+      }  #
+    }  #
+  }#
+  colnames(tempIndepend) = c()#
+  independVar = cbind(1, tempIndepend)#
+  # keep the free parameters #
+  freeCol = c()#
+  for (i in 1:length(arityIndependVar)) {#
+    freeCol = c(freeCol, sum(arityIndependVar[1:i]))#
+  }#
+  independFreeVar = tempIndepend[,-freeCol]#
+  independFreeVar = cbind(1, independFreeVar)#
+  lst = list(independVar = independVar, independFreeVar = independFreeVar, dependVar = dependVar, arityDependVar = arityDependVar, arityIndependVar = arityIndependVar)#
+  return(lst)#
+}#
+#
+################################################## msg len #############################################
+msgLen = function(data, y, x, sigma = 3, secondOrder = FALSE) {#
+  tempData = dataPreprocess(data = data, y = y, x = x, secondOrder = secondOrder)#
+  dependVar = tempData$dependVar#
+  independVar = tempData$independVar#
+  independFreeVar = tempData$independFreeVar#
+  # arity of dependent variable#
+  arityDependVar = tempData$arityDependVar#
+  # arity of each x in independent variable#
+  arityIndependVar = tempData$arityIndependVar#
+  nFreePar = ncol(independFreeVar)#
+  nPar = ncol(independVar)#
+  # nFreePar = sum(arityIndependVar - 1) + 1#
+  # lattice constant#
+  k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)#
+  latticeConst = ifelse(nFreePar <= length(k), k[nFreePar], min(k))#
+  # MAP estimation of the negative log likelihood #
+  negLogLike = mapEst(dependVar = dependVar, independVar = independVar, sigma = sigma, nPar = nPar)#
+  # determinant of fisher information matrix #
+  index = c()#
+  for (i in 1:length(arityIndependVar)) {#
+    index = c(index, sum(arityIndependVar[1:i]) + 1)#
+  }#
+  fisher = detFisher(dependVar = dependVar, independVar = independFreeVar, beta = negLogLike$par[-index], nFreePar = nFreePar)#
+  # total msg len #
+  mml = 0.5*nFreePar*log(2*pi) + nFreePar*log(sigma) - 0.5*log(arityDependVar) - #
+    0.5*sum((arityIndependVar - 1)*log(arityDependVar) + (arityDependVar - 1)*log(arityIndependVar)) + #
+    (1/(2*sigma^2))*sum(negLogLike$par^2) + 0.5*log(fisher) + negLogLike$value + #
+    0.5*nFreePar*(1 + log(latticeConst))#
+  lst = list(negLogLike$par, negLogLike$value, fisher, mml)#
+  names(lst) = c("par", "nll", "fisher", "mml")#
+  return(lst)#
+}#
+#
+#################################################### function #####################################
+# search for mb using mml #
+mbMML = function(data, y, debug = FALSE, secondOrder = FALSE) {#
+  allNodes = names(data)#
+  unUsedNodes = allNodes[allNodes != y]#
+  cmb = x = c()#
+  # default msn.len is infinity #
+  min.current = min.previous = Inf#
+  if (debug) {#
+    cat("----------------------------------------------------------------\n")#
+    cat("* learning the Markov blanket of", y, "\n")#
+  } # then#
+  repeat{#
+    if (debug) {#
+      cat("    * calculating msg len \n")#
+    } # then#
+    res = c()#
+    for (i in 1:length(unUsedNodes)) {#
+      res[i] = msgLen(data = data, y = y, x = c(unUsedNodes[i], cmb), secondOrder = secondOrder)$mml#
+      if (debug) {#
+        cat("    >", unUsedNodes[i], "has msg len:", res[i], "\n")  #
+      } # then#
+    }#
+    min.previous = min.current#
+    min.current = min(res)#
+    # stop when mml score does not decrease #
+    # means adding more unUsedNodes into cmb does not make current model better#
+    if (min.current >= min.previous) break#
+    to.add = unUsedNodes[which.min(res)]#
+    cmb = c(cmb, to.add)#
+    if (debug) {#
+      cat("    @", to.add, "include in the Markov blanket", "\n")#
+      cat("    > Markov blanket (", length(cmb), "nodes ) now is '", #
+          cmb, "'\n")#
+    } # then#
+    unUsedNodes = unUsedNodes[unUsedNodes != to.add]#
+    if(length(unUsedNodes) ==0) break#
+  }#
+  return(cmb)#
+}#
+#
+################### call function
+library(bnlearn)
+library(entropy)
+library(gtools)
+res=ranNet(8,2,2,1,2000)
+mbMML(res$data, "V1", debug=TRUE)
+y
+yes
+vector(10)
+?vector
+vector(length=10)
+system.time(a=vector(length=10))
+system.time(a <- vector(length=10))
+system.time(a <- vector(length=1000000))
+system.time(b <- rep(0, 1000000))
+a=vector(length=10)
+a
+a=1:10
+a
+system.time(b <- 1:1000000)
+system.time(b <- for (i in 1:1000000) b = c(b, i))
+complete.cases()
+complete.cases
+?complete.cases
+data
+#############################################################################################################
+# generate random structure with parameters#
+# number of variables, maximum number of parents#
+#############################################################################################################
+generateSeed = function() {#
+  op = options(digits.secs = 6)#
+  x = gsub("[: -]", "" , Sys.time(), perl = TRUE) # remove - and : #
+  x = strsplit(x, split = "[.]")[[1]][2] # get lower digits#
+  x = as.numeric(x) # convert char to numeric #
+  return(x)#
+}#
+#
+generateDag = function(numNodes, maxNumParents) {#
+  allNodes = paste0("V", 1:numNodes)#
+  dag = empty.graph(allNodes)#
+  if (maxNumParents > 0) { # if nodes have parents, sample parents from preceding nodes#
+    for (i in 2:length(allNodes)) {#
+      numParents = sample(0:min(maxNumParents, i - 1), 1) #
+      parents = sample(allNodes[1:(i - 1)], numParents)#
+      if (length(parents) > 0) { # add arc only if a node has at least 1 parents#
+        for (j in 1:numParents) dag = set.arc(dag, parents[j], allNodes[i])#
+      }#
+    } # end for i #
+  } # else return empty dag#
+  # re-order allNodes to keep the ordering consistent when generating cpts and data#
+  nodes(dag) = node.ordering(dag)#
+  return(dag)#
+}#
+#
+#############################################################################################################
+# generate random CPT based on a random DAG with parameters#
+# DAG, maximum number of values, concentration for Dirichelet distribution#
+# when concentration  is large, dirichlet is equivalent to uniform distribution i.e concentration is weak#
+# library(gtools)#
+#############################################################################################################
+#
+generateCPTs = function(dag, maxNumValues, concentration, debug = FALSE) {#
+  # the larger concentration is, the more concentration the distribution is, hence values are more close to the middle point #
+  allNodes = bnlearn::nodes(dag)#
+  numNodes = length(allNodes)#
+  # sample cardinalities for nodes #
+  if (maxNumValues == 2) {#
+    cardinalities = rep(2, numNodes)#
+    concentration = rep(concentration, 2) # equal concentration parameters for all values#
+  } else {#
+    cardinalities = sample(2:maxNumValues, numNodes, replace = TRUE)  #
+    concentration = rep(concentration, max(cardinalities)) # equal concentration parameters for all values#
+  }#
+  cpts = list()#
+  if (debug) cat("* sampling cpt values \n")#
+  # generate cpts for all nodes#
+  for (i in 1:numNodes) {#
+    parents = dag$nodes[[i]]$parents#
+    if (length(parents) < 1) {#
+      sampledCPT = rdirichlet(1, concentration[1:cardinalities[i]]) # sample single cpt from dirichlet  #
+      cpts[[i]] = array(sampledCPT, dim = c(1, cardinalities[i]), dimnames = list(NULL, LETTERS[1:cardinalities[i]]))#
+    } else {#
+      parentsIndex = which(allNodes %in% parents)#
+      sampledCPT = rdirichlet(prod(cardinalities[parentsIndex]), concentration[1:cardinalities[i]]) # sample multiple cpts from dirichlet with the above concentration#
+      sampledCPT = t(sampledCPT) # take the transpose#
+      dimNames = list(LETTERS[1:cardinalities[i]])#
+      for (j in 1:length(parents)) {#
+        dimNames[[j + 1]] = LETTERS[1:cardinalities[parentsIndex[j]]]   #
+      }#
+      names(dimNames) = c(allNodes[i], parents)#
+      cpts[[i]] = array(sampledCPT, dim = c(cardinalities[i], cardinalities[parentsIndex]), #
+                        dimnames = dimNames)#
+    }#
+  }#
+  names(cpts) = allNodes#
+  if (debug) cat("* converting to bn.fit \n")#
+  bnFit = custom.fit(dag, cpts) # convert cpts into bn.fit format#
+  return(bnFit)#
+}#
+# generate BN and data and save to files#
+generateBNAndData = function(numNodes, maxNumParents, maxNumValues, concentration, #
+                             numInstances, numIterations, currentDirectory, debug = FALSE) {#
+  if (debug) cat("* generating BN with numNodes", numNodes, "maxNumParents", maxNumParents, "maxNumValues", maxNumValues, #
+                 "concentration", concentration, "numInstances", numInstances,  "\n")#
+  i = 1 #
+  while(i <= numIterations) {#
+    seed = generateSeed()#
+    set.seed(seed)#
+    dag = generateDag(numNodes, maxNumParents) # generate dag#
+    cpts = generateCPTs(dag, maxNumValues, concentration, debug = debug) # sample cpts from dirichlet distribution#
+    dataTraining = rbn(cpts, numInstances) # generate training data#
+    dataTesting = rbn(cpts, 10000) # generate testing data#
+    if (debug) cat("* saving BN \n")#
+    fileName = paste(numNodes, maxNumParents, maxNumValues, concentration, numInstances, sep = "_")#
+    # save dag#
+    write.dot(paste0(currentDirectory, "/True networks/Structures/", #
+                     fileName, "_", seed, ".dot"), dag)#
+    # save cpts#
+    # write.net(paste0(currentDirectory, "/True networks/CPTs/", fileName, "_", seed, ".net"), cpts)#
+    saveRDS(cpts, paste0(currentDirectory, "/True networks/CPTs/", fileName, "_", seed, ".rds"))#
+    if (debug) cat("* saving data \n")#
+    # save training data#
+    # write.csv(dataTraining, paste0(currentDirectory, "/Datasets/", fileName, "_", seed, "_training.csv"), row.names = FALSE)#
+    saveRDS(dataTraining, paste0(currentDirectory, "/Datasets/Training/", fileName, "_", seed, "_training.rds"))#
+    # save testing data #
+    # write.csv(dataTesting, paste0(currentDirectory, "/Datasets/", fileName, "_", seed, "_testing.csv"), row.names = FALSE)#
+    saveRDS(dataTesting, paste0(currentDirectory, "/Datasets/Testing/", fileName, "_", seed, "_testing.rds"))#
+    i = i + 1#
+  }#
+}
+dag = generateDag(5,3)
+libraries = c("bnlearn", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "compiler")#
+lapply(libraries, require, character.only = TRUE)
+dag = generateDag(5,3)
+cpts=generateCPTs(dag,2,2)
+data=rbn(cpts,10)
+data
+as.numeric(data)
+as.numerci(data[,1])
+class(data[,1])
+as.numeric
+as.numeric(data[,1])
+load(".RData")
+757+284
+179+374
+182+448
+586+392
+496+968
+449+1146
+getwd()
+f = function(n) sqrt(2*pi*n)*((n/exp(1))^n)
+f
+f(1)
+?log
+f(1)
+log(factorial(1))
+f(100)
+log(factorial(100))
+f = function(n, base) log(sqrt(2*pi*n)*((n/exp(1))^n), base)
+f
+f(1,2)
+f(100,2)
+log(factorial(100),2)
+log(factorial(1000),2)
+f(1000,2)
+library(bnlearn)
+library(causalbn)
+getDataInfo
+?randSeed
+randSeed
+causalbn::randSeed
+mmhc
+library(roxygen2)
+install_github
+install
+?install
+library(roxygen2)
+install
+library(devtools)
+install
+library(roxygen2)
+?roxygen
+?roxygen2
+?causalbn
+getDataInfo
+shell$ R CMD INSTALL
+getwd()
+setwd("PhDProjects/RStudioProjects/LocalStrLearning/")
+getwd()
+dir = "../../../Polytree experiments/"#
+nVars = c(20, 40, 60, 80)#
+n = c(1000, 10000)
+i = 1
+j = 1
+pts_learned = list.files(paste0(dir, "/pt_mbmml/"), paste0(nVars[i], "_"))
+pts_learned
+pts_true = list.files(paste0(dir, "/pt/"), paste0("_", n[j], "_"))
+pts_true
+n
+j
+pts_true = list.files(paste0(dir, "pt/"), paste0("_", n[j], "_"))
+pts_true
+paste0(dir, "pt/")
+paste0("_", n[j], "_")
+pts_true = list.files(paste0(dir, "pt/"), paste0(nVars[i], "_"))
+pts_learned = list.files(paste0(dir, "pt_mbmml/"), paste0("_", n[j], "_"))
+pts_true
+pts_learned
+pts_learned
