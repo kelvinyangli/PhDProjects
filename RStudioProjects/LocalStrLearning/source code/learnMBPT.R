@@ -35,7 +35,8 @@ learnMBPT = function(vars, mbList, mbptsList, dataInfo, n) {
   mbpt_global = mergeMBPTs(strList, vars)
   mbpt_global = refineMergedMBPT(mbpt_global)  
   
-  return(mbpt_global)
+  res = list("localStrs" = strList, "mbpt" = mbpt_global)
+  return(res)
   
 }
 
