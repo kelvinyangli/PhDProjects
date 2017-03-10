@@ -21,8 +21,8 @@ logFactorialSheet = read.csv("logFactorial_1to10000.csv")
 # list all datasets in dir/data folder
 datasets = list.files(paste0(dir, "data/"))
 mbLists = list.files(paste0(dir, "mb_mml/"))
-#for (nData in 1:length(datasets)) {
-for (nData in 9:400) {
+for (nData in 1:length(datasets)) {
+#for (nData in 9:400) {
   
   cat(nData, "\n")
   

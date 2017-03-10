@@ -12,46 +12,80 @@
 # 
 # if not then the one that increase the mml the least
 
+#visited = rep(FALSE, ncol(adjmtx))
+
 dfs_cycle = function(adjmtx, x, from, visited) {
   
-  visited = c(visited, x)
-  cat("visited:", visited, "\n")
-  cat("from:", from, "\n")
-  #from = x
-  neighbour = unique(c(which(adjmtx[x, ] == 1), which(adjmtx[, x] == 1)))
-  cat("nbr:", neighbour, "\n")
+  #visited = c(visited, x)
+  cat("visited:", colnames(adjmtx[visited]), "\n")
   
-  for (i in 1:length(neighbour)) {
+  neighbour = unique(c(which(adjmtx[x, ] == 1), which(adjmtx[, x] == 1)))
+  neighbour = neighbour[order(neighbour)]
+  
+  cat("nbr(", x, "):", neighbour, "\n")
+  cat("from:", from, "\n")
+  
+  if ((length(neighbour) > 1) && (prod(neighbour %in% visited))) {
     
-    current = neighbour[i]
-    cat("current:", current, "\n")
+    cat("cycle detected! \n")
+    return(0) 
     
-    if (current != from) {
-      cat("current != from \n")
-      if (!current %in% visited) {
+  } else {
+    
+    
+    for (i in 1:length(neighbour)) {
+      
+      current = neighbour[i]
+      cat("current:", current, "\n")
+      
+      if ((current != from) && (current %in% visited)) {
+        
+        visited = visited
+        from = 
+        x = 
+        dfs_cycle(adjmtx, x, from, visited)
+        cat(current, "has been visited! skip \n")
+        #cat("Cycle detected! \n")
+        #break 
+        
+      } else if ((current != from) && (!current %in% visited)) {
+        
         cat("current not in visited \n")
         cat("add", current, "into", visited, "\n")
+        
+        visited = c(visited, current)
+        from = x
+        x = current
+        cat("visited:", visited, "\n")
         cat("------------------------ \n")
-        dfs_cycle(adjmtx, current, x, visited)
+        dfs_cycle(adjmtx, x, from, visited)
         
-      } else {
+      } else if (current == from) {
         
-        #ls = list(visited = visited, current = current, from = from)
-        print("Cycle detected!")
-        break 
+        cat("current = from, skip \n")
         
-      } # end else 
+      } 
       
-    } else {
-      
-      break
-      
-    } # end else 
+    } # end for i 
     
-    
-  } # end for i 
+  } # end else 
   
-  
-  #return(ls)
+  #return(0)
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
