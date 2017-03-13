@@ -1,4 +1,5 @@
-# a function to read .dne file into as text and then parse it to get the dag 
+# this function reads camml output .dne file into R as text file 
+# then parse the camml output to get a parent list for all nodes
 netica2bnlearn = function(directory) {
   
   text = read_file(directory)
@@ -7,7 +8,6 @@ netica2bnlearn = function(directory) {
   parentsList = list()
   
   for (i in 1:length(bnInfo)) {
-    
     
     info = strsplit(bnInfo[i], "\n\t")[[1]]
     allNodes[i] = trimws(gsub("[[:punct:]]", "", info[1]))
@@ -19,7 +19,7 @@ netica2bnlearn = function(directory) {
       
     } else {# if there is no parent
       
-      parentsList[[i]] = c()
+      parentsList[[i]] = vector()
       
     } # end else
     
