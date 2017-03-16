@@ -30,10 +30,12 @@ for (i in 1:length(local_pts)) {
 
 
 # plot
-#res_withPrior = netica2bnlearn(paste0("../../../Dag experiments/camml_withPrior_test/test.dne"))
-#dag_camml_withPrior = parentsList2BN(res_withPrior)
-#graphviz.plot(dag_camml_withPrior)
+res_withPrior = netica2bnlearn(paste0("../../../Dag experiments/camml_withPrior/40_4_5_1_290894_1000_111793.dne"))
+dag_camml_withPrior = parentsList2BN(res_withPrior)
+graphviz.plot(dag_camml_withPrior)
 
+dag_true = readRDS("../../../Dag experiments/dag/40_4_5_1_290894.rds")
+graphviz.plot(dag_true$adjmtx)
 #dag = readRDS(paste0(dir, "dag/20_3_4_1_302793.rds"))
 #editDistDags(dag_camml_withPrior, matrix2dag(dag$adjmtx))
 #data = readRDS(paste0(dir, "data/20_3_4_1_302793_1000_431117.rds"))

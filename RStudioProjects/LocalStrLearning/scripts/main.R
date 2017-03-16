@@ -26,6 +26,41 @@ for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))
 # log factorial sheet
 logFactorialSheet = read.csv("logFactorial_1to10000.csv")
 
+(dags_true = list.files(paste0(dir, "dag/")))
+dag = readRDS(paste0(dir, "dag/", dags_true[1]))
+dag = matrix2dag(dag$adjmtx)
+graphviz.plot(dag)
+(data_sets = list.files(paste0(dir, "data/")))
+i = 3
+data = readRDS(paste0(dir, "data/", data_sets[i]))
+dataInfo = getDataInfo(data)
+vars = colnames(data)
+mbList = readRDS(paste0(dir, "mb/", data_sets[i]))
+localStrs = readRDS(paste0(dir, "local_pt/", data_sets[i]))
+(filename = strsplit(data_sets[i], ".rds")[[1]][1])
+camml_withPrior = netica2bnlearn(paste0(dir, "camml_withPrior/", filename, ".dne"))
+camml_withPrior = parentsList2BN(camml_withPrior)
+editDistDags(camml_withPrior, dag)
+camml_noPrior = netica2bnlearn(paste0(dir, "camml_noPrior/", filename, ".dne"))
+camml_noPrior = parentsList2BN(camml_noPrior)
+editDistDags(camml_noPrior, dag, TRUE)
+
+# re-assess certainty 
+featureUncertainty("V10", "V20", mbList, localStrs, mbptsList, vars, data, 5)
+
+camml_test = netica2bnlearn(paste0(dir, "test.dne"))
+camml_test = parentsList2BN(camml_test)
+editDistDags(camml_test, dag)
+
+count = 1
+for (i in 1:20) {
+  for (j in (1):20) {
+    if (pt[i,j]>0) {
+      cat(count, ":", vars[i], "->", vars[j], "#", pt[i,j], "\n")
+      count = count + 1
+    }
+  }
+}
 # model specifications
 nVars = 25
 maxNPas = 4

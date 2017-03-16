@@ -1,6 +1,6 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
-method = "tabu_bde"
+method = "tabu_bde_bnlearn"
 dir = "../../../Dag experiments/"
 n = c(1000)
 nRepeat = 5
@@ -26,7 +26,10 @@ for (k in 1:length(n)) {
         
         parentsList = netica2bnlearn(paste0(dir, method, "/", pts_learned[j]))
         pt_learned = parentsList2BN(parentsList)
-        #pt_learned = matrix2dag(pt_learned)
+        
+      } else if (method == "mmhc_bnstruct") {
+        
+        pt_learned = matrix2dag(readRDS(paste0(dir, method, "/", pts_learned[j])))
         
       } else {
         
@@ -43,7 +46,7 @@ for (k in 1:length(n)) {
     
     #write.csv(x, paste0(dir, "editDistance/", method, "/pattern/", filename, ".csv"), row.names = FALSE)
     #write.csv(y, paste0(dir, "editDistance/", method, "/skeleton/", filename, ".csv"), row.names = FALSE)
-    write.csv(z, paste0(dir, "edit_distance/", method, "/", filename, ".csv"), row.names = FALSE)
+    #write.csv(z, paste0(dir, "edit_distance/", method, "/", filename, ".csv"), row.names = FALSE)
     
     #ed_pattern[i, k] = mean(x)
     #ed_sklt[i, k] = mean(y)
@@ -53,6 +56,7 @@ for (k in 1:length(n)) {
   
 } # end for k
 
+write.csv(ed_dag, paste0(dir, "edit_distance/", method, ".csv"), row.names = FALSE)
 #colnames(ed_sklt) = colnames(ed_pattern) = colnames(ed_dag) = n
 #ed_dag = ed_dag[1:20,]
 #ed_sklt = ed_sklt[1:20,]
