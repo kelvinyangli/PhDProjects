@@ -9,14 +9,13 @@ featureUncertainty = function(x, y, mbList, localStrs, mbptsList, vars, data, nR
     
     if (prod(c(x, y) %in% colnames(localStrs[[k]]))) {
       
+      mbpts = substituteVar(mbptsList[[length(mbList[[k]]) + 1]], vars[k], mbList[[k]])
+      
       for (i in 1:nResamples) {
         
-        #indices = sample(1:n, n, replace = TRUE)
-        data_resampled = data[sample(1:n, n, replace = TRUE), ]
-        dataInfo_resampled = getDataInfo(data_resampled)
+        indices = sample(1:n, n, replace = TRUE)
+        dataInfo_resampled = getDataInfo(data[indices, ])
         mmlmtx = computeMMLMatrix(vars, mbList[[k]], vars[k], dataInfo_resampled, n)
-        
-        mbpts = substituteVar(mbptsList[[length(mbList[[k]]) + 1]], vars[k], mbList[[k]])
         scores = rep(0, length(mbpts))
         
         for (j in 1:length(scores)) {
