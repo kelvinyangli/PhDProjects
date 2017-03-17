@@ -1,6 +1,6 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
-method = "tabu_bde_bnlearn"
+method = "camml_withPrior"
 dir = "../../../Dag experiments/"
 n = c(1000)
 nRepeat = 5

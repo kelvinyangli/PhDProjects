@@ -28,11 +28,12 @@ logFactorialSheet = read.csv("logFactorial_1to10000.csv")
 
 dir = "../../../Dag experiments/"
 (dags_true = list.files(paste0(dir, "dag/")))
-dag = readRDS(paste0(dir, "dag/", dags_true[1]))
+nData = 8
+dag = readRDS(paste0(dir, "dag/", dags_true[nData]))
 dag = matrix2dag(dag$adjmtx)
 graphviz.plot(dag)
-(data_sets = list.files(paste0(dir, "data/")))
-i = 3
+(data_sets = list.files(paste0(dir, "data/"), strsplit(dags_true[nData], ".rds")[[1]][1]))
+i = 4
 data = readRDS(paste0(dir, "data/", data_sets[i]))
 dataInfo = getDataInfo(data)
 vars = colnames(data)
@@ -46,12 +47,23 @@ camml_noPrior = netica2bnlearn(paste0(dir, "camml_noPrior/", filename, ".dne"))
 camml_noPrior = parentsList2BN(camml_noPrior)
 editDistDags(camml_noPrior, dag, TRUE)
 
+
 # re-assess certainty 
-featureUncertainty("V10", "V20", mbList, localStrs, mbptsList, vars, data, 5)
+mtx = mergeMBPTs(localStrs, vars)
+arcs = extractArcs(mtx)
+priors = arcPrior(arcs, maxProb = 0.8, mbList, localStrs, mbptsList, vars, data, nResamples = 5 )
+text = cammlPrior(arcs, priors)
+write_file(text, paste0(dir, "test_prior.txt"))
+
+
 
 camml_test = netica2bnlearn(paste0(dir, "test.dne"))
 camml_test = parentsList2BN(camml_test)
-editDistDags(camml_test, dag)
+editDistDags(camml_test, dag, debug = T)
+
+camml_test = netica2bnlearn(paste0(dir, "test_prior.dne"))
+camml_test = parentsList2BN(camml_test)
+editDistDags(camml_test, dag, debug = T)
 
 count = 1
 for (i in 1:20) {
@@ -62,6 +74,12 @@ for (i in 1:20) {
     }
   }
 }
+
+
+
+
+
+
 
 
 
