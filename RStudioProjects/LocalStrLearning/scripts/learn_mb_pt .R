@@ -8,9 +8,10 @@
 #beta = c(1, 5, 10, 15)
 #n = c(1000, 10000)
 #nExp = 10 # the number of times repeat this experiment
+nVars = 20
 maxMB = 7 
 dir = "../../../Dag experiments/"
-n = 1000
+n = 100
 # read pre-saved mbpts into memory 
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
@@ -19,14 +20,14 @@ for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))
 logFactorialSheet = read.csv("logFactorial_1to10000.csv")
 
 # list all datasets in dir/data folder
-datasets = list.files(paste0(dir, "data/"), "40_")
+datasets = list.files(paste0(dir, "data_csv/", n, "/"), paste0(nVars, "_"))
 #mbLists = list.files(paste0(dir, "mb_mml/"))
 for (nData in 1:length(datasets)) {
 #for (nData in 9:400) {
   
   cat(nData, "\n")
   
-  data = readRDS(paste0(dir, "data/", datasets[nData]))
+  data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[nData]))
   dataInfo = getDataInfo(data)
   vars = colnames(data)
   #n = as.numeric(strsplit(datasets[nData], "_")[[1]][5]) # get sample size from file name
@@ -41,7 +42,7 @@ for (nData in 1:length(datasets)) {
   
   }
   mbList = symmetryCorrection(vars, mbList) # apply symmetry correction 
-  saveRDS(mbList, paste0(dir, "mb/", datasets[nData])) # save learned mb candidates 
+  saveRDS(mbList, paste0(dir, "mb/", n, "/", datasets[nData])) # save learned mb candidates 
   
   #mbList = readRDS(paste0(dir, "mb_mml/", mbLists[nData]))
   
@@ -57,8 +58,8 @@ for (nData in 1:length(datasets)) {
   learned = learnMBPT(vars, mbList, mbptsList, dataInfo, n)
   #localStrs = learned$localStrs
   #mbpt_global = learned$mbpt
-  saveRDS(learned$localStrs, paste0(dir, "local_pt/", datasets[nData]))
-  saveRDS(learned$mbpt_global, paste0(dir, "pt_mml/", datasets[nData]))
+  saveRDS(learned$localStrs, paste0(dir, "local_pt/", n, "/", datasets[nData]))
+  saveRDS(learned$mbpt_global, paste0(dir, "pt_mml/", n, "/", datasets[nData]))
   
 }
 

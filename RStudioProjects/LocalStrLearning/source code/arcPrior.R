@@ -33,7 +33,7 @@ arcPrior = function(arcs, maxProb, mbList, localStrs, mbptsList, vars, data, nRe
     
   }
   
-  return(list(directed = p, 2, undirected = q, 2))
+  return(list(directed = p, undirected = q))
   
 }
 

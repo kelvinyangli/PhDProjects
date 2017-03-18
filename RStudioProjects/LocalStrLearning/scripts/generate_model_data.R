@@ -1,10 +1,10 @@
 # generating random polytree adjmtx and cpts at the given specification
 # sampling data from polytree models for given sample sizes 
-nVars = c(40)
-maxNPas = 4
-maxArity = 5
+nVars = 20
+maxNPas = 3
+maxArity = 4
 beta = 1
-n = 1000
+n = 100
 nRepeat = 5 # the number of times repeat this experiment
 dir = "../../../Dag experiments/"
 

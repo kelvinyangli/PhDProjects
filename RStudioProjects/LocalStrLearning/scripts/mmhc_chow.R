@@ -1,11 +1,12 @@
 # mmhc and chow.liu 
 dir = "../../../Dag experiments/"
 method = "mmhc_bnstruct"
+n = 100
 # list all datasets in dir/data folder
-datasets = list.files(paste0(dir, "data/"))
+datasets = list.files(paste0(dir, "data_csv/", n, "/"))
 for (nData in 1:length(datasets)) {
 
-  data = readRDS(paste0(dir, "data/", datasets[nData]))
+  data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[nData]))
   
   if (method == "mmhc_bnstruct") {
     
@@ -17,11 +18,11 @@ for (nData in 1:length(datasets)) {
     learned = learn.network(data_bnstruct, algo = "mmhc", scoring.func = "BDeu", alpha = 0.05, ess = 10)@dag
     dimnames(learned) = list(vars, vars)
     
-  } else if (method == "mmhc") {
+  } else if (method == "mmhc_bnlearn") {
     
     learned = mmhc(data, score = "bde")
     
-  } else if (method == "bde") {
+  } else if (method == "tabu_bde_bnlearn") {
     
     learned = tabu(data, score = "bde")
     
@@ -31,7 +32,7 @@ for (nData in 1:length(datasets)) {
     
   } 
   
-  saveRDS(learned, paste0(dir, method, "/", datasets[nData]))
+  saveRDS(learned, paste0(dir, method, "/", n, "/", datasets[nData]))
   
 }
 
