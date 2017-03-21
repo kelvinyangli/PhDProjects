@@ -1,10 +1,8 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
 methods = c("camml_fixedPrior", "camml_unfixedPrior", "camml_noPrior", "mmhc_bnlearn", "tabu_bde_bnlearn")
-#methods = c("camml_fixedPrior", "mmhc_bnlearn", "tabu_bde_bnlearn")
 dir = "../../../UAI_exp/"
-n = 1000
-#nVars = 20
+n = 100
 nRepeat = 5
 pts_true = list.files(paste0(dir, "dag"))
 ed_dag = ed_sklt = ed_pattern = c()
