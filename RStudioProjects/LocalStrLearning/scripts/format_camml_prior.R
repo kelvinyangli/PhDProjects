@@ -1,7 +1,7 @@
 # this script format the optimal local polytree structures learned into the
 # required format for camml prior
 fixed = TRUE
-nVars = 20
+#nVars = 20
 n = 100
 dir = "../../../UAI_exp/"
 mbptsList = list()
@@ -38,9 +38,9 @@ for (i in 1:length(data_sets)) {
   }
   text = cammlPrior(arcs, priors)
   if (fixed) {
-    write_file(text, paste0(dir, "prior_fixed/", filename, ".txt"))
+    write_file(text, paste0(dir, "prior_fixed/", n, "/", filename, ".txt"))
   } else {
-    write_file(text, paste0(dir, "prior_unfixed/", filename, ".txt"))
+    write_file(text, paste0(dir, "prior_unfixed/", n, "/", filename, ".txt"))
   }
   
 }
