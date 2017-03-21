@@ -12,7 +12,7 @@ dir = "../../../UAI_exp/"
 nVars = 30
 beta = 1
 maxMB = 7 
-n = 1000
+n = 100
 # read pre-saved mbpts into memory 
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
