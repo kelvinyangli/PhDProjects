@@ -73,9 +73,9 @@ editDistDags = function(learned, true, debug = FALSE) {
         deletion = deletion + 1
         if (debug) {
           
-          cat("* arcs between", arcsTrue[j,][[1]], "and", arcsTrue[j,][[2]], "do not match (deletion). \n")
-          cat("  > the learned network contains", arcsTrue[j,][[1]], "->", arcsTrue[j,][[2]], ". \n")
-          cat("  > the true network contains no arc between", arcsTrue[j,][[1]], "and", arcsTrue[j,][[2]], ". \n")
+          cat("* arcs between", arcsLearned[j,][[1]], "and", arcsLearned[j,][[2]], "do not match (deletion). \n")
+          cat("  > the learned network contains", arcsLearned[j,][[1]], "->", arcsLearned[j,][[2]], ". \n")
+          cat("  > the true network contains no arc between", arcsLearned[j,][[1]], "and", arcsLearned[j,][[2]], ". \n")
           
         } # end debug
       

@@ -2,11 +2,7 @@
 # required format for camml prior
 fixed = TRUE
 #nVars = 20
-<<<<<<< HEAD
-n = 100
-=======
 n = 1000
->>>>>>> master
 dir = "../../../UAI_exp/"
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
