@@ -14,6 +14,7 @@ data_sets = list.files(paste0(dir, "data_csv/", n, "/"))
 maxMB = 7
 nResamples = 5
 maxProb = 0.8
+p = seq(0.1, 0.7, 0.1)
 #Rprof("prior.out")
 for (i in 1:length(data_sets)) {
 #for (i in 2:2) {
