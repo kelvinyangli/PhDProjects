@@ -1,9 +1,4 @@
-def f(a, l = None):
-    if l is None:
-        l = []
-    l.append(a)
-    return l
+import glob
+f = glob.glob("/C:/Users/Administrator/Desktop/FIT5197 2017 ONLINE/")
+print f
 
-print(f(1))
-print(f(2))
-print(f(3))
