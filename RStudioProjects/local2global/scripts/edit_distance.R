@@ -5,39 +5,49 @@ methods = c("global_pt", "camml_noPrior", "mmhc_bnlearn")
 dir = "../../../UAI_exp/"
 n = 1000
 nRepeat = 5
-pts_true = list.files(paste0(dir, "dag"), ".rds")
-mtx = matrix(0, nRepeat * length(pts_true), length(methods))
+dags = list.files(paste0(dir, "dag"), ".rds")[1:10]
+mtx = matrix(0, nRepeat * length(dags), length(methods))
 for (k in 1:length(methods)) {
   
   cnt = 1
-  pts_learned = list.files(paste0(dir, methods[k], "/", n, "/"))
+  dags_learned = list.files(paste0(dir, methods[k], "/", n, "/"))[1:50]
   
-  for (i in 1:length(pts_true)) {
+  for (i in 1:length(dags)) {
     
     #x = y = z = c()
     #z = c()
-    pt_true = readRDS(paste0(dir, "dag/", pts_true[i]))
-    pt_true = matrix2dag(pt_true$adjmtx)
+    adjmtx = readRDS(paste0(dir, "dag/", dags[i]))$adjmtx
+    dag = matrix2dag(adjmtx)
     
     for (j in ((i - 1) * nRepeat + 1):(i * nRepeat)) {
       
       if (length(grep("camml", methods[k])) > 0) {
         
-        parentsList = netica2bnlearn(paste0(dir, methods[k], "/", n, "/", pts_learned[j]))
-        pt_learned = parentsList2BN(parentsList)
+        parentsList = netica2bnlearn(paste0(dir, methods[k], "/", n, "/", dags_learned[j]))
+        learned = parentsList2BN(parentsList)
         
       } else {
         
-        pt_learned = readRDS(paste0(dir, methods[k], "/", n, "/", pts_learned[j]))
+        adjmtx_learned = readRDS(paste0(dir, methods[k], "/", n, "/", dags_learned[j]))
         
       }
         
-      if (methods[k] == "global_pt") pt_learned = matrix2dag(pt_learned)
-      
-      #if (acyclic(cextend(pt_learned))) {
+      if (methods[k] == "global_pt") learned = matrix2dag(adjmtx_learned)
+      filename = strsplit(dags_learned[j], ".rds")[[1]][1]
+      data = read.csv(paste0(dir, "data_csv/", n, "/", filename, ".csv"))
+      dataInfo = getDataInfo(data)
+      if (!directed(learned)) {# if the learned is cpdag 
         
-      #mtx[j, k] = bnlearn::shd(pt_learned, pt_true) # pattern
-      mtx[j, k] = editDistDags(pt_learned, pt_true) # dag
+        dag_learned = cpdag2dag(learned, adjmtx_learned, dataInfo, colnames(data), n)
+        
+      }
+      
+      
+      dag_sa = sa(dag_learned$adjmtx, colnames(data), dataInfo, n, step = 0.01, maxItr = 100)
+      #if (acyclic(cextend(learned))) {
+        
+      mtx[j, k] = bnlearn::shd(matrix2dag(dag_sa), dag) # pattern
+      #mtx[j, k] = editDistDags(learned, dag) # dag
   
       #}
       
@@ -48,8 +58,10 @@ for (k in 1:length(methods)) {
 } # end for k
 
 colnames(mtx) = methods
-colMeans(mtx)
-apply(mtx, 2, computeCI)
+colMeans(mtx[1:25,])
+apply(mtx[1:25,], 2, computeCI)
+colMeans(mtx[26:50,])
+apply(mtx[26:50,], 2, computeCI)
 
 
 

@@ -8,11 +8,13 @@
 #beta = c(1, 5, 10, 15)
 #n = c(1000, 10000)
 #nExp = 10 # the number of times repeat this experiment
-dir = "../../../UAI_exp/hailfinder/"
-#nVars = 20
-#beta = 1
+dir = "../../../UAI_exp/"
+nVars = 20
+maxNPas = 3
+maxArity = 4
+beta = 1
 maxMB = 7 
-n = 1000
+n = 100
 # read pre-saved mbpts into memory 
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
@@ -20,7 +22,7 @@ for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))
 logFactorialSheet = read.csv("logFactorial_1to10000.csv") # log factorial sheet
 
 # list all datasets in dir/data folder
-datasets = list.files(paste0(dir, "data_csv/", n, "/"))
+datasets = list.files(paste0(dir, "data_csv/", n, "/"), paste(nVars, maxNPas, maxArity, beta, sep = "_"))
 #mbLists = list.files(paste0(dir, "mb/", n, "/"))
 #strLists = list.files(paste0(dir, "local_pt/", n, "/"))
 
