@@ -1,10 +1,10 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
-methods = c("camml_fixedPrior", "camml_unfixedPrior", "camml_noPrior", "mmhc_bnlearn", "tabu_bde_bnlearn")
+methods = c("global_pt", "camml_unfixedPrior", "camml_noPrior", "mmhc_bnlearn", "tabu_bde_bnlearn")
 dir = "../../../UAI_exp/"
-n = 100
+n = 1000
 nRepeat = 5
-pts_true = list.files(paste0(dir, "dag"))
+pts_true = list.files(paste0(dir, "dag"), ".rds")
 ed_dag = ed_sklt = ed_pattern = c()
 ed_dag_temp = ed_sklt_temp = ed_pattern_temp = matrix(0, nrow = length(pts_true), ncol = length(n))
 total_ed_dag = matrix(0, 100, length(methods), dimnames = list(NULL, methods))
@@ -34,6 +34,12 @@ for (k in 1:length(methods)) {
       } else {
         
         pt_learned = readRDS(paste0(dir, methods[k], "/", n, "/", pts_learned[j]))
+        
+      }
+      
+      if (methods[k] == "global_pt") {
+        
+        pt_learned = matrix2dag(pt_learned)
         
       }
       
@@ -73,7 +79,7 @@ colnames(ed_dag) = methods
 #mean_ed_sklt[order(mean_ed_sklt)]
 #mean_ed_pattern[order(mean_ed_pattern)]
 
-write.csv(total_ed_dag, paste0(dir, "edit_distance/ed_dag_", n, ".csv"), row.names = F)
+#write.csv(total_ed_dag, paste0(dir, "edit_distance/ed_dag_", n, ".csv"), row.names = F)
 
 
 temp = total_ed_dag[c(1:25, 51:75), ]

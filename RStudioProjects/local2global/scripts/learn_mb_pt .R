@@ -9,10 +9,10 @@
 #n = c(1000, 10000)
 #nExp = 10 # the number of times repeat this experiment
 dir = "../../../UAI_exp/"
-nVars = 30
+nVars = 40
 beta = 1
 maxMB = 7 
-n = 100
+n = 1000
 # read pre-saved mbpts into memory 
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
@@ -21,7 +21,7 @@ for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))
 logFactorialSheet = read.csv("logFactorial_1to10000.csv")
 
 # list all datasets in dir/data folder
-datasets = list.files(paste0(dir, "data_csv/", n, "/"), paste0(nVars, "_3_4_", beta))
+datasets = list.files(paste0(dir, "data_csv/", n, "/"), paste0(nVars, "_"))
 #mbLists = list.files(paste0(dir, "mb_mml/"))
 for (nData in 1:length(datasets)) {
 #for (nData in 9:400) {
