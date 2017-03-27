@@ -31,3 +31,30 @@ cammlPrior = function(arcs, priors) {
   text = paste(text, "\n }")
     
 }
+
+
+#############################################################################################
+cammlPrior = function(arcs, priors) {
+  
+  #if (length(arc_list$single) == 2) arc_list$single = matrix(arc_list$single, 1, 2) 
+  #if (length(arc_list$bi) == 2) arc_list$bi = matrix(arc_list$bi, 1, 2) 
+  
+  text = "arcs {"
+  
+  if (length(arcs) > 0) {
+    
+    for (i in 1:nrow(arcs)) {
+      
+      text = paste(text, "\n", arcs[i, 1], "->", arcs[i, 2], priors$directed[i], ";")
+      text = paste(text, "\n", arcs[i, 1], "--", arcs[i, 2], priors$undirected[i], ";")
+      
+    } # end for i 
+    
+    
+  }
+  
+  text = paste(text, "\n }")
+  
+}
+
+

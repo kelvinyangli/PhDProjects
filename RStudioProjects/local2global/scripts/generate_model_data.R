@@ -44,8 +44,13 @@ for (i in 1:length(models)) {
     data_5000 = rbn(cpts, n[2])
     name_5000 = paste(filename, n[2], data_seed_5000, sep = "_")
     
+<<<<<<< HEAD
     write.csv(data_1000, paste0(dir, "data_csv/1000/", name_1000, ".csv"), row.names = F)
     write.csv(data_5000, paste0(dir, "data_csv/5000/", name_5000, ".csv"), row.names = F)
+=======
+    write.csv(data_100, paste0(dir, "data_csv/1000/", name_100, ".csv"), row.names = F)
+    write.csv(data_1000, paste0(dir, "data_csv/5000/", name_1000, ".csv"), row.names = F)
+>>>>>>> master
     
   } # end for nData
   

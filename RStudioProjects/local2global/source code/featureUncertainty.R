@@ -12,7 +12,7 @@ featureUncertainty = function(x, y, mbList, localStrs, mbptsList, vars, data, nR
       mbpts = substituteVar(mbptsList[[length(mbList[[k]]) + 1]], vars[k], mbList[[k]])
       
       for (i in 1:nResamples) {
-        
+        cat("Bootstrapping", i, "\n")
         indices = sample(1:n, n, replace = TRUE)
         dataInfo_resampled = getDataInfo(data[indices, ])
         mmlmtx = computeMMLMatrix(vars, mbList[[k]], vars[k], dataInfo_resampled, n)
@@ -28,10 +28,12 @@ featureUncertainty = function(x, y, mbList, localStrs, mbptsList, vars, data, nR
         if ((mbpts[[index]][x, y] == 1) && (mbpts[[index]][y, x] == 0)) {
           
           x2y = x2y + 1
+          xy = xy + 1
           
         } else if ((mbpts[[index]][y, x] == 1) && (mbpts[[index]][x, y] == 0)) {
           
           y2x = y2x + 1
+          xy = xy + 1
           
         } else if ((mbpts[[index]][x, y] == 1) && (mbpts[[index]][y, x] == 1)) {
           

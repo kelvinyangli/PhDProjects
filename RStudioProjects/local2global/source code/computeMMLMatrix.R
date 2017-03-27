@@ -23,9 +23,10 @@ computeMMLMatrix = function(vars, mbVars, target, dataInfo, n) {
     var = rownames(mmlMatrix)[i]
     varIndex = which(vars == var)
     
+    # when there is no parent
     mmlMatrix[i, 1] = mmlCPT(varIndex, c(), dataInfo$indexListPerNodePerValue, dataInfo$arities, n)
     
-    if (length(mbVars) > 1) {
+    if (length(mbVars) > 0) {
       
       for (j in 2:ncol(mmlMatrix)) {
         
@@ -41,7 +42,7 @@ computeMMLMatrix = function(vars, mbVars, target, dataInfo, n) {
             
           } # end if 
           
-        } # end else if 
+        } # end if 
         
       } # end for j 
       

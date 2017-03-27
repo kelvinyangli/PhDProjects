@@ -1,40 +1,47 @@
 # a function to extimate arc prior using bootstrapping 
 arcPrior = function(arcs, maxProb, mbList, localStrs, mbptsList, vars, data, nResamples) {
-  
-  if (length(arcs$directed) > 0) {
+  cat(nrow(arcs), "arcs \n")
+  if (length(arcs) > 0) {
     
-    p = rep(0, nrow(arcs$directed))
-    for (i in 1:nrow(arcs$directed)) {
+    p_directed = p_undirected = rep(0, nrow(arcs))
+    for (i in 1:nrow(arcs)) {
+      cat(i, "\n")
+      counts = featureUncertainty(arcs[i, 1], arcs[i, 2], mbList, localStrs, mbptsList, vars, data, nResamples)
+      #p[i] = round(min(counts[1] / sum(counts[1:2]), maxProb), 2)
+      if (counts[3] == 0) {
+        
+        p_undirected[i] = p_directed[i] = 0
+        
+      } else if ((counts[3] != 0) && (counts[4] == 0)) {
+        
+        p_undirected[i] = 1
+        p_directed[i] = (counts[1] / counts[3])[[1]]
+        
+      } else if ((counts[3] != 0) && (counts[4] != 0)) {
+        
+        p_undirected[i] = (counts[3] / sum(counts[3:4]))[[1]]
+        p_directed[i] = ((counts[1] / counts[3]))[[1]] * p_undirected[i]
+        
+      } # ene else if 
       
-      counts = featureUncertainty(arcs$directed[i, 1], arcs$directed[i, 2], mbList, localStrs, mbptsList, vars, data, nResamples)
-      p[i] = round(min(counts[1] / sum(counts[1:2]), maxProb), 2)
       
-    }
+    } # end for i
     
   } else {
     
-    p = c()
+    p_directed = p_undirected = c()
     
   } 
   
-  if (length(arcs$undirected) > 0) {
+  #return(list(directed = p, undirected = q))
+  for (i in 1:length(p_directed)) {
     
-    q = rep(0, nrow(arcs$undirected))
-    for (i in 1:nrow(arcs$undirected)) {
-      
-      counts = featureUncertainty(arcs$undirected[i, 1], arcs$undirected[i, 2], mbList, localStrs, mbptsList, vars, data, nResamples)
-      q[i] = round(min(sum(counts[1:3]) / sum(counts), maxProb), 2)
-      
-    }
-    
-  } else {
-    
-    q = c()
+    if (p_directed[i] > maxProb) p_directed[i] = maxProb
+    if (p_undirected[i] > maxProb) p_undirected[i] = maxProb
     
   }
   
-  return(list(directed = p, undirected = q))
-  
+  return(list(directed = round(p_directed, 2), undirected = round(p_undirected, 2)))
 }
 
 

@@ -1,5 +1,6 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
+<<<<<<< HEAD
 methods = c("global_pt", "camml_unfixedPrior", "camml_noPrior", "mmhc_bnlearn", "tabu_bde_bnlearn")
 dir = "../../../UAI_exp/"
 n = 1000
@@ -9,34 +10,51 @@ ed_dag = ed_sklt = ed_pattern = c()
 ed_dag_temp = ed_sklt_temp = ed_pattern_temp = matrix(0, nrow = length(pts_true), ncol = length(n))
 total_ed_dag = matrix(0, 100, length(methods), dimnames = list(NULL, methods))
 
+=======
+methods = c("global_pt", "camml_noPrior", "mmhc_bnlearn")
+#methods = c("global_pt")
+dir = "../../../UAI_exp/"
+n = 1000
+nRepeat = 5
+dags = list.files(paste0(dir, "dag"), ".rds")[1:10]
+mtx = matrix(0, nRepeat * length(dags), length(methods))
+>>>>>>> master
 for (k in 1:length(methods)) {
   
   cnt = 1
-  pts_learned = list.files(paste0(dir, methods[k], "/", n, "/"))
+  dags_learned = list.files(paste0(dir, methods[k], "/", n, "/"))[1:50]
   
-  for (i in 1:length(pts_true)) {
+  for (i in 1:length(dags)) {
     
     #x = y = z = c()
-    z = c()
-    pt_true = readRDS(paste0(dir, "dag/", pts_true[i]))
-    pt_true = matrix2dag(pt_true$adjmtx)
-    #filename = strsplit(pts_true[i], ".rds")[[1]][1]
-    #filename = paste0(filename, "_", n[k])
-    
+    #z = c()
+    adjmtx = readRDS(paste0(dir, "dag/", dags[i]))$adjmtx
+    dag = matrix2dag(adjmtx)
     
     for (j in ((i - 1) * nRepeat + 1):(i * nRepeat)) {
       
       if (length(grep("camml", methods[k])) > 0) {
         
-        parentsList = netica2bnlearn(paste0(dir, methods[k], "/", n, "/", pts_learned[j]))
-        pt_learned = parentsList2BN(parentsList)
+        parentsList = netica2bnlearn(paste0(dir, methods[k], "/", n, "/", dags_learned[j]))
+        learned = parentsList2BN(parentsList)
         
       } else {
         
-        pt_learned = readRDS(paste0(dir, methods[k], "/", n, "/", pts_learned[j]))
+        adjmtx_learned = readRDS(paste0(dir, methods[k], "/", n, "/", dags_learned[j]))
+        
+      }
+        
+      if (methods[k] == "global_pt") learned = matrix2dag(adjmtx_learned)
+      filename = strsplit(dags_learned[j], ".rds")[[1]][1]
+      data = read.csv(paste0(dir, "data_csv/", n, "/", filename, ".csv"))
+      dataInfo = getDataInfo(data)
+      if (!directed(learned)) {# if the learned is cpdag 
+        
+        dag_learned = cpdag2dag(learned, adjmtx_learned, dataInfo, colnames(data), n)
         
       }
       
+<<<<<<< HEAD
       if (methods[k] == "global_pt") {
         
         pt_learned = matrix2dag(pt_learned)
@@ -47,28 +65,24 @@ for (k in 1:length(methods)) {
       #x = c(x, bnlearn::shd(pt_learned, pt_true)) # pattern
       #y = c(y, bnlearn::hamming(pt_learned, pt_true)) # skeleton
       z = c(z, editDistDags(pt_learned, pt_true)) # dag
+=======
+>>>>>>> master
       
-      total_ed_dag[cnt, k] = editDistDags(pt_learned, pt_true)
-      cnt = cnt + 1
+      dag_sa = sa(dag_learned$adjmtx, colnames(data), dataInfo, n, step = 0.01, maxItr = 100)
+      #if (acyclic(cextend(learned))) {
+        
+      mtx[j, k] = bnlearn::shd(matrix2dag(dag_sa), dag) # pattern
+      #mtx[j, k] = editDistDags(learned, dag) # dag
+  
+      #}
       
     } # end for j
     
-    #write.csv(x, paste0(dir, "editDistance/", method, "/pattern/", filename, ".csv"), row.names = FALSE)
-    #write.csv(y, paste0(dir, "editDistance/", method, "/skeleton/", filename, ".csv"), row.names = FALSE)
-    #write.csv(z, paste0(dir, "edit_distance/", method, "/", filename, ".csv"), row.names = FALSE)
-    
-    #ed_pattern_temp[i, 1] = mean(x)
-    #ed_sklt_temp[i, 1] = mean(y)
-    ed_dag_temp[i, 1] = mean(z)
-    
   } # end for i
-  
-  ed_dag = cbind(ed_dag, ed_dag_temp)
-  #ed_sklt = cbind(ed_sklt, ed_sklt_temp)
-  #ed_pattern = cbind(ed_pattern, ed_pattern_temp)
   
 } # end for k
 
+<<<<<<< HEAD
 colnames(ed_dag) = methods
 
 #mean_ed_dag = colMeans(ed_dag)
@@ -81,19 +95,14 @@ colnames(ed_dag) = methods
 
 #write.csv(total_ed_dag, paste0(dir, "edit_distance/ed_dag_", n, ".csv"), row.names = F)
 
+=======
+colnames(mtx) = methods
+colMeans(mtx[1:25,])
+apply(mtx[1:25,], 2, computeCI)
+colMeans(mtx[26:50,])
+apply(mtx[26:50,], 2, computeCI)
+>>>>>>> master
 
-temp = total_ed_dag[c(1:25, 51:75), ]
-upper = apply(temp, 2, mean) + 1.96 * apply(temp, 2, sd)/sqrt(nrow(temp))
-lower = apply(temp, 2, mean) - 1.96 * apply(temp, 2, sd)/sqrt(nrow(temp))
-names(upper) = names(lower) = c()
-df = data.frame(mean = colMeans(temp), lower, upper)
-ord = order(colMeans(temp))
-(dff = round(df[ord, ], 2))
-#write.csv(ed_dag, paste0(dir, "edit_distance/", method, ".csv"), row.names = FALSE)
-#colnames(ed_sklt) = colnames(ed_pattern) = colnames(ed_dag) = n
-#ed_dag = ed_dag[1:20,]
-#ed_sklt = ed_sklt[1:20,]
-#ed_pattern = ed_pattern[1:20,]
 
 
 
