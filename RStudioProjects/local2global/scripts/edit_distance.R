@@ -1,9 +1,9 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
-#methods = c("global_pt", "camml_noPrior")
-methods = c("global_pt")
+methods = c("global_pt", "camml_noPrior")
 #methods = c("global_pt")
-dir = "../../../UAI_exp/barley/"
+#methods = c("global_pt")
+dir = "../../../UAI_exp/insurance/"
 real = TRUE
 n = 500
 nRepeat = 10
@@ -43,10 +43,11 @@ for (k in 1:length(methods)) {
       if (methods[k] == "global_pt") learned = matrix2dag(adjmtx_learned)
       #filename = strsplit(dags_learned[j], ".rds")[[1]][1]
       #data = read.csv(paste0(dir, "data_csv/", n, "/", filename, ".csv"))
+      #if (real) data = numeric2Nominal(data)
       #dataInfo = getDataInfo(data)
       #if (!directed(learned)) {# if the learned is cpdag 
         
-        #dag_learned = cpdag2dag(learned, adjmtx_learned, dataInfo, colnames(data), n)
+      #  dag_learned = cpdag2dag(learned, adjmtx_learned, dataInfo, colnames(data), n)
         
       #}
       
