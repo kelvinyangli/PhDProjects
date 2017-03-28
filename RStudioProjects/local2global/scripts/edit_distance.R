@@ -1,17 +1,17 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
-#methods = c("global_pt", "camml_noPrior")
-methods = c("global_pt")
+methods = c("global_pt", "camml_noPrior", "mmhc")
 #methods = c("global_pt")
-dir = "../../../UAI_exp/barley/"
+#methods = c("global_pt")
+dir = "../../../UAI_exp/hailfinder/"
 real = TRUE
-n = 500
+n = 5000
 nRepeat = 10
-dags = list.files(paste0(dir, "dag"), ".rds")
+(dags = list.files(paste0(dir, "dag"), ".rds"))
+if (!real && (n == 5000)) dags = dags[11:20]
 mtx = matrix(0, nRepeat * length(dags), length(methods))
 for (k in 1:length(methods)) {
   
-  #cnt = 1
   dags_learned = list.files(paste0(dir, methods[k], "/", n, "/"))
   
   for (i in 1:length(dags)) {
@@ -66,11 +66,13 @@ for (k in 1:length(methods)) {
 } # end for k
 
 colnames(mtx) = methods
+mtx
 colMeans(mtx)
-apply(mtx, 2, computeCI)
+write.table(mtx, "../../../UAI_exp/insurance.txt", append = FALSE, row.names = FALSE)
+#apply(mtx, 2, computeCI)
 #colMeans(mtx[1:25,])
 #apply(mtx[1:25,], 2, computeCI)
-#colMeans(mtx[26:50,])
+#colMeans(mtx[26:50,])SS
 #apply(mtx[26:50,], 2, computeCI)
 
 

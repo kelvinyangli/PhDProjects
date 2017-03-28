@@ -8,10 +8,10 @@
 #beta = c(1, 5, 10, 15)
 #n = c(1000, 10000)
 #nExp = 10 # the number of times repeat this experiment
-dir = "../../../UAI_exp/barley/"
+dir = "../../../UAI_exp/insurance/"
 real = TRUE
-nVars = 20
-maxNPas = 3
+nVars = 50
+maxNPas = 4
 maxArity = 4
 beta = 1
 maxMB = 7 
