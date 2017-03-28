@@ -8,37 +8,37 @@
 #beta = c(1, 5, 10, 15)
 #n = c(1000, 10000)
 #nExp = 10 # the number of times repeat this experiment
-dir = "../../../UAI_exp/"
+dir = "../../../UAI_exp/barley/"
+real = TRUE
 nVars = 20
 maxNPas = 3
 maxArity = 4
 beta = 1
 maxMB = 7 
-n = 1000
-# read pre-saved mbpts into memory 
+n = 500
 mbptsList = list()
-for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds")) 
-
+for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))  # read pre-saved mbpts into memory 
 logFactorialSheet = read.csv("logFactorial_1to10000.csv") # log factorial sheet
 
 # list all datasets in dir/data folder
-datasets = list.files(paste0(dir, "data_csv/", n, "/"), paste(nVars, maxNPas, maxArity, beta, sep = "_"))
-#mbLists = list.files(paste0(dir, "mb/", n, "/"))
+if (real) {
+  datasets = list.files(paste0(dir, "data_csv/", n, "/")) 
+} else {
+  datasets = list.files(paste0(dir, "data_csv/", n, "/"), paste(nVars, maxNPas, maxArity, beta, sep = "_"))
+}
+  #mbLists = list.files(paste0(dir, "mb/", n, "/"))
 #strLists = list.files(paste0(dir, "local_pt/", n, "/"))
 
 for (nData in 1:length(datasets)) {
-#for (nData in 9:400) {
-  
-  #cat(nData, "\n")
+
   data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[nData]))
-  data = numeric2Nominal(data)
+  if (real) data = numeric2Nominal(data)
   #data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[nData]))
   dataInfo = getDataInfo(data)
   vars = colnames(data)
   #n = as.numeric(strsplit(datasets[nData], "_")[[1]][5]) # get sample size from file name
   
   mbList = list()
-  # learn mb(x), for all x \in vars
   for (i in 1:length(vars)) {
   #  
     mbList[[i]] = mbForwardSelection.fast(data, vars[i], dataInfo$arities, 
