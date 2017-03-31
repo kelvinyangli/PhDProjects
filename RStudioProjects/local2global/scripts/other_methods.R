@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 dir = "../../../UAI_exp/alarm5/"
+=======
+dir = "../../../UAI_exp/alarm3/"
+>>>>>>> master
 n = c(500, 1000, 5000)
 for (i in 1:3) {
   
@@ -19,3 +23,5 @@ for (i in 1:3) {
   }
   
 }
+
+
