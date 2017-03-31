@@ -3,7 +3,7 @@
 # their names should follow the order of n_m_k, where n = |mb|, m = |colliders|, k = |spouses|
 # for the case when there is no colliders and hence no spouses, the file will be named n_0_0
 
-dir = "all mb dags/"
+dir = "MBPTs split/"
 #x=c()
 x = paste0("V", 1:7)
 y = "T"

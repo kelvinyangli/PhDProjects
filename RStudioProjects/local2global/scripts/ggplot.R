@@ -1,10 +1,10 @@
-require(ggplot2)
+#require(ggplot2)
 #require(GGally)
-require(reshape2)
-require(lme4)
-require(compiler)
-require(parallel)
-require(boot)
+#require(reshape2)
+#require(lme4)
+#require(compiler)
+#require(parallel)
+#require(boot)
 
 
 library(ggplot2)
@@ -32,10 +32,6 @@ m = cbind(c(rep("Insurance", 3), rep("Alarm", 3), rep("Barley", 3), rep("Hailfin
 m[,c(2,3,4)] = as.numeric(m[,c(2,3,4)])
 colnames(m) = c("Model", "Sample", "MBPT", "CaMML")
 
-tmp = melt(m[1:3,], id.vars = "Sample")
-ggplot(tmp, aes(factor(remission), y = value, fill=factor(remission))) +
-  geom_boxplot() +
-  facet_wrap(~variable, scales="free_y")
 
 df = rbind(m[,c(1,2,3)],m[,c(1,2,4)])
 df=cbind(df, c(rep("MBPT", 12), rep("CaMML", 12)))
@@ -44,8 +40,6 @@ df = data.frame(df)
 df = df[,c(3, 4, 2, 1)]
 df[,1]=as.numeric(levels(df[,1]))[df[,1]]
 
-df = read.csv("../../../UAI_exp/ed.csv")
-
-ggplot(df, aes(x = Sample, y = editDistance, fill = Algorithm)) +
-  geom_boxplot() +
-  facet_wrap(~ Model)
+df = read.csv("../../../UAI_exp/ijcai.csv")
+df[, 2] = as.factor(df[,2])
+ggplot(df, aes(x = Sample, y = editDistance)) + geom_boxplot() + facet_wrap(~ Model)
