@@ -1,4 +1,4 @@
-dir = "../../../UAI_exp/hailfinder/"
+dir = "../../../UAI_exp/alarm5/"
 n = c(500, 1000, 5000)
 for (i in 1:3) {
   

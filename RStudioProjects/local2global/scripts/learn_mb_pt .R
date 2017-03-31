@@ -8,14 +8,14 @@
 #beta = c(1, 5, 10, 15)
 #n = c(1000, 10000)
 #nExp = 10 # the number of times repeat this experiment
-dir = "../../../UAI_exp/insurance/"
+dir = "../../../UAI_exp/child5/"
 real = TRUE
 nVars = 50
 maxNPas = 4
 maxArity = 4
 beta = 1
 maxMB = 7 
-n = 500
+n = 5000
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("MBPTs/", i - 1, ".rds"))  # read pre-saved mbpts into memory 
 logFactorialSheet = read.csv("logFactorial_1to10000.csv") # log factorial sheet

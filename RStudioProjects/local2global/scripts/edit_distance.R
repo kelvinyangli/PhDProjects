@@ -1,11 +1,11 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
-methods = c("global_pt", "camml_noPrior", "mmhc")
+#methods = c("global_pt", "camml_noPrior", "mmhc")
+methods = c("global_pt", "mmhc")
 #methods = c("global_pt")
-#methods = c("global_pt")
-dir = "../../../UAI_exp/hailfinder/"
+dir = "../../../UAI_exp/insurance5/"
 real = TRUE
-n = 5000
+n = 500
 nRepeat = 10
 (dags = list.files(paste0(dir, "dag"), ".rds"))
 if (!real && (n == 5000)) dags = dags[11:20]
@@ -68,8 +68,8 @@ for (k in 1:length(methods)) {
 
 colnames(mtx) = methods
 mtx
-colMeans(mtx)
-write.table(mtx, "../../../UAI_exp/insurance.txt", append = FALSE, row.names = FALSE)
+cat(colMeans(mtx))
+#write.table(mtx, "../../../UAI_exp/insurance.txt", append = FALSE, row.names = FALSE)
 #apply(mtx, 2, computeCI)
 #colMeans(mtx[1:25,])
 #apply(mtx[1:25,], 2, computeCI)
