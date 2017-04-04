@@ -1,18 +1,10 @@
 # computing edit distance b/w the learned and true polytrees 
 # here the edit distance is for dag, pattern and skeleton
 #methods = c("global_pt", "camml_noPrior", "mmhc")
-<<<<<<< HEAD
-methods = c("global_pt", "mmhc")
-#methods = c("global_pt")
-dir = "../../../UAI_exp/insurance5/"
-real = TRUE
-n = 500
-=======
 methods = c("global_pt", "camml_noPrior")
 real = TRUE
 pattern = TRUE
 n = c(500, 1000, 5000)
->>>>>>> master
 nRepeat = 10
 models = c("child")
 mtx = c()
@@ -20,7 +12,6 @@ for (m in 1:length(models)) {
   
   for (s in 1:length(n)) {
     
-<<<<<<< HEAD
     for (j in ((i - 1) * nRepeat + 1):(i * nRepeat)) {
       
       if (length(grep("camml", methods[k])) > 0) {

@@ -1,4 +1,4 @@
-model = "insurance3"
+model = "child"
 dir = paste0("../../../UAI_exp/", model, "/")
 n = 5000
 nRepeat = 10
