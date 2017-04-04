@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 #require(reshape2)
 #library(ggplot2)
 
-#ed = read.csv("../../../UAI_exp/plot_sample.csv")
-#ed$Sample = as.factor(ed$Sample)
-str(ed)
 
 models = c("ALARM", "ALARM3", "CHILD", "CHILD3", "BARLEY", "INSURANCE", "INSURANCE3", "INSURANCE5")
 #models = c("INSURANCE", "INSURANCE3", "INSURANCE5")
