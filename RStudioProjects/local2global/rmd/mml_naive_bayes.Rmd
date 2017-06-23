@@ -1,0 +1,114 @@
+---
+title: "MML for Naive Bayes"
+author: "Kelvin"
+date: "16 June 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Starting from a simple case. Assuming all varaibles are binary. Given the 
+conditional independence assumption of Naive Bayes, the joint distribution 
+\[
+\begin{eqnarray}
+P(Y=y, X = x) &=& P(Y=y)P(X=x|Y=y) \\ 
+&=& P(Y=y) \prod_{j=1}^mP(X_j=x_j|Y=y)
+\end{eqnarray}
+\]
+where $X=<X_1, \dots, X_m>$. Using Bayes' Theorem, the conditional distribution 
+\[
+P(Y=y|X=x) = \frac{P(Y=y) \prod_{j=1}^mP(X_j=x_j|Y=y)}{P(X=x)}
+\]
+The likelihood of parameters $\vec{\theta}$ given the entire data set 
+$D = <d_1, \dots, d_n>$ is then 
+\[
+\begin{eqnarray}
+l(\vec{\theta}|D) &=& P(D|\vec{\theta}) \\
+&=& \prod_{i=1}^n P(d_i|\vec{\theta}) \\
+&=& \prod_{i=1}^n \frac{P(Y=y) \prod_{j=1}^mP(X_j=x_j|Y=y)}{P(X=x)}
+\end{eqnarray}
+\]
+The negative log likelihood is 
+\[
+\begin{eqnarray}
+L &=& -\log(l(\vec{\theta}|D)) \\
+&=& =-\sum_{i=1}^n \left[ \log(P(Y=y)) + \sum_{j=1}^m \log(P(X_j = x_j|Y=y)) - \log(P(X))\right]
+\end{eqnarray}
+\]
+The parameters are 
+\[
+\begin{eqnarray}
+\vec{\theta} &=&  <p_0, p_1, \dots, p_m>\\
+&=& <P(Y = y), P(X_1=x_1|Y=y), \dots, P(X_m=x_m|Y=y)>
+\end{eqnarray}
+\]
+To calculate FIM, we take the second derivative of the negative log likelihood 
+w.r.t each of these parameters, then we get 
+\[
+\begin{eqnarray}
+\frac{\partial{L}}{\partial{p_j}} &=& -\sum_{i=1}^n\frac{1}{p_j} \\
+\frac{\partial^2{L}}{\partial{p_j^2}} &=& \sum_{i=1}^n\frac{1}{p_j^2}
+\end{eqnarray}
+\]
+for $j = [0, m]$. The expected value of the second derivatives are the same as the 
+same as the second derivatives themselves. Hence, the fisher information matrix 
+is a m+1 by m+1 diagnal matrix 
+\[
+FIM = \left[\begin{array}
+{rrr}
+\sum_{i=1}^n\frac{1}{p_0^2} & \dots & 0 \\
+\vdots &  & \vdots \\
+0 & \dots & \sum_{i=1}^n\frac{1}{p_m^2}
+\end{array}\right]
+\]
+The determinant of FIM is the product of the dianal 
+\[
+F = \prod_{j=1}^{m+1} \sum_{i=1}^n \frac{1}{p_j^2}
+\]
+To derive the MML equation for Naive Bayes, we then substitute the fisher $F$ 
+and the negative log likelihood $L$ into the MML87 equation 
+\[
+I = \left[-\log(\frac{h(\theta)}{\sqrt{F(\theta)/12}}) \right] + \left[-\log(f(x|\theta))\right] + \frac{1}{2}
+\]
+except that we need to choose an approapriate parameter prior. If we assume 
+uniform prior, then $h(\theta) = 1$. All we need to do then is to find the MML
+estimation of the parameters. If it cannot be solved analytically, we can then 
+use numerical methods. 
+
+```{r}
+source("~/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
+dag = empty.graph(c("X1", "X2", "Y"))
+dag = set.arc(dag, "Y", "X1")
+dag = set.arc(dag, "Y", "X2")
+
+m = 100
+n = 1000
+v = rep(0, m)
+cpts = randCPTs(dag, 2, 1)
+data = rbn(cpts, n)
+querygrain(compile(as.grain(cpts)), c("Y", "X1"), type = "joint")
+
+for (i in 1:m) {
+  cpts = randCPTs(dag, 2, 1)
+data = rbn(cpts, n)
+di = getDataInfo(data)
+i1 = mmlCPT(3, c(), di$indexListPerNodePerValue, di$arities, n) +
+  mmlCPT(1, c(3), di$indexListPerNodePerValue, di$arities, n) +
+  mmlCPT(2, c(3), di$indexListPerNodePerValue, di$arities, n)
+
+i2 = mmlCPT(1, c(), di$indexListPerNodePerValue, di$arities, n) +
+  mmlCPT(2, c(), di$indexListPerNodePerValue, di$arities, n) +
+  mmlCPT(3, c(1, 2), di$indexListPerNodePerValue, di$arities, n)
+
+if (i1 < i2) {
+  v[i] = 1
+}
+}
+sum(v)
+```
+
+
+
+

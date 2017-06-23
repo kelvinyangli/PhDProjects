@@ -39,7 +39,7 @@ for (m in 1:length(models)) {
       #dag_sa = sa(dag_learned$adjmtx, colnames(data), dataInfo, n, step = 0.01, maxItr = 100)
       #if (acyclic(cextend(learned))) {
         
-      mtx[j, k] = editDistDags(learned, dag) # pattern
+      mtx[j, k] = editDistDags(learned, dag) # dag
       #mtx[j, k] = bnlearn::shd(matrix2dag(dag_sa), dag) # pattern
       #mtx[j, k] = editDistDags(learned, dag) # dag
   

@@ -1,0 +1,65 @@
+---
+title: "CaMML MB prior test"
+author: "Kelvin"
+date: "23 June 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source('~/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R')
+```
+
+## Generate models and data
+
+```{r}
+seed = randSeed()
+set.seed(seed)
+nvars = 15
+maxPar = 3
+maxArity = 3
+beta = 1
+n = 1000
+dag = randDag(nvars, maxPar)
+cpts = randCPTs(dag, maxArity, beta)
+data = rbn(cpts, n)
+name = paste0(c(nvars, maxPar, maxArity, beta, n, seed), collapse = "_")
+saveRDS(dag, paste0("~/Experiments/CaMML/MB prior test/Dag/", name, ".rds"))
+write.csv(data, paste0("~/Experiments/CaMML/MB prior test/Data/", name, ".csv"), row.names = FALSE)
+```
+
+Get the Markov blanket of each node. Firstly, test camml by giving the connections in each mb. That is by telling camml the true arcs in dag. 
+
+```{r}
+arcList = bnlearn::arcs(dag)
+priors = rep(1, nrow(arcList))
+text = "arcs {"
+for (i in 1:nrow(arcList)) {
+  text = paste(text, "\n", arcList[i, 1], "->", arcList[i, 2], priors[i], ";")
+}
+text = paste(text, "\n }")
+write_file(text, paste0("~/Experiments/CaMML/MB prior test/Prior/", name, ".txt"))
+```
+
+Evaluate CaMML outputs with and without priors. 
+
+```{r}
+x = netica2bnlearn(paste0("~/Experiments/CaMML/MB prior test/CaMML without prior/", name, ".dne"))
+y = netica2bnlearn(paste0("~/Experiments/CaMML/MB prior test/CaMML with prior/", name, ".dne"))
+cammlWOPrior = parentsList2BN(x)
+cammlWPrior = parentsList2BN(y)
+dag = readRDS(paste0("~/Experiments/CaMML/MB prior test/Dag/", name, ".rds"))
+cat("Number of nodes =", nvars, "\n")
+cat("Number of edges =", nrow(arcList), "\n")
+cat("Edit distance without prior: \n")
+cat("   Pattern -", bnlearn::shd(cammlWOPrior, dag), "\n") # pattern
+cat("   Dag -", editDistDags(cammlWOPrior, dag), "\n") # dag
+cat("Edit distance with prior: \n")
+cat("   Pattern -", bnlearn::shd(cammlWPrior, dag), "\n") # pattern
+cat("   Dag -", editDistDags(cammlWPrior, dag), "\n") # dag
+```
+
+
