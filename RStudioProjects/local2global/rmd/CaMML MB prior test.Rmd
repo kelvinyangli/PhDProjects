@@ -9,57 +9,85 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, message=FALSE}
 source('~/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R')
 ```
 
 ## Generate models and data
 
-```{r}
-seed = randSeed()
-set.seed(seed)
-nvars = 15
-maxPar = 3
-maxArity = 3
-beta = 1
-n = 1000
-dag = randDag(nvars, maxPar)
-cpts = randCPTs(dag, maxArity, beta)
-data = rbn(cpts, n)
-name = paste0(c(nvars, maxPar, maxArity, beta, n, seed), collapse = "_")
-saveRDS(dag, paste0("~/Experiments/CaMML/MB prior test/Dag/", name, ".rds"))
-write.csv(data, paste0("~/Experiments/CaMML/MB prior test/Data/", name, ".csv"), row.names = FALSE)
+```{r, eval=FALSE}
+for (i in 1:10) {
+  seed = randSeed()
+  set.seed(seed)
+  nvars = 15
+  maxPar = 3
+  maxArity = 3
+  beta = 1
+  n = 1000
+  dag = randDag(nvars, maxPar)
+  cpts = randCPTs(dag, maxArity, beta)
+  data = rbn(cpts, n)
+  name = paste0(c(nvars, maxPar, maxArity, beta, n, seed), collapse = "_")
+  saveRDS(dag, paste0("~/Experiments/CaMML/MB prior test/Dag/", name, ".rds"))
+  saveRDS(cpts, paste0("~/Experiments/CaMML/MB prior test/CPT/", name, ".rds"))
+  write.csv(data, paste0("~/Experiments/CaMML/MB prior test/Data/", name, ".csv"),
+            row.names = FALSE)
+}
+list.files("~/Experiments/CaMML/MB prior test/Data/")
 ```
+
+## True prios
 
 Get the Markov blanket of each node. Firstly, test camml by giving the connections in each mb. That is by telling camml the true arcs in dag. 
 
-```{r}
-arcList = bnlearn::arcs(dag)
-priors = rep(1, nrow(arcList))
-text = "arcs {"
-for (i in 1:nrow(arcList)) {
-  text = paste(text, "\n", arcList[i, 1], "->", arcList[i, 2], priors[i], ";")
+```{r, eval=FALSE}
+files = list.files("~/Experiments/CaMML/MB prior test/Dag/")
+probs = seq(0.1, 1, 0.1)
+for (p in probs) {
+  for (i in 1:length(files)) {
+    dag = readRDS(paste0("~/Experiments/CaMML/MB prior test/Dag/", files[i]))
+    arcList = bnlearn::arcs(dag)
+    priors = rep(p, nrow(arcList))
+    text = "arcs {"
+    for (j in 1:nrow(arcList)) {
+      text = paste(text, "\n", arcList[j, 1], "->", arcList[j, 2], priors[j], ";")
+    } # end for j 
+    text = paste(text, "\n }")
+    name = strsplit(files[i], ".rds")[[1]]
+    write_file(text, paste0("~/Experiments/CaMML/MB prior test/Prior/", p, "/",
+                            name, ".txt"))
+  } # end for i 
 }
-text = paste(text, "\n }")
-write_file(text, paste0("~/Experiments/CaMML/MB prior test/Prior/", name, ".txt"))
 ```
 
 Evaluate CaMML outputs with and without priors. 
 
 ```{r}
-x = netica2bnlearn(paste0("~/Experiments/CaMML/MB prior test/CaMML without prior/", name, ".dne"))
-y = netica2bnlearn(paste0("~/Experiments/CaMML/MB prior test/CaMML with prior/", name, ".dne"))
-cammlWOPrior = parentsList2BN(x)
-cammlWPrior = parentsList2BN(y)
-dag = readRDS(paste0("~/Experiments/CaMML/MB prior test/Dag/", name, ".rds"))
-cat("Number of nodes =", nvars, "\n")
-cat("Number of edges =", nrow(arcList), "\n")
-cat("Edit distance without prior: \n")
-cat("   Pattern -", bnlearn::shd(cammlWOPrior, dag), "\n") # pattern
-cat("   Dag -", editDistDags(cammlWOPrior, dag), "\n") # dag
-cat("Edit distance with prior: \n")
-cat("   Pattern -", bnlearn::shd(cammlWPrior, dag), "\n") # pattern
-cat("   Dag -", editDistDags(cammlWPrior, dag), "\n") # dag
+ed = editDistDags
+#ed = bnlearn::shd
+files = list.files("~/Experiments/CaMML/MB prior test/CaMML without prior/")
+dags = list.files("~/Experiments/CaMML/MB prior test/Dag/")
+ed_matrix = matrix(0, nrow = length(files) + 1, ncol = 11)
+colnames(ed_matrix) = c("noPiror", rev(probs))
+rownames(ed_matrix) = c(paste("dag", 1:10), "mean")
+for (i in 1:length(files)) {
+  dag = readRDS(paste0("~/Experiments/CaMML/MB prior test/Dag/", dags[i]))
+  x = netica2bnlearn(paste0("~/Experiments/CaMML/MB prior test/CaMML without prior/", files[i]))
+  ed_matrix[i, 1] = ed(parentsList2BN(x), dag)
+  j = 2
+  for (p in rev(probs)) {
+    y = netica2bnlearn(paste0("~/Experiments/CaMML/MB prior test/CaMML with prior/", p, "/", files[i]))
+    ed_matrix[i, j] = ed(parentsList2BN(y), dag)
+    j = j + 1
+  } # end for p
+}
+ed_matrix[nrow(ed_matrix), ] = colMeans(ed_matrix[1:length(files), ])
+ed_matrix
 ```
+
+## Varying arc certainty 
+
+Test CaMML under different arc cerntaities. 
+
 
 

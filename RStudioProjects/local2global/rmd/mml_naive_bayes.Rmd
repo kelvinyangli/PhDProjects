@@ -77,34 +77,32 @@ uniform prior, then $h(\theta) = 1$. All we need to do then is to find the MML
 estimation of the parameters. If it cannot be solved analytically, we can then 
 use numerical methods. 
 
-```{r}
+```{r, message=FALSE}
 source("~/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
-dag = empty.graph(c("X1", "X2", "Y"))
+```
+
+```{r}
+dag = empty.graph(c("X1", "X2", "X3","X4", "Y"))
 dag = set.arc(dag, "Y", "X1")
 dag = set.arc(dag, "Y", "X2")
-
+dag = set.arc(dag, "Y", "X3")
+dag = set.arc(dag, "Y", "X4")
 m = 100
-n = 1000
+n = 10000
 v = rep(0, m)
-cpts = randCPTs(dag, 2, 1)
-data = rbn(cpts, n)
-querygrain(compile(as.grain(cpts)), c("Y", "X1"), type = "joint")
-
+#querygrain(compile(as.grain(cpts)), c("Y", "X1"), type = "joint")
 for (i in 1:m) {
   cpts = randCPTs(dag, 2, 1)
-data = rbn(cpts, n)
-di = getDataInfo(data)
-i1 = mmlCPT(3, c(), di$indexListPerNodePerValue, di$arities, n) +
-  mmlCPT(1, c(3), di$indexListPerNodePerValue, di$arities, n) +
-  mmlCPT(2, c(3), di$indexListPerNodePerValue, di$arities, n)
-
-i2 = mmlCPT(1, c(), di$indexListPerNodePerValue, di$arities, n) +
-  mmlCPT(2, c(), di$indexListPerNodePerValue, di$arities, n) +
-  mmlCPT(3, c(1, 2), di$indexListPerNodePerValue, di$arities, n)
-
-if (i1 < i2) {
-  v[i] = 1
-}
+  data = rbn(cpts, n)
+  di = getDataInfo(data)
+  i1 = mmlCPT(5, c(1, 2, 3, 4), di$indexListPerNodePerValue, di$arities, n) # cpt
+  i2 = mmlCPT(1, c(5), di$indexListPerNodePerValue, di$arities, n) + 
+    mmlCPT(2, c(5), di$indexListPerNodePerValue, di$arities, n) + 
+    mmlCPT(3, c(5), di$indexListPerNodePerValue, di$arities, n) + 
+    mmlCPT(4, c(5), di$indexListPerNodePerValue, di$arities, n) # naive bayes
+  if (i1 > i2) {
+    v[i] = 1
+  }
 }
 sum(v)
 ```
