@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r global_options, include=F, warning=F, message=F, eval=T}
-knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = T)
 library(bnlearn)
 source("~/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
 ```
@@ -18,6 +18,7 @@ dag = set.arc(dag, "Y", "X1")
 dag = set.arc(dag, "Y", "X2")
 cpts = randCPTs(dag, 2, 1)
 data = rbn(cpts, 1000)
+nVars = ncol(data)
 # model = naiveBayes(Y ~ ., data = data)
 # model$tables
 ```
@@ -69,7 +70,7 @@ mle_est_nb = function(y, x, data, smoothing = 1) {
 }
 
 # (mle_est_nb("Y", c("X1", "X2"), data, 0)) # with no smoothing
-(pars = mle_est_nb("Y", c("X1", "X2"), data, 1)) # with smoothing
+pars = mle_est_nb("Y", c("X1", "X2"), data, 1) # with smoothing
 ```
 
 ## Fisher information matrix
@@ -103,6 +104,31 @@ arities = sapply(data, nlevels)
 yIndex = which(colnames(data) == y)
 xIndices = which(colnames(data) %in% x)
 
+# a function to get corresponding probabilities for each row of data
+# only need to specify yIndex since we need to get probs for all Xs given Y
+# this function assumes Y has no parents due to the way prob(y) is stored in pars
+# the probs need to be stored in the order of p(x_1|y), ..., p(x_m|y), p(y)
+extract_probs = function(yIndex, pars, dataPoint) {
+  probs = rep(0, ncol(data))
+  yValue = dataPoint[[yIndex]]
+  ic = 1 # initialize an incremental index to store prob(x|y) in vector probs
+  for (xIndex in 1:ncol(data)) {
+    if (xIndex != yIndex) {
+      xValue = dataPoint[[xIndex]]
+      probs[ic] = pars[[xIndex]][xValue, yValue]
+      ic = ic + 1
+    } # end if 
+  } # end for each x
+  probs[length(probs)] = pars[[yIndex]][yValue]
+  return(probs)
+}
+
+y = "Y"
+x = c("X1", "X2")
+arities = sapply(data, nlevels)
+yIndex = which(colnames(data) == y)
+xIndices = which(colnames(data) %in% x)
+
 px = function(yIndex, xIndices, pars, dataPoint, arities) {
   ss = 0 
   for (yValue in 1:arities[yIndex]) {
@@ -117,13 +143,78 @@ px = function(yIndex, xIndices, pars, dataPoint, arities) {
   return(ss)
 }
 
-#head(data)
-#pars
-px(3, c(1,2), pars, data[101,], arities)
-head(apply(data, 1, px, yIndex=3,xIndices=c(1,2),pars=pars,arities=arities))
+# extract the corresponding probs for each row of data from pars
+probs_table = t(apply(data, 1, extract_probs, yIndex = 3, pars = pars))
+colnames(probs_table) = colnames(data)
+
+#px(3, c(1,2), pars, data[101,], arities)
+allPXs = apply(data, 1, px, yIndex=3,xIndices=c(1,2),pars=pars,arities=arities)
+
+# cbind allPXs to the last column of probs_table with colname "X"
+probs_table = cbind(probs_table, X = allPXs)
+head(probs_table)
+#prod(probs_table[1,])
+
+# FIM is an (M+1) by (M+1) symmetric matrix
+# probsPoint is the row of probs in probs_table corresponding to a dataPoint in data
+# cellIndex = 1 corresponds to 2nd derivative of L w.r.t. p(y), 
+# which is stored at the last of the parameter list "pars" and 
+# 2nd last column of probs_table
+diag_entry = function(nVars, diagIndex, probsPoint) {
+  if (diagIndex == 1) {
+    varIndex = nVars
+  } else {
+    varIndex = diagIndex - 1
+  } 
+  value = 1 / (probsPoint[[varIndex]] ^ 2) - 
+  (prod(probsPoint[-c(varIndex, nVars + 1)]) ^ 2) / (probsPoint[[nVars + 1]] ^ 2)
+  return(value)
+}
+
+#diag_entry(3, 1, probs_table[1,])
+#sum(apply(probs_table, 1, diag_entry, nVars = 3, diagIndex = 1))
 ```
 
+```{r}
+# since FIM is symmetric, we only need to fill entries in either above or below diagonal
+# above_diag_entry filles entries above the diagonal 
+# i.e. rowIndex < colIndex, where rowIndex \in [1, m] and colIndex \in [2, m+1]
+above_diag_entry = function(nVars, rowIndex, colIndex, probsPoint) {
+  # rowVarIndex := 1st var differentiated w.r.t. 
+  if (rowIndex == 1) {
+    rowVarIndex = nVars
+  } else {
+    rowVarIndex = rowIndex - 1 
+  }
+  # colVarIndex := 2nd var differentiated w.r.t.
+  # since colIndex >= 2, col var will never be p(y)
+  colVarIndex = colIndex - 1 
+  px = probsPoint[[nVars + 1]]
+  exclRowVar = prod(probsPoint[-c(rowVarIndex, nVars + 1)])
+  exclColVar = prod(probsPoint[-c(colVarIndex, nVars + 1)])
+  exclBothVar = prod(probsPoint[-c(rowVarIndex, colVarIndex, nVars + 1)])
+  return((px * exclBothVar - exclRowVar * exclColVar) / (px ^ 2))
+}
+```
 
+```{r}
+fim = matrix(0, nrow = nVars, ncol = nVars)
+
+for (i in 1:(nVars - 1)) {
+  for (j in (i + 1):nVars) {
+    fim[i, j] = sum(apply(probs_table, 1, above_diag_entry, nVars = 3, rowIndex = i, colIndex = j))
+  }
+}
+
+fim = fim + t(fim)
+
+for (i in 1:nrow(fim)) {
+  diag(fim)[i] = sum(apply(probs_table, 1, diag_entry, nVars = 3, diagIndex = i))
+}
+
+fim
+log(det(fim))
+```
 
 
 
