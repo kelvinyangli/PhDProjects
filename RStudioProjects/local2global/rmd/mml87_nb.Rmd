@@ -83,18 +83,18 @@ Define $\theta_0 = P(Y=y)$ and $\theta_j = P(X_j = x|Y=y), \forall j \in [1,m]$.
 \end{aligned}
 \]
 
-<!-- to be a vector of parameters for Naive Bayes, where $\theta_0 = P(Y=y_1)$ and -->
-<!-- $\theta{j1} = P(X_j = x_j | Y = y_1)$ and $\theta{j2} = P(X_j = x_j | Y = y_2)$ -->
-<!-- respectively. Then we have the following -->
-<!-- \[ -->
-<!-- \begin{aligned} -->
-<!-- P(X) &= \sum_{Y=y} P(Y=y) \prod_{j=1}^m P(X_j|Y=y) \\ -->
-<!-- \frac{\partial^2L}{\partial\theta_0^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_0^2} - \left(\frac{\prod_{j=1}^m\theta_{j1} - \prod_{j=1}^m\theta_{j2}}{P(X)}\right)^2\right] \\ -->
-<!-- \frac{\partial^2L}{\partial\theta_{k1}^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_{k1}^2} - \left(\frac{\theta_0\prod_{j=1}^{m,j \neq k}\theta_{j1}}{P(X)}\right)^2\right] \\ -->
-<!-- \frac{\partial^2L}{\partial\theta_{k2}^2} &= \sum_{i=1}^n \left[-\left(\frac{(1-\theta_0)\prod_{j=1}^{m,j \neq k}\theta_{j2}}{P(X)}\right)^2\right] -->
-<!-- \end{aligned} -->
-<!-- \] -->
-<!-- for $k \in [1, m]$. -->
+to be a vector of parameters for Naive Bayes, where $\theta_0 = P(Y=y_1)$ and
+$\theta{j1} = P(X_j = x_j | Y = y_1)$ and $\theta{j2} = P(X_j = x_j | Y = y_2)$
+respectively. Then we have the following
+\[
+\begin{aligned}
+P(X) &= \sum_{Y=y} P(Y=y) \prod_{j=1}^m P(X_j|Y=y) \\
+\frac{\partial^2L}{\partial\theta_0^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_0^2} - \left(\frac{\prod_{j=1}^m\theta_{j1} - \prod_{j=1}^m\theta_{j2}}{P(X)}\right)^2\right] \\
+\frac{\partial^2L}{\partial\theta_{k1}^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_{k1}^2} - \left(\frac{\theta_0\prod_{j=1}^{m,j \neq k}\theta_{j1}}{P(X)}\right)^2\right] \\
+\frac{\partial^2L}{\partial\theta_{k2}^2} &= \sum_{i=1}^n \left[-\left(\frac{(1-\theta_0)\prod_{j=1}^{m,j \neq k}\theta_{j2}}{P(X)}\right)^2\right]
+\end{aligned}
+\]
+for $k \in [1, m]$.
 
 ## FIM implementations
 ```{r}
