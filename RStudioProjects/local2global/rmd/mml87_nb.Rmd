@@ -9,36 +9,32 @@ output:
 
 ```{r global_options, include=F, warning=F, message=F, eval=T}
 knitr::opts_chunk$set(echo = TRUE, eval = T)
-library(bnlearn)
-source("~/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
-```
-```{r}
-dag = empty.graph(c("X1", "X2", "Y"))
-dag = set.arc(dag, "Y", "X1")
-dag = set.arc(dag, "Y", "X2")
-cpts = randCPTs(dag, 2, 1)
-data = rbn(cpts, 1000)
-nVars = ncol(data)
-# model = naiveBayes(Y ~ ., data = data)
-# model$tables
+source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
 ```
 
 ## Log likelihood 
-For NB with multinomial variables, there are two types of parameters $P(Y=y)$ and $P(X_j =x | Y=y)$. The likelihood of Naive Bayes is then
+For a Naive Bayes model with binary variable, its parameters are $\{P(Y_i=T), P(X_{ij}|Y_i=T), P(X_{ij}|Y_i=F)\}$. To simply the notations, we use $\{p_{i0}, p_{ij1}, p_{ij2}\}$ to denote the above probabilities respectively. The likelihood of Naive Bayes given a data set is then
 \[
 \begin{aligned}
-P(Y|\vec{X}) &= \frac{P(Y)\prod_{j=1}^m P(X_j|Y)}{P(\vec{X})} \\
-&= \frac{P(Y)\prod_{j=1}^m P(X_j|Y)}{\sum_{Y}P(Y)\prod_{j=1}^m P(X_j|Y)}
+l = \prod_i^n P(Y_i=T|\vec{X_i})^{Y_i} (1-P(Y_i=T|\vec{X_i}))^{1-Y_i}
 \end{aligned}
 \]
-where $\vec{X} = <X_1, \dots, X_m>$ is a vector of $m$ input variables. The negative loglikelihood of an entire data set with $n$ observations is 
+where the posterior probability of $Y_i$ given a vector $\vec{X_i} = <X_{i1}, \dots, X_{im}>$ is 
 \[
 \begin{aligned}
-L &= -\sum_{i=1}^n \log P(Y|X) \\
-&= -\sum_{i=1}^n \left[\log P(Y) + \sum_{j=1}^m \log P(X_j|Y) - \log \left(\sum_{Y}P(Y)\prod_{j=1}^m P(X_j|Y)\right)\right]
+P(Y_i=T|\vec{X_i}) &= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(\vec{X_i})} \\
+&= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)+(1-P(Y_i=T))\prod_{j=1}^m P(X_{ij}|Y_i=F)} \\
+&= \frac{p_{i0}\prod_{j=1}^m p_{ij1}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}}
 \end{aligned}
 \]
-Since it is not known whether or not there is a closed form solution for the determinant of the FIM, we firstly use MLE of NB parameters
+The negative loglikelihood
+\[
+\begin{aligned}
+L &= -\sum_{i=1}^n \left[Y_i\ln p(Y_i|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i|\vec{X_i}))\right] \\
+&= -\sum_{i=1}^n \left[Y_i \ln p_{i0} + (1-Y_i) \ln (1-p_{i0}) + Y_i \sum_{j=1}^m \ln p_{ij1} + (1-Y_i) \sum_{j=1}^m \ln p_{ij2} - \ln \left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)\right]
+\end{aligned}
+\]
+Notice that the log likelihood function that stated above is different from what mostly shown by others, which do not consider the case where $Y_i = T$ and $Y_i=F$. Hence, it is not sure whether we can use their MLE of NB parameters as shown below. 
 \[
 \begin{aligned}
 P(Y=y) &= \frac{count(y)}{n} \\
@@ -54,23 +50,21 @@ A function to calculate maximum likelihood estimation of nb parameters.
 # y is the output node
 # x is a set of input nodes
 # estimated parameters are stored in a list
-# smoothing is additive smoothing constant to avoid 0 probabilities
-# it can take any other values
+# smoothing is additive smoothing constant to avoid 0 probabilities but it can take any other values
+# y parameters is always store at the end
 mle_est_nb = function(y, x, data, smoothing = 1) {
   xIndices = which(colnames(data) %in% x)
   yIndex = which(colnames(data) == y)
   lst = list()
   for (i in 1:length(x)) {
-    lst[[i]] = (table(data[, c(yIndex, xIndices[i])]) + smoothing) /
-      (rowSums(table(data[, c(yIndex, xIndices[i])])) + smoothing * nlevels(data[, xIndices[i]]))
+    lst[[i]] = t((table(data[, c(yIndex, xIndices[i])]) + smoothing) /
+      (rowSums(table(data[, c(yIndex, xIndices[i])])) + smoothing * nlevels(data[, xIndices[i]])))
   } # end for i 
-  lst[[yIndex]] = (table(data[, yIndex]) + smoothing) / (nrow(data) + smoothing * nlevels(data[, 3]))
+  # always store y parameters at the last 
+  lst[[length(x) + 1]] = (table(data[, yIndex]) + smoothing) / (nrow(data) + smoothing * nlevels(data[, yIndex]))
   names(lst) = c(x, y)
   return(lst)
 }
-
-# (mle_est_nb("Y", c("X1", "X2"), data, 0)) # with no smoothing
-pars = mle_est_nb("Y", c("X1", "X2"), data, 1) # with smoothing
 ```
 
 ## Fisher information matrix
@@ -97,124 +91,116 @@ P(X) &= \sum_{Y=y} P(Y=y) \prod_{j=1}^m P(X_j|Y=y) \\
 for $k \in [1, m]$.
 
 ## FIM implementations
-```{r}
-y = "Y"
-x = c("X1", "X2")
-arities = sapply(data, nlevels)
-yIndex = which(colnames(data) == y)
-xIndices = which(colnames(data) %in% x)
-
-# a function to get corresponding probabilities for each row of data
-# only need to specify yIndex since we need to get probs for all Xs given Y
-# this function assumes Y has no parents due to the way prob(y) is stored in pars
-# the probs need to be stored in the order of p(x_1|y), ..., p(x_m|y), p(y)
-extract_probs = function(yIndex, pars, dataPoint) {
-  probs = rep(0, ncol(data))
-  yValue = dataPoint[[yIndex]]
-  ic = 1 # initialize an incremental index to store prob(x|y) in vector probs
-  for (xIndex in 1:ncol(data)) {
-    if (xIndex != yIndex) {
-      xValue = dataPoint[[xIndex]]
-      probs[ic] = pars[[xIndex]][xValue, yValue]
-      ic = ic + 1
-    } # end if 
-  } # end for each x
-  probs[length(probs)] = pars[[yIndex]][yValue]
-  return(probs)
-}
-
-y = "Y"
-x = c("X1", "X2")
-arities = sapply(data, nlevels)
-yIndex = which(colnames(data) == y)
-xIndices = which(colnames(data) %in% x)
-
-px = function(yIndex, xIndices, pars, dataPoint, arities) {
-  ss = 0 
-  for (yValue in 1:arities[yIndex]) {
-    mm = pars[[yIndex]][yValue]
-    for (j in 1:length(xIndices)) {
-      #xValue = data[dataPoint, xIndices[j]]
-      xValue = dataPoint[[xIndices[j]]]
-      mm = mm * pars[[j]][yValue, xValue]
-    } # end for each x_j
-    ss = ss + mm
-  } # end for each y value
-  return(ss)
-}
-
-# extract the corresponding probs for each row of data from pars
-probs_table = t(apply(data, 1, extract_probs, yIndex = 3, pars = pars))
-colnames(probs_table) = colnames(data)
-
-#px(3, c(1,2), pars, data[101,], arities)
-allPXs = apply(data, 1, px, yIndex=3,xIndices=c(1,2),pars=pars,arities=arities)
-
-# cbind allPXs to the last column of probs_table with colname "X"
-probs_table = cbind(probs_table, X = allPXs)
-head(probs_table)
-#prod(probs_table[1,])
-
-# FIM is an (M+1) by (M+1) symmetric matrix
-# probsPoint is the row of probs in probs_table corresponding to a dataPoint in data
-# cellIndex = 1 corresponds to 2nd derivative of L w.r.t. p(y), 
-# which is stored at the last of the parameter list "pars" and 
-# 2nd last column of probs_table
-diag_entry = function(nVars, diagIndex, probsPoint) {
-  if (diagIndex == 1) {
-    varIndex = nVars
-  } else {
-    varIndex = diagIndex - 1
-  } 
-  value = 1 / (probsPoint[[varIndex]] ^ 2) - 
-  (prod(probsPoint[-c(varIndex, nVars + 1)]) ^ 2) / (probsPoint[[nVars + 1]] ^ 2)
-  return(value)
-}
-
-#diag_entry(3, 1, probs_table[1,])
-#sum(apply(probs_table, 1, diag_entry, nVars = 3, diagIndex = 1))
-```
 
 ```{r}
-# since FIM is symmetric, we only need to fill entries in either above or below diagonal
-# above_diag_entry filles entries above the diagonal 
-# i.e. rowIndex < colIndex, where rowIndex \in [1, m] and colIndex \in [2, m+1]
-above_diag_entry = function(nVars, rowIndex, colIndex, probsPoint) {
-  # rowVarIndex := 1st var differentiated w.r.t. 
-  if (rowIndex == 1) {
-    rowVarIndex = nVars
-  } else {
-    rowVarIndex = rowIndex - 1 
+# p(x_ij|y=k)
+# xIndices is a vector of x indices in data
+# xIndex is the index of the particular x that we want 
+p_ijk = function(dataPoint, pars, xIndices, xIndex, yValue) {
+  xValue = dataPoint[[xIndex]]
+  xParsIndex = which(xIndices == xIndex)
+  return(pars[[xParsIndex]][yValue, xValue])
+}
+
+# \prod_j p(x_ij|y=k)
+# i is the dataPoint index
+# j is the X index in data
+# k is the value of Y, i.e. k \in [1, arity(y)]
+prod_pijk = function(dataPoint, pars, xIndices, yValue) {
+  mm = 1
+  for (i in 1:length(xIndices)) {
+    xValue = dataPoint[[xIndices[i]]]
+    mm = mm * pars[[i]][xValue, yValue]
   }
-  # colVarIndex := 2nd var differentiated w.r.t.
-  # since colIndex >= 2, col var will never be p(y)
-  colVarIndex = colIndex - 1 
-  px = probsPoint[[nVars + 1]]
-  exclRowVar = prod(probsPoint[-c(rowVarIndex, nVars + 1)])
-  exclColVar = prod(probsPoint[-c(colVarIndex, nVars + 1)])
-  exclBothVar = prod(probsPoint[-c(rowVarIndex, colVarIndex, nVars + 1)])
-  return((px * exclBothVar - exclRowVar * exclColVar) / (px ^ 2))
+  return(mm)
 }
 ```
 
 ```{r}
-fim = matrix(0, nrow = nVars, ncol = nVars)
+dag = empty.graph(c("X1", "X2", "Y", "X3"))
+dag = set.arc(dag, "Y", "X1")
+dag = set.arc(dag, "Y", "X2")
+dag = set.arc(dag,  "Y", "X3")
+set.seed(10086)
+cpts = randCPTs(dag, 2, 1)
+data = rbn(cpts, 100)
+nVars = ncol(data)
 
-for (i in 1:(nVars - 1)) {
-  for (j in (i + 1):nVars) {
-    fim[i, j] = sum(apply(probs_table, 1, above_diag_entry, nVars = 3, rowIndex = i, colIndex = j))
-  }
+y = "Y"
+x = c("X1", "X3")
+arities = sapply(data, nlevels)
+yIndex = which(colnames(data) == y)
+xIndices = which(colnames(data) %in% x)
+
+# mle of parameters with smoothing
+pars = mle_est_nb(y, x, data, 1) 
+
+# p(y=T)
+py1 = pars[[length(pars)]][[1]]
+# p(y=F)
+py2 = pars[[length(pars)]][[2]]
+
+# a vector of p_yi 
+#p_y = sapply(data[, yIndex], p_yi, pars = pars, yIndex = yIndex)
+
+# a vector of \prod_j p(x_ij|y=1)
+prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 1)
+# a vector of \prod_j p(x_ij|y=2)
+prodPij2 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 2)
+
+# a vector of p_xi 
+px = py1 * prodPij1 + py2 * prodPij2
+
+# a matrix of p(x_j|y=T) and p(y_j|y=F)
+probsMatrix = c()
+for (j in xIndices) {
+  probsMatrix = cbind(probsMatrix, apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 1), apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 2))
+}
+```
+
+### Off diagonal of FIM
+
+```{r}
+# empty FIM
+fimDim = (arities[yIndex] - 1) + length(x) * arities[yIndex]
+fim = matrix(0, nrow = fimDim, ncol = fimDim)
+
+mm = prodPij1 * prodPij2/(px^2) # a common contant 
+fim[1, -1] = colSums(mm/probsMatrix) # fill in 1st row of FIM
+fim[1, seq(3, ncol(fim), 2)] = -1 * fim[1, seq(3, ncol(fim), 2)]
+for (rowIndex in 2:(nrow(fim) - 1)) {
+  if (ncol(fim) - rowIndex == 1) {
+    fim[rowIndex, -(1:rowIndex)] = sum(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
+  } else {
+    fim[rowIndex, -(1:rowIndex)] = colSums(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
+  } # end else
 }
 
 fim = fim + t(fim)
+fim
+```
 
-for (i in 1:nrow(fim)) {
-  diag(fim)[i] = sum(apply(probs_table, 1, diag_entry, nVars = 3, diagIndex = i))
+### Diagonal of FIM
+
+```{r}
+# assume all variables are binary, hence the diag[1] is always the 2nd derivative w.r.t. p_i0
+diag(fim)[1] = sum(prodPij1/(py1 * px) + prodPij2/(py2 * px) - ((prodPij1 - prodPij2)/px)^2)
+
+# two vectors to store 2nd derivative w.r.t. p_ik1 and p_ik2 respectively, where the 1 and 2 corresponds to y values
+z = c()
+for (i in 1:length(xIndices)) {
+  v = sum(py1 * prodPij1/(probsMatrix[,i * 2 - 1]^2 * px) - (py1 * prodPij1/(px * probsMatrix[,i * 2 - 1]))^2)
+  w = sum(py2 * prodPij2/(probsMatrix[,i * 2]^2 * px) - (py2 * prodPij2/(px * probsMatrix[,i * 2]))^2)
+  z = c(z, v, w)
 }
 
+diag(fim)[-1] = z
 fim
+det(fim)
 log(det(fim))
 ```
+
+
 
 
 

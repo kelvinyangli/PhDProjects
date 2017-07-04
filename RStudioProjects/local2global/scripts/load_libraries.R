@@ -17,14 +17,14 @@ sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
 }
 
 # source from local repository
-sourceDir("~/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLCPT/")
-sourceDir("~/PhDProjects/RStudioProjects/mbDiscoveryR/randBN/")
-sourceDir("~/PhDProjects/RStudioProjects/mbDiscoveryR/learnBN/")
+sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLCPT/")
+sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/randBN/")
+sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/learnBN/")
 #sourceDir("testing/")
-sourceDir("~/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLLogit/")
-sourceDir("~/PhDProjects/RStudioProjects/mbDiscoveryR/searches/")
-sourceDir("~/PhDProjects/RStudioProjects/local2global/source code/")
+sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLLogit/")
+sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/searches/")
+sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/source code/")
 
 # log factorial sheet
-logFactorialSheet = read.csv("~/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv") 
+logFactorialSheet = read.csv("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv") 
 
