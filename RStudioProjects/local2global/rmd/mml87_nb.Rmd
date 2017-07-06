@@ -12,39 +12,15 @@ knitr::opts_chunk$set(echo = TRUE, eval = T)
 source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
 ```
 
-## Log likelihood 
-For a Naive Bayes model with binary variable, its parameters are $\{P(Y_i=T), P(X_{ij}|Y_i=T), P(X_{ij}|Y_i=F)\}$. To simply the notations, we use $\{p_{i0}, p_{ij1}, p_{ij2}\}$ to denote the above probabilities respectively. The likelihood of Naive Bayes given a data set is then
-\[
-\begin{aligned}
-l = \prod_i^n P(Y_i=T|\vec{X_i})^{Y_i} (1-P(Y_i=T|\vec{X_i}))^{1-Y_i}
-\end{aligned}
-\]
-where the posterior probability of $Y_i$ given a vector $\vec{X_i} = <X_{i1}, \dots, X_{im}>$ is 
-\[
-\begin{aligned}
-P(Y_i=T|\vec{X_i}) &= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(\vec{X_i})} \\
-&= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)+(1-P(Y_i=T))\prod_{j=1}^m P(X_{ij}|Y_i=F)} \\
-&= \frac{p_{i0}\prod_{j=1}^m p_{ij1}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}}
-\end{aligned}
-\]
-The negative loglikelihood
-\[
-\begin{aligned}
-L &= -\sum_{i=1}^n \left[Y_i\ln p(Y_i|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i|\vec{X_i}))\right] \\
-&= -\sum_{i=1}^n \left[Y_i \ln p_{i0} + (1-Y_i) \ln (1-p_{i0}) + Y_i \sum_{j=1}^m \ln p_{ij1} + (1-Y_i) \sum_{j=1}^m \ln p_{ij2} - \ln \left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)\right]
-\end{aligned}
-\]
-Notice that the log likelihood function that stated above is different from what mostly shown by others, which do not consider the case where $Y_i = T$ and $Y_i=F$. Hence, it is not sure whether we can use their MLE of NB parameters as shown below. 
+## MLE of NB parameters
+The MLE estimations of NB parameters are as follows:
 \[
 \begin{aligned}
 P(Y=y) &= \frac{count(y)}{n} \\
 P(X_j = x|Y = y) &= \frac{count(x) \cup count(y)}{count(y)}
 \end{aligned}
 \]
-The following are implementations of MLE of NB parameters. 
-
-## MLE implementations
-A function to calculate maximum likelihood estimation of nb parameters. 
+Notice that the log likelihood function that stated below is different from what mostly shown by others, which do not consider the case where $Y_i = T$ and $Y_i=F$. Hence, it is not sure whether we can use the above MLE of parameters. The following is the implementations of MLE of NB parameters. 
 
 ```{r}
 # y is the output node
@@ -67,28 +43,71 @@ mle_est_nb = function(y, x, data, smoothing = 1) {
 }
 ```
 
+## Negative log likelihood of NB
+For a Naive Bayes model with binary variable, its parameters are $\{P(Y_i=T), P(X_{ij}|Y_i=T), P(X_{ij}|Y_i=F)\}$. To simply the notations, we use $\{p_{i0}, p_{ij1}, p_{ij2}\}$ to denote the above probabilities respectively. The likelihood of Naive Bayes given a data set is then
+\[
+\begin{aligned}
+l = \prod_i^n P(Y_i=T|\vec{X_i})^{Y_i} (1-P(Y_i=T|\vec{X_i}))^{1-Y_i}
+\end{aligned}
+\]
+where the posterior probability of $Y_i$ given a vector $\vec{X_i} = <X_{i1}, \dots, X_{im}>$ is 
+\[
+\begin{aligned}
+P(Y_i=T|\vec{X_i}) &= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(\vec{X_i})} \\
+&= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)+(1-P(Y_i=T))\prod_{j=1}^m P(X_{ij}|Y_i=F)} \\
+&= \frac{p_{i0}\prod_{j=1}^m p_{ij1}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}}
+\end{aligned}
+\]
+The negative loglikelihood
+\[
+\begin{aligned}
+L &= -\sum_{i=1}^n \left[Y_i\ln p(Y_i|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i|\vec{X_i}))\right] \\
+&= -\sum_{i=1}^n \left[Y_i \ln p_{i0} + (1-Y_i) \ln (1-p_{i0}) + Y_i \sum_{j=1}^m \ln p_{ij1} + (1-Y_i) \sum_{j=1}^m \ln p_{ij2} - \ln \left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)\right]
+\end{aligned}
+\]
+
+## NLL implementations
+
+```{r}
+nll_auxiliary = function(dataPoint, pars, xIndices, yIndex) {
+  ss = 0
+  for (j in 1:(length(pars) - 1)) {
+    ss = ss + log(p_ijk(dataPoint, pars, xIndices, xIndices[j], dataPoint[[yIndex]]))
+  }
+  ss = ss + log(pars[[length(pars)]][dataPoint[[yIndex]]])
+  return(ss)
+}
+```
+
 ## Fisher information matrix
-
-Define $\theta_0 = P(Y=y)$ and $\theta_j = P(X_j = x|Y=y), \forall j \in [1,m]$. The second derivative of the above negative log likelihood w.r.t each parameter is 
+The first derivatives of the above negative log likelihood w.r.t. each parameter are
 \[
 \begin{aligned}
-\frac{\partial^2L}{\partial\theta_k^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_k^2} - \left(\frac{\prod_{j=0}^{\neq k}\theta_j}{\sum_y\prod_{j=0}^m\theta_j}\right)^2\right] \\
-\frac{\partial^2L}{\partial\theta_k\partial\theta_l} &= \sum_{i=1}^n \left[\frac{(\sum_y\prod_{j=0}^m\theta_j)(\sum_{j=0}^{\neq k, l}\theta_j)-(\prod_{j=0}^{\neq k}\theta_j)(\prod_{j=0}^{\neq l}\theta_j)}{\left(\sum_y\prod_{j=0}^m\theta_j\right)^2}\right]
+\frac{\partial L}{\partial p_{i0}} &= -\sum_{i=1}^n \left[\frac{Y_i}{p_{i0}} - \frac{1-Y_i}{1-p_{i0}} -\frac{\prod_{j=1}^m p_{ij1} - \prod_{j=1}^m p_{ij2}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}} \right] \\
+\frac{\partial L}{\partial p_{ik1}} &= -\sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}} - \frac{p_{i0}\prod_{j=1}^m p_{ik1}}{p_{ik1}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right] \\
+\frac{\partial L}{\partial p_{ik2}} &= -\sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik2}} - \frac{(1-p_{i0})\prod_{j=1}^m p_{ik2}}{p_{ik2}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right]
+\end{aligned}
+\]
+The second derivatives are
+\[
+\begin{aligned}
+\frac{\partial^2L}{\partial p_{i0}^2} &= \sum_{i=1}^n \left[\frac{Y_i}{p_{i0}^2} + \frac{1-Y_i}{(1-p_{i0})^2} - \left(\frac{\prod_{j=1}^m p_{ij1} - \prod_{j=1}^m p_{ij2}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}}\right)^2\right] \\
+\frac{\partial^2L}{\partial p_{ik1}} &= \sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}^2} - \left(\frac{p_{i0} \prod_{j=1}^mp_{ij1}}{p_{ik1}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right)^2\right] \\
+\frac{\partial^2L}{\partial p_{ik2}} &= \sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik2}^2} - \left(\frac{(1-p_{i0}) \prod_{j=1}^mp_{ij2}}{p_{ik2}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right)^2\right] \\
+\frac{\partial^2L}{\partial p_{i0}p_{ik1}} &= \sum_{i=1}^n \frac{\prod_{j=1}^mp_{ij1}p_{ij2}}{\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)^2}\frac{1}{p_{ik1}}\\
+\frac{\partial^2L}{\partial p_{i0}p_{ik2}} &= \sum_{i=1}^n \frac{\prod_{j=1}^mp_{ij1}p_{ij2}}{\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)^2}\frac{-1}{p_{ik2}}\\
+\frac{\partial^2L}{\partial p_{ik1}p_{ik2}} &= \sum_{i=1}^n \frac{\prod_{j=1}^mp_{ij1}p_{ij2}}{\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)^2}\frac{-p_{i0}(1-p_{i0})}{p_{ik1}p_{ik2}}
 \end{aligned}
 \]
 
-to be a vector of parameters for Naive Bayes, where $\theta_0 = P(Y=y_1)$ and
-$\theta{j1} = P(X_j = x_j | Y = y_1)$ and $\theta{j2} = P(X_j = x_j | Y = y_2)$
-respectively. Then we have the following
+Since FIM entries are expectations of the second derivatives, we need to take expectations for the first three second derivatives that contain $Y_i$. To simplify the notations, we use $p_x$ to denote $p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}$. Then the expectations become
 \[
 \begin{aligned}
-P(X) &= \sum_{Y=y} P(Y=y) \prod_{j=1}^m P(X_j|Y=y) \\
-\frac{\partial^2L}{\partial\theta_0^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_0^2} - \left(\frac{\prod_{j=1}^m\theta_{j1} - \prod_{j=1}^m\theta_{j2}}{P(X)}\right)^2\right] \\
-\frac{\partial^2L}{\partial\theta_{k1}^2} &= \sum_{i=1}^n \left[\frac{1}{\theta_{k1}^2} - \left(\frac{\theta_0\prod_{j=1}^{m,j \neq k}\theta_{j1}}{P(X)}\right)^2\right] \\
-\frac{\partial^2L}{\partial\theta_{k2}^2} &= \sum_{i=1}^n \left[-\left(\frac{(1-\theta_0)\prod_{j=1}^{m,j \neq k}\theta_{j2}}{P(X)}\right)^2\right]
+E\left(\frac{\partial^2L}{\partial p_{i0}^2}\right) &= \sum_{i=1}^n \left[\frac{\prod_{j=1}^m p_{ij1}}{p_{i0}p_x} + \frac{\prod_{j=1}^m p_{ij2}}{(1-p_{i0})p_x}- \left(\frac{\prod_{j=1}^m p_{ij1} - \prod_{j=1}^m p_{ij2}}{p_x}\right)^2\right] \\
+E\left(\frac{\partial^2L}{\partial p_{ik1}}\right) &= \sum_{i=1}^n \left[\frac{p_{i0}\prod_{j=1}^m p_{ij1}}{p_{ik1}^2p_x} - \left(\frac{p_{i0} \prod_{j=1}^mp_{ij1}}{p_{ik1}p_x}\right)^2\right] \\
+E\left(\frac{\partial^2L}{\partial p_{ik2}}\right) &= \sum_{i=1}^n \left[\frac{(1-p_{i0})\prod_{j=1}^m p_{ij2}}{p_{ik2}^2p_x} - \left(\frac{(1-p_{i0}) \prod_{j=1}^mp_{ij2}}{p_{ik2}p_x}\right)^2\right] \\
 \end{aligned}
 \]
-for $k \in [1, m]$.
 
 ## FIM implementations
 
@@ -99,7 +118,7 @@ for $k \in [1, m]$.
 p_ijk = function(dataPoint, pars, xIndices, xIndex, yValue) {
   xValue = dataPoint[[xIndex]]
   xParsIndex = which(xIndices == xIndex)
-  return(pars[[xParsIndex]][yValue, xValue])
+  return(pars[[xParsIndex]][xValue, yValue])
 }
 
 # \prod_j p(x_ij|y=k)
@@ -121,13 +140,14 @@ dag = empty.graph(c("X1", "X2", "Y", "X3"))
 dag = set.arc(dag, "Y", "X1")
 dag = set.arc(dag, "Y", "X2")
 dag = set.arc(dag,  "Y", "X3")
-set.seed(10086)
+#set.seed(10086)
 cpts = randCPTs(dag, 2, 1)
 data = rbn(cpts, 100)
 nVars = ncol(data)
 
+#data = data[, sample(1:ncol(data))]
 y = "Y"
-x = c("X1", "X3")
+x = c("X1")
 arities = sapply(data, nlevels)
 yIndex = which(colnames(data) == y)
 xIndices = which(colnames(data) %in% x)
@@ -139,9 +159,6 @@ pars = mle_est_nb(y, x, data, 1)
 py1 = pars[[length(pars)]][[1]]
 # p(y=F)
 py2 = pars[[length(pars)]][[2]]
-
-# a vector of p_yi 
-#p_y = sapply(data[, yIndex], p_yi, pars = pars, yIndex = yIndex)
 
 # a vector of \prod_j p(x_ij|y=1)
 prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 1)
@@ -158,16 +175,15 @@ for (j in xIndices) {
 }
 ```
 
-### Off diagonal of FIM
-
 ```{r}
 # empty FIM
 fimDim = (arities[yIndex] - 1) + length(x) * arities[yIndex]
 fim = matrix(0, nrow = fimDim, ncol = fimDim)
 
-mm = prodPij1 * prodPij2/(px^2) # a common contant 
-fim[1, -1] = colSums(mm/probsMatrix) # fill in 1st row of FIM
-fim[1, seq(3, ncol(fim), 2)] = -1 * fim[1, seq(3, ncol(fim), 2)]
+# off diagonal entries
+mm = prodPij1 * prodPij2 / (px ^ 2) # a common contant 
+fim[1, -1] = colSums(mm / probsMatrix) # fill in 1st row of FIM
+fim[1, odd(2:ncol(fim))] = -1 * fim[1, odd(2:ncol(fim))]
 for (rowIndex in 2:(nrow(fim) - 1)) {
   if (ncol(fim) - rowIndex == 1) {
     fim[rowIndex, -(1:rowIndex)] = sum(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
@@ -175,33 +191,61 @@ for (rowIndex in 2:(nrow(fim) - 1)) {
     fim[rowIndex, -(1:rowIndex)] = colSums(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
   } # end else
 }
+fim = fim + t(fim) # duplicate upper to lower triangular fim
 
-fim = fim + t(fim)
-fim
+# diagonal entries
+# assume all variables are binary, hence the diag[1] is always the 2nd derivative w.r.t. p_i0
+diag(fim)[1] = sum(prodPij1 / (py1 * px) + prodPij2 / (py2 * px) - ((prodPij1 - prodPij2) / px) ^ 2)
+diag(fim)[-1] = colSums(py1 * py2 * prodPij1 * prodPij2 / (px * probsMatrix) ^ 2)
 ```
 
-### Diagonal of FIM
+## MML of Naive Bayes
+\[
+\begin{aligned}
+I = -\ln K - \ln h(\vec{\theta}) + \frac{1}{2}\ln F(\vec{\theta}) - \ln f(D|\vec{\theta}) + \frac{|\vec{\theta}|}{2}
+\end{aligned}
+\]
+where $\vec{\theta} = <p_{i0}, p_{ij1}, p_{ij2}>, \forall j \in [1,m]$ is the set of parameters, $|\vec{\theta}|$ is the number of free parameters, $K$ is the lattice contant and $h(\vec{\theta})$ is the parameter prior. A commonly used conjugate prior for binary variables is beta prior (i.e., beta distribution) with probability density function 
+\[
+f(x, \alpha, \beta) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha, \beta)}
+\]
+where $B(\alpha, \beta) = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)}$. For simplicity, we assume all parameters are uniformly (i.e., $\alpha=\beta=1$), hence for a single parameter prior is $x(1-x)$. Assuming all parameters are independent, we have  
+\[
+\ln h(\vec{\theta}) = \ln p_{i0} + \ln (1-p_{i0}) + \sum_{j=1}^m\left[\ln p_{ij1} + \ln (1-p_{ij1}) + \ln p_{ij2} + \ln (1-p_{ij2})\right]
+\]
+Substituting this into the above MML formula we get 
+\[
+I = -\left(\ln p_{i0} + \ln (1-p_{i0}) + \sum_{j=1}^m\left[\ln p_{ij1} + \ln (1-p_{ij1}) + \ln p_{ij2} + \ln (1-p_{ij2})\right]\right) + \frac{1}{2}F(\vec{\theta}) - \ln f(D|\vec{\theta}) + \frac{d}{2}(1+\ln k_d)
+\]
+where $d$ is the number of free parameters and $k_d$ is the lattice constant for each free parameter. 
 
+## MML implementations
 ```{r}
-# assume all variables are binary, hence the diag[1] is always the 2nd derivative w.r.t. p_i0
-diag(fim)[1] = sum(prodPij1/(py1 * px) + prodPij2/(py2 * px) - ((prodPij1 - prodPij2)/px)^2)
-
-# two vectors to store 2nd derivative w.r.t. p_ik1 and p_ik2 respectively, where the 1 and 2 corresponds to y values
-z = c()
-for (i in 1:length(xIndices)) {
-  v = sum(py1 * prodPij1/(probsMatrix[,i * 2 - 1]^2 * px) - (py1 * prodPij1/(px * probsMatrix[,i * 2 - 1]))^2)
-  w = sum(py2 * prodPij2/(probsMatrix[,i * 2]^2 * px) - (py2 * prodPij2/(px * probsMatrix[,i * 2]))^2)
-  z = c(z, v, w)
+# negative log likelihood
+nll = -sum(apply(data, 1, nll_auxiliary, pars = pars, xIndices = xIndices, yIndex = yIndex)) + sum(log(px))
+# log determinant of FIM
+f = det(fim)
+logF = log(f)
+# number of free parameters
+d = nrow(fim)
+# log prior
+logPrior = sum(unlist(lapply(pars, log)))
+# lattice constant
+k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)
+if (d <= length(k)) {
+  kd = k[d]
+} else {
+  kd = min(k)
 }
 
-diag(fim)[-1] = z
-fim
-det(fim)
-log(det(fim))
+# mml
+l = -logPrior + 0.5 * logF + nll + 0.5 * d * (1 + log(kd))
+l
 ```
 
-
-
+```{r}
+# test
+```
 
 
 
