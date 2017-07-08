@@ -142,12 +142,13 @@ dag = set.arc(dag, "Y", "X2")
 dag = set.arc(dag,  "Y", "X3")
 #set.seed(10086)
 cpts = randCPTs(dag, 2, 1)
-data = rbn(cpts, 100)
+n = 10000
+data = rbn(cpts, n)
 nVars = ncol(data)
 
 #data = data[, sample(1:ncol(data))]
 y = "Y"
-x = c("X1")
+x = c("X1", "X2", "X3")
 arities = sapply(data, nlevels)
 yIndex = which(colnames(data) == y)
 xIndices = which(colnames(data) %in% x)
@@ -240,12 +241,35 @@ if (d <= length(k)) {
 
 # mml
 l = -logPrior + 0.5 * logF + nll + 0.5 * d * (1 + log(kd))
-l
-```
+cat("mml=", l, "\n")
+cat("@ 1st part=", l-nll, "\n")
+cat("*** logPrior=", logPrior, "\n")
+cat("*** 0.5*log(det)=", 0.5*logF, "\n")
+cat("*** lattice=", 0.5*d*(1+log(kd)), "\n")
+cat("@ 2nd part=nll=", nll, "\n")
 
+``` 
+## MML CPT
 ```{r}
-# test
+di = getDataInfo(data)
+mmlCPT(yIndex, xIndices, di$indexListPerNodePerValue, di$arities, n)
 ```
+The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
-
+## Sanity check
+This is a sanity check to ensure that nll is corrected calculated. The following code use gRain to compute the posterior probability $P(Y_i|\vec{X_i})$ based on the estimated cpts from data. The posterior probability given each data point is then used to compute the nll of the entire data set. The answer confirms that the above nll calculation is correct. 
+```{r}
+cptsEst = bn.fit(dag, data, method = "bayes")
+obj = gRbase::compile(as.grain(cptsEst))
+post = querygrain(obj, nodes = c("Y", "X1", "X2", "X3"), type = "conditional")
+nll2 = 0
+for (i in 1:nrow(data)) {
+  x1 = data[i, 1]
+  x2 = data[i, 2]
+  x3 = data[i, 4]
+  y = data[i, 3]
+  nll2 = nll2 + log(post[x1, x2, x3, y])
+}
+nll2
+```
 
