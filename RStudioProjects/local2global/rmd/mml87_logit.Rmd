@@ -1,0 +1,81 @@
+---
+title: "mml87_logit"
+author: "kl"
+date: "11 July 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
+```
+
+## Estimating logit parameters using the glm() function
+
+## Search
+
+## Execution 
+```{r}
+dag = randDag(10, 2)
+cpts = randCPTs(dag, 2, 1)
+sampleSize = 1000
+data = rbn(cpts, sampleSize)
+y = "V1"
+x = c("V9", "V3", "V5", "V11")
+#x = c()
+yIndex = which(names(data) == y)
+xIndices = which(names(data) %in% x)
+arities = sapply(data, nlevels)
+names(arities) = c()
+dataNumeric = factor2numeric(data)
+vars = names(data)
+#mml_logit(data, arities, sampleSize, x, y)
+forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
+# fim
+# log(det(fim))
+# logDeterminant(fim)*2
+```
+
+## MML_CPT
+
+```{r}
+indexListPerNodePerValue = count_occurance(data, arities)
+forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1), debug=T)
+```
+
+## Comparison with mml_cpt
+```{r}
+nrep = 1
+for (j in 1:nrep) {
+  dag = randDag(15, 3)
+  cpts = randCPTs(dag, 2, 1)
+  sampleSize = 1000
+  data = rbn(cpts, sampleSize)
+  dataNumeric = factor2numeric(data)
+  arities = sapply(data, nlevels)
+  indexListPerNodePerValue = count_occurance(data, arities)
+  names(arities) = c()
+  vars = names(data)
+  lstLogit = lstCPT = list()
+  for (i in 1:length(vars)) {
+    lstLogit[[i]] = forward_greedy(data, arities, vars, sampleSize, vars[i], score = mml_logit, dataNumeric = dataNumeric)
+    lstCPT[[i]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, vars[i], 
+                                      logFactorialSheet, base = exp(1))
+  }
+  
+  # evaluation
+  accLogit = accCPT = matrix(0, nrow = length(vars), ncol = 3)
+  for (i in 1:length(vars)) {
+    accLogit[i, -3] = unlist(edit_dist_mb(bnlearn::mb(dag, vars[i]), lstLogit[[i]], vars, vars[i]))
+    accCPT[i, -3] = unlist(edit_dist_mb(bnlearn::mb(dag, vars[i]), lstCPT[[i]], vars, vars[i]))
+  }
+  accLogit[, 3] = 2 * accLogit[, 1] * accLogit[, 2] / (accLogit[, 1] + accLogit[, 2])
+  accCPT[, 3] = 2 * accCPT[, 1] * accCPT[, 2] / (accCPT[, 1] + accCPT[, 2])
+}
+
+accLogit
+colMeans(accLogit)
+accCPT
+colMeans(accCPT)
+```
+

@@ -7,9 +7,10 @@ output:
   html_document: default
 ---
 
-```{r global_options, include=F, warning=F, message=F, eval=F}
+```{r global_options, include=F, warning=F, message=F, eval=T}
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = TRUE, eval = T)
 source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
+#library(lglbnlearn)
 ```
 
 ## MLE of NB parameters
@@ -234,12 +235,13 @@ data = rbn(cpts, n)
 nVars = ncol(data)
 #data = data[, sample(1:ncol(data))]
 arities = sapply(data, nlevels)
+names(arities) = c()
 ```
 
 ## Executing MML_NB
 ```{r}
 y = "Y"
-x = c("X2", "X4")
+x = c("X2")
 yIndex = which(colnames(data) == y)
 xIndices = which(colnames(data) %in% x)
 # mle of parameters with smoothing
@@ -263,7 +265,7 @@ for (j in xIndices) {
 # FIM
 fim = calculate_fim(prodPij1, prodPij2, px, probsMatrix, py1, py2, arities, yIndex)
 # mml
-(i_nb = mml_NB(data, pars, fim, px, xIndices, yIndex, debug=TRUE))
+(i_nb = mml_NB(data, pars, fim, px, xIndices, yIndex, debug = TRUE))
 ```
 
 ## MML_CPT
@@ -277,20 +279,12 @@ The above mml + cpt is even smaller than mml + nb, which is expected to be short
 ## MML_Logit
 
 ```{r}
-dataInfo = getDataInfo(data)
-indexListPerNodePerValue = dataInfo$indexListPerNodePerValue
-base = exp(1)
-indicatorMatrix = getIndicator(data)
-interactData = getInteractData(indicatorMatrix)
-completeIndicatorMatrix = cbind(indicatorMatrix, interactData)
-
-debug = T
-allNodes = names(cpts)
-# mbForwardSelection(data, y, mmlLogit, arities, indexListPerNodePerValue, 
-#                      base = exp(1), indicatorMatrix = indicatorMatrix, mbSize = 1000, 
-#                      interaction = FALSE, debug)
-
-(i_lr = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma=3))
+dataNumeric = factor2numeric(data)
+vars = names(data)
+sampleSize = n
+(i_lr = mml_logit(data, arities, sampleSize, x, y, sigma = 3, debug = T))
+#forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = T)
+#(i_lr = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma=3))
 #mmlLogit(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma=3)
 ```
 

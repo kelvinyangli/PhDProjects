@@ -11,7 +11,7 @@
 #' dataNumeric, because the function start filling in entries from 2nd row and 2nd column. The 1st row and 
 #' column are filled in separately. 
 #' @export
-calculate_fim = function(dataNumeric, betaDotX, xIndices, yIndex) {
+fim_logit = function(dataNumeric, betaDotX, xIndices, yIndex) {
   m = matrix(0, length(xIndices) + 1, length(xIndices) + 1) 
   # fill in the (1, 1) entry 
   m[1, 1] = sum(exp(betaDotX) / (1 + exp(betaDotX)) ^ 2)

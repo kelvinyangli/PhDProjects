@@ -2,7 +2,7 @@
 
 #libraries = c("bnlearn", "readr", "foreign", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz", "arm")
 libraries = c("bnlearn", "entropy", "reshape2", "ggplot2", "Rgraphviz", "gRain",
-              "magic", "expm", "gtools", "readr", "networkD3")
+              "magic", "expm", "gtools", "readr", "networkD3", "devtools", "lglbnlearn")
 lapply(libraries, require, character.only = TRUE)
 
 #library(bnlearn)
@@ -18,12 +18,12 @@ sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
 }
 
 # source from local repository
-sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLCPT/")
-sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/randBN/")
+#sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLCPT/")
+#sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/randBN/")
 sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/learnBN/")
 #sourceDir("testing/")
-sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLLogit/")
-sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/searches/")
+#sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLLogit/")
+#sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/searches/")
 sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/source code/")
 
 # log factorial sheet

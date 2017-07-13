@@ -13,10 +13,11 @@
 #' @param y The output/target variable. 
 #' @param sigma The standard derivation of the assumed Gaussian distribution for parameter prior. The 
 #' default value is 3 as suggested by the original paper. 
+#' @param debug A boolean argument to display mml score for each part.
 #' @return The function by default returns the mml score. But it can also return a list of detailed values, 
 #' such as nlogPrior, nlogF, etc. 
 #' @export
-mml_logit = function(data, arities, sampleSize, x, y, sigma = 3) {
+mml_logit = function(data, arities, sampleSize, x, y, sigma = 3, debug = FALSE) {
   
   yIndex = which(names(data) == y)
   xIndices = which(names(data) %in% x)
@@ -30,7 +31,7 @@ mml_logit = function(data, arities, sampleSize, x, y, sigma = 3) {
     betaDotX = apply(dataNumeric, 1, inner_product, beta = beta, xIndices = xIndices) # vector  
   }
   # negative log likelihood
-  nll = negLogLike(dataNumeric, betaDotX, xIndices, yIndex)
+  nll = nll_logit(dataNumeric, betaDotX, xIndices, yIndex)
   
   if (length(xIndices) < 1) {# when no parent
     # negative log prior
@@ -58,7 +59,7 @@ mml_logit = function(data, arities, sampleSize, x, y, sigma = 3) {
     }
     # negative log lattice constant
     nlogLattice = 0.5 * nFreePars * (1 + log(latticeConstant))
-    fim = calculate_fim(dataNumeric, betaDotX, xIndices, yIndex)
+    fim = fim_logit(dataNumeric, betaDotX, xIndices, yIndex)
     # log det(fim)
     logF = log_determinant(fim)
   }
@@ -67,5 +68,11 @@ mml_logit = function(data, arities, sampleSize, x, y, sigma = 3) {
   mml = nlogPrior + nlogLattice + 0.5 * logF + nll
   lst = list(mml, nlogPrior, nlogLattice, logF, nll)
   names(lst) = c("mml", "nlogPrior", "nlogLattice", "logF", "nll")
-  return(lst[[1]])
+  
+  if (debug) {
+    return(lst)
+  } else {
+    return(lst[[1]])  
+  }
+  
 }

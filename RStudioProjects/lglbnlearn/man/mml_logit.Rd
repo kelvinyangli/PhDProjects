@@ -4,7 +4,7 @@
 \alias{mml_logit}
 \title{A function to calculate the mml of a 1st order logit model}
 \usage{
-mml_logit(data, arities, sampleSize, x, y, sigma = 3)
+mml_logit(data, arities, sampleSize, x, y, sigma = 3, debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -19,6 +19,8 @@ mml_logit(data, arities, sampleSize, x, y, sigma = 3)
 
 \item{sigma}{The standard derivation of the assumed Gaussian distribution for parameter prior. The 
 default value is 3 as suggested by the original paper.}
+
+\item{debug}{A boolean argument to display mml score for each part.}
 }
 \value{
 The function by default returns the mml score. But it can also return a list of detailed values, 

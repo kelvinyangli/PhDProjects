@@ -7,7 +7,7 @@
 #' @param xIndices Indices of the input variables.
 #' @param yIndex Input of the output/target variable. 
 #' @export
-negLogLike = function(dataNumeric, betaDotX, xIndices, yIndex) {
+nll_logit = function(dataNumeric, betaDotX, xIndices, yIndex) {
   if (length(xIndices) < 1) {
     ll = -log(1 + exp(betaDotX)) * nrow(dataNumeric) + sum(dataNumeric[, yIndex]) * betaDotX
   } else {
