@@ -7,8 +7,8 @@ output:
   html_document: default
 ---
 
-```{r global_options, include=F, warning=F, message=F, eval=T}
-knitr::opts_chunk$set(echo = TRUE, eval = T)
+```{r global_options, include=F, warning=F, message=F, eval=F}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = TRUE, eval = T)
 source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
 ```
 
@@ -37,7 +37,8 @@ mle_est_nb = function(y, x, data, smoothing = 1) {
       (rowSums(table(data[, c(yIndex, xIndices[i])])) + smoothing * nlevels(data[, xIndices[i]])))
   } # end for i 
   # always store y parameters at the last 
-  lst[[length(x) + 1]] = (table(data[, yIndex]) + smoothing) / (nrow(data) + smoothing * nlevels(data[, yIndex]))
+  lst[[length(x) + 1]] = 
+    (table(data[, yIndex]) + smoothing) / (nrow(data) + smoothing * nlevels(data[, yIndex]))
   names(lst) = c(x, y)
   return(lst)
 }
@@ -133,71 +134,36 @@ prod_pijk = function(dataPoint, pars, xIndices, yValue) {
   }
   return(mm)
 }
-```
 
-```{r}
-dag = empty.graph(c("X1", "X2", "Y", "X3"))
-dag = set.arc(dag, "Y", "X1")
-dag = set.arc(dag, "Y", "X2")
-dag = set.arc(dag,  "Y", "X3")
-#set.seed(10086)
-cpts = randCPTs(dag, 2, 1)
-n = 10000
-data = rbn(cpts, n)
-nVars = ncol(data)
-
-#data = data[, sample(1:ncol(data))]
-y = "Y"
-x = c("X1", "X2", "X3")
-arities = sapply(data, nlevels)
-yIndex = which(colnames(data) == y)
-xIndices = which(colnames(data) %in% x)
-
-# mle of parameters with smoothing
-pars = mle_est_nb(y, x, data, 1) 
-
-# p(y=T)
-py1 = pars[[length(pars)]][[1]]
-# p(y=F)
-py2 = pars[[length(pars)]][[2]]
-
-# a vector of \prod_j p(x_ij|y=1)
-prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 1)
-# a vector of \prod_j p(x_ij|y=2)
-prodPij2 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 2)
-
-# a vector of p_xi 
-px = py1 * prodPij1 + py2 * prodPij2
-
-# a matrix of p(x_j|y=T) and p(y_j|y=F)
-probsMatrix = c()
-for (j in xIndices) {
-  probsMatrix = cbind(probsMatrix, apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 1), apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 2))
+# a function to calculate FIM
+calculate_fim = function(prodPij1, prodPij2, px, probsMatrix, py1, py2, arities, yIndex) {
+  # empty FIM
+  fimDim = (arities[yIndex] - 1) + length(x) * arities[yIndex]
+  fim = matrix(0, nrow = fimDim, ncol = fimDim)
+  
+  # off diagonal entries
+  mm = prodPij1 * prodPij2 / (px ^ 2) # a common contant 
+  fim[1, -1] = colSums(mm / probsMatrix) # fill in 1st row of FIM
+  fim[1, (2:ncol(fim))[odd(2:ncol(fim))]] = -1 * fim[1, (2:ncol(fim))[odd(2:ncol(fim))]]
+  for (rowIndex in 2:(nrow(fim) - 1)) {
+    if (ncol(fim) - rowIndex == 1) {
+      fim[rowIndex, -(1:rowIndex)] = 
+        sum(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
+    } else {
+      fim[rowIndex, -(1:rowIndex)] = 
+        colSums(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
+    } # end else
+  }
+  fim = fim + t(fim) # duplicate upper to lower triangular fim
+  
+  # diagonal entries
+  # assume all variables are binary, hence the diag[1] is always the 2nd derivative w.r.t. p_i0
+  diag(fim)[1] = sum(prodPij1 / (py1 * px) + prodPij2 / (py2 * px) - ((prodPij1 - prodPij2) / px) ^ 2)
+  diag(fim)[-1] = colSums(py1 * py2 * prodPij1 * prodPij2 / (px * probsMatrix) ^ 2)
+  
+  return(fim)
 }
-```
 
-```{r}
-# empty FIM
-fimDim = (arities[yIndex] - 1) + length(x) * arities[yIndex]
-fim = matrix(0, nrow = fimDim, ncol = fimDim)
-
-# off diagonal entries
-mm = prodPij1 * prodPij2 / (px ^ 2) # a common contant 
-fim[1, -1] = colSums(mm / probsMatrix) # fill in 1st row of FIM
-fim[1, odd(2:ncol(fim))] = -1 * fim[1, odd(2:ncol(fim))]
-for (rowIndex in 2:(nrow(fim) - 1)) {
-  if (ncol(fim) - rowIndex == 1) {
-    fim[rowIndex, -(1:rowIndex)] = sum(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
-  } else {
-    fim[rowIndex, -(1:rowIndex)] = colSums(-mm * py1 * py2 / (probsMatrix[, rowIndex - 1] * probsMatrix[, -(1:(rowIndex - 1))]))
-  } # end else
-}
-fim = fim + t(fim) # duplicate upper to lower triangular fim
-
-# diagonal entries
-# assume all variables are binary, hence the diag[1] is always the 2nd derivative w.r.t. p_i0
-diag(fim)[1] = sum(prodPij1 / (py1 * px) + prodPij2 / (py2 * px) - ((prodPij1 - prodPij2) / px) ^ 2)
-diag(fim)[-1] = colSums(py1 * py2 * prodPij1 * prodPij2 / (px * probsMatrix) ^ 2)
 ```
 
 ## MML of Naive Bayes
@@ -222,54 +188,141 @@ where $d$ is the number of free parameters and $k_d$ is the lattice constant for
 
 ## MML implementations
 ```{r}
-# negative log likelihood
-nll = -sum(apply(data, 1, nll_auxiliary, pars = pars, xIndices = xIndices, yIndex = yIndex)) + sum(log(px))
-# log determinant of FIM
-f = det(fim)
-logF = log(f)
-# number of free parameters
-d = nrow(fim)
-# log prior
-logPrior = sum(unlist(lapply(pars, log)))
-# lattice constant
-k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)
-if (d <= length(k)) {
-  kd = k[d]
-} else {
-  kd = min(k)
+mml_NB = function(data, pars, fim, px, xIndices, yIndex, debug = FALSE) {
+  # negative log likelihood
+  nll = 
+    -sum(apply(data, 1, nll_auxiliary, pars = pars, xIndices = xIndices, yIndex = yIndex)) + 
+    sum(log(px))
+  # log determinant of FIM
+  logF = log(det(fim))
+  # number of free parameters
+  d = nrow(fim)
+  # log prior
+  logPrior = sum(unlist(lapply(pars, log)))
+  # lattice constant
+  k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)
+  if (d <= length(k)) {
+    kd = k[d]
+  } else {
+    kd = min(k)
+  }
+  # mml
+  l = -logPrior + 0.5 * logF + nll + 0.5 * d * (1 + log(kd))
+  
+  if (debug) {
+    cat("mml=", l, "\n")
+    cat("@ 1st part=", l-nll, "\n")
+    cat("*** -logPrior=", -logPrior, "\n")
+    cat("*** logFisher=", logF, "\n")
+    cat("*** logLattice=", 0.5*d*(1+log(kd)), "\n")
+    cat("@ 2nd part=nll=", nll, "\n")
+  }
+  
+  return(l)
 }
-
-# mml
-l = -logPrior + 0.5 * logF + nll + 0.5 * d * (1 + log(kd))
-cat("mml=", l, "\n")
-cat("@ 1st part=", l-nll, "\n")
-cat("*** logPrior=", logPrior, "\n")
-cat("*** 0.5*log(det)=", 0.5*logF, "\n")
-cat("*** lattice=", 0.5*d*(1+log(kd)), "\n")
-cat("@ 2nd part=nll=", nll, "\n")
-
 ``` 
-## MML CPT
+
+## Random model
+```{r}
+dag = empty.graph(c("Y", paste0("X", 1:5)))
+for (i in 2:nnodes(dag)) {
+  dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
+}
+cpts = randCPTs(dag, 2, 1)
+n = 1000
+data = rbn(cpts, n)
+nVars = ncol(data)
+#data = data[, sample(1:ncol(data))]
+arities = sapply(data, nlevels)
+```
+
+## Executing MML_NB
+```{r}
+y = "Y"
+x = c("X2", "X4")
+yIndex = which(colnames(data) == y)
+xIndices = which(colnames(data) %in% x)
+# mle of parameters with smoothing
+pars = mle_est_nb(y, x, data, 1) 
+# p(y=T)
+py1 = pars[[length(pars)]][[1]]
+# p(y=F)
+py2 = pars[[length(pars)]][[2]]
+# a vector of \prod_j p(x_ij|y=1)
+prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 1)
+# a vector of \prod_j p(x_ij|y=2)
+prodPij2 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 2)
+# a vector of p_xi 
+px = py1 * prodPij1 + py2 * prodPij2
+# a matrix of p(x_j|y=T) and p(y_j|y=F)
+probsMatrix = c()
+for (j in xIndices) {
+  probsMatrix = 
+    cbind(probsMatrix, apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 1), apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 2))
+}
+# FIM
+fim = calculate_fim(prodPij1, prodPij2, px, probsMatrix, py1, py2, arities, yIndex)
+# mml
+(i_nb = mml_NB(data, pars, fim, px, xIndices, yIndex, debug=TRUE))
+```
+
+## MML_CPT
 ```{r}
 di = getDataInfo(data)
-mmlCPT(yIndex, xIndices, di$indexListPerNodePerValue, di$arities, n)
+mbForwardSelection.fast(data, names(data)[yIndex], di$arities, di$indexListPerNodePerValue, debug=F)
+(i_cpt = mmlCPT(yIndex, xIndices, di$indexListPerNodePerValue, di$arities, n))
 ```
 The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
+## MML_Logit
+
+```{r}
+dataInfo = getDataInfo(data)
+indexListPerNodePerValue = dataInfo$indexListPerNodePerValue
+base = exp(1)
+indicatorMatrix = getIndicator(data)
+interactData = getInteractData(indicatorMatrix)
+completeIndicatorMatrix = cbind(indicatorMatrix, interactData)
+
+debug = T
+allNodes = names(cpts)
+# mbForwardSelection(data, y, mmlLogit, arities, indexListPerNodePerValue, 
+#                      base = exp(1), indicatorMatrix = indicatorMatrix, mbSize = 1000, 
+#                      interaction = FALSE, debug)
+
+(i_lr = msgLenWithPredictors(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma=3))
+#mmlLogit(data, indicatorMatrix, yIndex, xIndices, arities, allNodes, sigma=3)
+```
+
 ## Sanity check
 This is a sanity check to ensure that nll is corrected calculated. The following code use gRain to compute the posterior probability $P(Y_i|\vec{X_i})$ based on the estimated cpts from data. The posterior probability given each data point is then used to compute the nll of the entire data set. The answer confirms that the above nll calculation is correct. 
-```{r}
+```{r, eval=F}
 cptsEst = bn.fit(dag, data, method = "bayes")
 obj = gRbase::compile(as.grain(cptsEst))
-post = querygrain(obj, nodes = c("Y", "X1", "X2", "X3"), type = "conditional")
+post = querygrain(obj, nodes = names(data)[c(yIndex, xIndices)], type = "conditional")
 nll2 = 0
 for (i in 1:nrow(data)) {
-  x1 = data[i, 1]
-  x2 = data[i, 2]
-  x3 = data[i, 4]
-  y = data[i, 3]
+  x1 = data[i, "X1"]
+  x2 = data[i, "X2"]
+  x3 = data[i, "X3"]
+  y = data[i, "Y"]
   nll2 = nll2 + log(post[x1, x2, x3, y])
 }
-nll2
+-nll2
 ```
+
+## Comparison
+```{r}
+i_nb
+i_cpt
+i_lr
+```
+
+## Observations
+
+* The above tests show that nll for both naive bayes and logit are close to nll using true cpts. But mml_nb is larger than mml_logit and mml_cpt even if the true model is a naive bayes model. This is likely to be  caused by large message length for nb parameter priors and definitely large log(det(fim)) as compared with mml_logit. Could this because of the mml_logit is only for 1st order logit model, hence the model is simpler than a nb? 
+
+* In mml_nb, det(fim) are almost always negative when X is a single variable. When Xs are two or more variables, it is less likely to have negative determinant. Not sure what's the problem. This problem may have been fixed. But occasionally the determinant is still a small negative number, perhaps due to under flow. 
+
+
 

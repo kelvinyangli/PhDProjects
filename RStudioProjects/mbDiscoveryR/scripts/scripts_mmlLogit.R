@@ -1,6 +1,6 @@
-dag = generateDag(5, 2)
-cpts = generateCPTs(dag, 2, 1)
-data = rbn(cpts, 1000)
+dag = randDag(5, 2)
+cpts = randCPTs(dag, 2, 1)
+data = rbn(cpts, 100)
 graphviz.plot(dag)
 
 #data = asia
@@ -26,13 +26,15 @@ for (i in 1:length(cpts)) {
   ls1[[i]] = mbForwardSelection(data, node, mmlLogit, arities, indexListPerNodePerValue, 
                      base = exp(1), indicatorMatrix = indicatorMatrix, mbSize = 1000, 
                      interaction = FALSE, debug)
-  
-  ls2[[i]] = mbForwardSelectionForMML2ndOrderLogit(data, node, arities, indexListPerNodePerValue,
-                                        base = exp(1), indicatorMatrix, 
-                                        interactData, completeIndicatorMatrix, debug)
-  
+  cat("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \n")
+  # ls2[[i]] = mbForwardSelectionForMML2ndOrderLogit(data, node, arities, indexListPerNodePerValue,
+  #                                       base = exp(1), indicatorMatrix, 
+  #                                       interactData, completeIndicatorMatrix, debug)
+  # 
   ls3[[i]] = mbForwardSelection.fast(data, node, arities, indexListPerNodePerValue, base = exp(1), debug)
 }
+
+ls2 = ls1
 
 # compute accuracy 
 mtx = matrix(0, nrow = length(cpts) + 1, ncol = 6)
@@ -56,6 +58,7 @@ for (i in 1:length(cpts)) {
 
 mtx[length(cpts) + 1, ] = apply(mtx, 2, mean)
 round(mtx, 2)
+
 
 
 

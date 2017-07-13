@@ -5,7 +5,7 @@ dag = set.arc(dag, "V2", "V3")
 dag = set.arc(dag, "V4", "V5")
 #graphviz.plot(dag)
 
-n = 1000
+n = 10000
 v1 = rbinom(n, 1, runif(1))
 v2 = rbinom(n, 1, runif(1))
 y = 1 + 0.2 * v1 + 0.5 * v2 + 3 * v1 ^ 2 + 4 * v1 * v2
@@ -44,10 +44,10 @@ mbForwardSelection(data, node, mmlLogit, arities, indexListPerNodePerValue,
                    base = exp(1), indicatorMatrix = indicatorMatrix, mbSize = 1000, 
                    interaction = FALSE, debug)
 
-cat("#################################### \n")
-mbForwardSelectionForMML2ndOrderLogit(data, node, arities, indexListPerNodePerValue,
-                                      base = exp(1), indicatorMatrix, 
-                                      interactData, completeIndicatorMatrix, debug)
+# cat("#################################### \n")
+# mbForwardSelectionForMML2ndOrderLogit(data, node, arities, indexListPerNodePerValue,
+#                                       base = exp(1), indicatorMatrix, 
+#                                       interactData, completeIndicatorMatrix, debug)
 
 cat("#################################### \n")
 mbForwardSelection.fast(data, node, arities, indexListPerNodePerValue, base = exp(1), debug)

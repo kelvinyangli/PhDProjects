@@ -105,22 +105,27 @@ msgLenWithPredictors = function(data, indicatorMatrix, yIndex, xIndices, arities
   logFisher = logDeterminant(fisherInfoMatrix)
   
   # computing mml 
-  mmlFixedPart =  0.5 * nFreePar * log(2 * pi) + nFreePar * log(sigma) - 0.5 * log(arityOfY) - 
-    0.5 * sum((arities[xIndices] - 1) * log(arityOfY) + 
-                (arityOfY - 1) * log(arities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
+  # mmlFixedPart =  0.5 * nFreePar * log(2 * pi) + nFreePar * log(sigma) - 0.5 * log(arityOfY) - 
+  #   0.5 * sum((arities[xIndices] - 1) * log(arityOfY) + 
+  #               (arityOfY - 1) * log(arities[xIndices])) + 0.5 * nFreePar*(1 + log(latticeConst)) 
   
   # sum of logit parameters square
-  sumParSquare = 0 
-  for (i in 1:length(nFreePar)) sumParSquare = sumParSquare + beta[i] ^ 2
+  # sumParSquare = 0 
+  # for (i in 1:nFreePar) sumParSquare = sumParSquare + beta[i] ^ 2
+  sumParSquare = sum(beta ^ 2)
   
-  mmlNonFixedPart = 0.5 * sumParSquare / sigma ^ 2 + 0.5 * logFisher + nll
+  nlogPrior = 0.5 * nFreePar * log(2 * pi) + nFreePar * log(sigma) - 0.5 * log(arityOfY) - 
+    0.5 * sum((arities[xIndices] - 1) * log(arityOfY) + (arityOfY - 1) * log(arities[xIndices])) + 
+    0.5 * sumParSquare / sigma ^ 2
   
-  mml = mmlFixedPart + mmlNonFixedPart
+  logLattice = 0.5 * nFreePar*(1 + log(latticeConst))
+  
+  mml = nlogPrior + logLattice + 0.5 * logFisher + nll
   
   # store results in a list 
-  lst = list(beta, nll, logFisher, mml)
+  lst = list(beta, nlogPrior, logLattice, nll, logFisher, mml)
   
-  names(lst) = c("par", "nll", "logFisher", "mml")
+  names(lst) = c("par", "nlogPrior", "logLattice", "nll", "logFisher", "mml")
   
   return(lst)
   

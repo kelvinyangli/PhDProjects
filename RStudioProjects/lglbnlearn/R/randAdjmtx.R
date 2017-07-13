@@ -1,5 +1,12 @@
-# this function is the same as the randDag function, except it generates adjacency matrix rather than a graph
-# the resulting adj matrix can then be transfered into bnlearn format dag using the self-written matrix2dag function
+#' A function to generate random adjacency matrix
+#'
+#' This function randomly generate a DAG based on the specified structure details. It is the same as the 
+#' randDag() function, except the generated DAG is stored in its adjacency matrix format. The adjacency
+#' matrix can be transferred into the bnlearn format DAG using the matrix2dag() function. 
+#' @param nvars The desired number of varaibles. 
+#' @param maxNPa The desired maximum number of parents, with minimum 0 parent. 
+#' @param adjList A list of user preferred adjacencies. The default is NULL, meaning no preferred adjacenceis. 
+#' @export
 randAdjmtx = function(nvars, maxNPa, adjList = NULL) {
   
   vars = paste0("V", 1:nvars)
@@ -32,7 +39,7 @@ randAdjmtx = function(nvars, maxNPa, adjList = NULL) {
     } # end if length(adjList) > 0
     
   } # end else 
-
+  
   return(mtx)
   
 }
