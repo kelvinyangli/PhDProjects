@@ -5,7 +5,7 @@ date: "11 July 2017"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
 ```
@@ -46,6 +46,8 @@ forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logF
 ## Comparison with mml_cpt
 ```{r}
 nrep = 1
+#eval_metric = edit_dist_mb
+eval_metric = classfication_accuracy_mb
 for (j in 1:nrep) {
   dag = randDag(15, 3)
   cpts = randCPTs(dag, 2, 1)
@@ -66,8 +68,8 @@ for (j in 1:nrep) {
   # evaluation
   accLogit = accCPT = matrix(0, nrow = length(vars), ncol = 3)
   for (i in 1:length(vars)) {
-    accLogit[i, -3] = unlist(edit_dist_mb(bnlearn::mb(dag, vars[i]), lstLogit[[i]], vars, vars[i]))
-    accCPT[i, -3] = unlist(edit_dist_mb(bnlearn::mb(dag, vars[i]), lstCPT[[i]], vars, vars[i]))
+    accLogit[i, -3] = unlist(eval_metric(bnlearn::mb(dag, vars[i]), lstLogit[[i]], vars, vars[i]))
+    accCPT[i, -3] = unlist(eval_metric(bnlearn::mb(dag, vars[i]), lstCPT[[i]], vars, vars[i]))
   }
   accLogit[, 3] = 2 * accLogit[, 1] * accLogit[, 2] / (accLogit[, 1] + accLogit[, 2])
   accCPT[, 3] = 2 * accCPT[, 1] * accCPT[, 2] / (accCPT[, 1] + accCPT[, 2])

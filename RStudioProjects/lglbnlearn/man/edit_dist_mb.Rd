@@ -17,7 +17,8 @@ edit_dist_mb(mbTrue, mbLearned, vars, target)
 }
 \description{
 This is a function to calculate the edit distance from the learned Markov blanket to the true 
-Markov blanket. If both true and learned are empty, the edit distance is 0; if only one of them is 
+Markov blanket. Edit distance is defined as the number of operations required to get from one to the 
+other. If both true and learned are empty, the edit distance is 0; if only one of them is 
 empty, the edit distance is the size of the other; if none of them is empty, the edit distance is 
 the false positives plus the false negatives.
 }
