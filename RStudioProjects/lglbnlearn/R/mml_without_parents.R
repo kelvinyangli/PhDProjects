@@ -4,8 +4,8 @@
 #' a node without any parents. 
 #' @param indexListPerNodePerValue A list of stored indices for each value of each node. It is obtained 
 #' by the function count_occurance().
-#' @param arities 
-#' @param sampleSize
+#' @param arities A vector of variable ariteis.
+#' @param sampleSize Sample size of a given data set. 
 #' @param targetIndex Index of the target node.  
 #' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.
 #' @param base The base of the logarithm.  

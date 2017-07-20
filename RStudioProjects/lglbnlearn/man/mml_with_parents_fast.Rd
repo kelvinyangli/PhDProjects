@@ -11,9 +11,11 @@ mml_with_parents_fast(indexListPerNodePerValue, cachedIndicesList, arities,
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
 by the function count_occurance().}
 
-\item{cachedIndicesList}{}
+\item{cachedIndicesList}{A vector of indices stored to speed up calculations.}
 
-\item{arities}{}
+\item{arities}{A vector of varaible arities.}
+
+\item{sampleSize}{Sample size of a given data set.}
 
 \item{parentsIndices}{Indices of parents nodes.}
 

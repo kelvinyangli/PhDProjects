@@ -44,7 +44,9 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
     minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base)
   } else if (scoreIndex == 2) {#logit
     minMsgLen = score(data, arities, sampleSize, c(), target, sigma = sigma)
-  } 
+  } else if (scoreIndex == 3) {#nb
+    minMsgLen = score(data, vars, arities, sampleSize, c(), target)
+  }
   
   if (debug) {
     cat("Search: Forward greedy with", options[scoreIndex], "\n")
@@ -71,6 +73,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
           score(nodeIndex, inputIndices, indexListPerNodePerValue, arities, sampleSize, base)
       } else if (scoreIndex == 2) {#logit
         msgLenCurrent = score(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
+      } else if (scoreIndex == 3) {#nb
+        msgLenCurrent = score(data, vars, arities, sampleSize, vars[inputIndices], target) 
       }
       
       if (debug) cat("parents =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")

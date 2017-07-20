@@ -2,7 +2,7 @@
 % Please edit documentation in R/mml_logit.R
 \name{mml_logit}
 \alias{mml_logit}
-\title{A function to calculate the mml of a 1st order logit model}
+\title{A function to calculate the mml of the 1st order logit model}
 \usage{
 mml_logit(data, arities, sampleSize, x, y, sigma = 3, debug = FALSE)
 }

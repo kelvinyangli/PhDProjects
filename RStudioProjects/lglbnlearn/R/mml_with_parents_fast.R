@@ -3,9 +3,9 @@
 #' This is an auxiliary function to mml_cpt_fast. It calculates the mml score of a node given its parents. 
 #' @param indexListPerNodePerValue A list of stored indices for each value of each node. It is obtained 
 #' by the function count_occurance().
-#' @param cachedIndicesList 
-#' @param arities 
-#' @param sampleSize
+#' @param cachedIndicesList A vector of indices stored to speed up calculations.
+#' @param arities A vector of varaible arities.
+#' @param sampleSize Sample size of a given data set. 
 #' @param parentsIndices Indices of parents nodes. 
 #' @param targetIndex Index of the target node.  
 #' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.

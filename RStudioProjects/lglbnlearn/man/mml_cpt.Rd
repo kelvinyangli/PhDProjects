@@ -11,7 +11,9 @@ mml_cpt(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
 by the function count_occurance().}
 
-\item{arities}{}
+\item{arities}{A vector of varaible arities.}
+
+\item{sampleSize}{Sample size of the given data set.}
 
 \item{parentsIndices}{Indices of parents nodes.}
 

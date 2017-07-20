@@ -1,4 +1,4 @@
-#' A function to calculate the mml of a 1st order logit model
+#' A function to calculate the mml of the 1st order logit model
 #'
 #' This function calculates the mml of a 1st order logit model given input and output variables. The mml 
 #' 1st order logit formula was derived by [Neil, Wallace and Korb 1999]. The parameter priors are assumed 
