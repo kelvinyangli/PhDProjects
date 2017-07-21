@@ -1,0 +1,107 @@
+---
+title: "MB_learner_comparison"
+author: "Kelvin Li"
+date: "21 July 2017"
+output: html_document
+---
+
+```{r global_options, include=F, warning=F, message=F, eval=T, echo=F, message=F}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+
+logFactorialSheet = read.csv(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv")) 
+````
+
+## Random model
+```{r}
+# dag = empty.graph(c("Y", paste0("X", 1:20)))
+# for (i in 2:nnodes(dag)) {
+#   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
+# }
+dag = randDag(15, 3)
+# graphviz.plot(dag)
+cpts = randCPTs(dag, 2, 1)
+sampleSize = n = 1000
+data = rbn(cpts, n)
+vars = colnames(data)
+arities = sapply(data, nlevels)
+names(arities) = c()
+# y = "V7"
+# x = bnlearn::mb(dag, y)
+# yIndex = which(vars == y)
+# xIndices = which(vars %in% x)
+# mb(dag, y)
+```
+
+## Executing MML_NB
+```{r, eval = T}
+lst_nb = list()
+for (i in 1:length(vars)) {
+  y = vars[i]
+  lst_nb[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb)
+}
+
+```
+
+## MML_CPT
+```{r}
+indexListPerNodePerValue = count_occurance(data, arities)
+lst_cpt = list()
+for (i in 1:length(vars)) {
+  y = vars[i]
+  lst_cpt[[i]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1))
+}
+```
+The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
+
+## MML_Logit
+
+```{r}
+dataNumeric = factor2numeric(data)
+vars = names(data)
+sampleSize = n
+lst_logit = list()
+for (i in 1:length(vars)) {
+  y = vars[i]
+  lst_logit[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric)
+}
+```
+
+## Accuracy
+```{r}
+acc_nb = acc_cpt = acc_logit = matrix(0, nrow = length(vars), ncol = 2)
+for (i in 1:length(vars)) {
+  acc_nb[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_nb[[i]], vars, vars[i])  
+}
+
+for (i in 1:length(vars)) {
+  acc_cpt[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_cpt[[i]], vars, vars[i])  
+}
+
+for (i in 1:length(vars)) {
+  acc_logit[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_logit[[i]], vars, vars[i])  
+}
+
+x1 = round(colMeans(acc_nb), 2)
+x2 = round(1.96 * apply(acc_nb, 2, sd) / sqrt(length(vars)), 2)
+x3 = round(colMeans(acc_cpt), 2)
+x4 = round(1.96 * apply(acc_cpt, 2, sd) / sqrt(length(vars)), 2)
+x5 = round(colMeans(acc_logit), 2)
+x6 = round(1.96 * apply(acc_logit, 2, sd) / sqrt(length(vars)), 2)
+
+cat("mml_nb:", x1[1], "(", x2[1], ")", x1[2], "(", x2[2], ") \n")
+cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
+cat("mml_logit:", x5[1], "(", x6[1], ")", x5[2], "(", x6[2], ") \n")
+```
+
+## Findings
+* mml_cpt is almost always the best among logit and naive bayes. 
+* 
+
+
+

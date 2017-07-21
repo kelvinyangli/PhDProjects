@@ -8,14 +8,14 @@ lapply(libraries, require, character.only = TRUE)
 #library(bnlearn)
 #library(gtools)
 #options(scipen = 10)
-sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
-  allFiles = list.files(path, pattern = fileName)
-  for (file in allFiles) {
-    if(trace) cat(file,":")
-    source(file.path(path, file), ...)
-    if(trace) cat("\n")
-  }
-}
+# sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
+#   allFiles = list.files(path, pattern = fileName)
+#   for (file in allFiles) {
+#     if(trace) cat(file,":")
+#     source(file.path(path, file), ...)
+#     if(trace) cat("\n")
+#   }
+# }
 
 # source from local repository
 #sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/mbMMLCPT/")
@@ -26,6 +26,5 @@ sourceDir <- function(path, fileName = ".R", trace = TRUE, ...) {
 #sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/mbDiscoveryR/searches/")
 #sourceDir("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/source code/")
 
-# log factorial sheet
-logFactorialSheet = read.csv("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv") 
 
+# install.packages("../lglbnlearn_0.0.0.9000.tar.gz",repos=NULL, type = "source")

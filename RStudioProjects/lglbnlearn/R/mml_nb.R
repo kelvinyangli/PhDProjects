@@ -41,7 +41,12 @@ mml_nb = function(data, vars, arities, sampleSize, x, y, debug = FALSE) {
     # FIM
     fim = fim_nb(prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
     # log determinant of FIM
-    logF = log(det(fim))
+    detFIM = det(fim)
+    # for some reason, we have negative determinant when there is a small number of input variables,
+    # since the problem can't be resolved for now, I manually convert negative determinant into 
+    # positive. Most of negative determinant are very small negative values, meaning close to 0. 
+    if (detFIM < 0) detFIM = -detFIM 
+    logF = log(detFIM)
     # number of free parameters
     d = nrow(fim)
   } else {# if x is empty fim is a 1x1 matrix 

@@ -1,0 +1,25 @@
+---
+title: "Mid_candidature_review"
+author: "Kelvin Li"
+date: "21 July 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Confirmation
+* MB discovery based on cmi chaning
+* MB discovery based on mml_logit 1st order
+
+## Mid-candidature
+* MB discovery based on mml_cpt: this method has been proved to be promissing and competitive with state-of-the arts. One concern is that this method assumes a fixed model structure. That is, all MB candidate nodes are parents of the target node. The could potentially stop the algorithm in an early stage due to its large model complexity. 
+
+* Polytree learning within MB: we then proposed to exhaustively search for valid polytree structures within MBs using MMl_CPT as an objective function. Here we proposed a way to enumerate all MB-polytrees, and hence demonstrated that it is feasible to do a full search when the number of nodes is not large. 
+
+* Use polytree as prior to CaMML: we tried to incorporate learned MBs into CaMML by providing MB-polytree connections as priors to CaMML with arc confidence estimated using bootstrapping. The result, however, is almost always worse than run CaMML alone without any prior at all. We suspect this is due to several reasons, such as inaccurate learned MBs and local structures. 
+
+* Merge polytrees together in a hard way: alternatively, we also tried to merge all learned MB-polytrees together in a hard way, as what most other people do to obtain a global structure. The result is not bad, but doesn't seem to improve state-of-the-arts (a direct comparison is made against a result published in 2010 UAI). 
+
+* MB discovery based on mml_nb: with the motivation to further improve accuracy of our MB learner, especially the recall rate, we proposed to consider serveral different model structures other than just all parents when learning MBs. We looked into mml with NB, which generally requires less number of paremters than a CPT, but mml_nb is almost always worse than mml_cpt and mml_logit. 

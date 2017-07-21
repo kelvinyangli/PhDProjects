@@ -3,18 +3,24 @@ title: "mml87_nb"
 author: "Kelvin"
 date: "27 June 2017"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r global_options, include=F, warning=F, message=F, eval=T, echo=F, message=F}
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
-source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
-#library(lglbnlearn)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+
+logFactorialSheet = read.csv(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv")) 
 ```
 
 ## MLE of NB parameters
-The MLE estimations of NB parameters are -*as follows:
+The MLE estimations of NB parameters are as follows:
 \[
 \begin{aligned}
 P(Y=y) &= \frac{count(y)}{n} \\
@@ -101,7 +107,7 @@ dag = empty.graph(c("Y", paste0("X", 1:10)))
 for (i in 2:nnodes(dag)) {
   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 }
-dag = randDag(20, 4)
+#dag = randDag(20, 4)
 graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
 sampleSize = n = 1000
@@ -109,23 +115,25 @@ data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
 names(arities) = c()
-y = "V7"
-x = bnlearn::mb(dag, y)
+y = "Y"
+#x = bnlearn::mb(dag, y)
 yIndex = which(vars == y)
-xIndices = which(vars %in% x)
+#xIndices = which(vars %in% x)
+#mb(dag, y)
 ```
 
 ## Executing MML_NB
-```{r, eval = F}
-(i_nb = mml_nb(data, vars, arities, sampleSize, x="V17", y, debug = TRUE))
-forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, debug = T)
+```{r, eval = T}
+indices = c(2,3,4,5,6,7,8,9,10,11)
+(i_nb = mml_nb(data, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
+#forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, debug = F)
 ```
 
 ## MML_CPT
 ```{r}
 indexListPerNodePerValue = count_occurance(data, arities)
-# forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1), debug = T)
-(i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, xIndices, yIndex, logFactorialSheet, base = exp(1)))
+#forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1), debug = F)
+(i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, indices, yIndex, logFactorialSheet, base = exp(1)))
 ```
 The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
@@ -135,8 +143,8 @@ The above mml + cpt is even smaller than mml + nb, which is expected to be short
 dataNumeric = factor2numeric(data)
 vars = names(data)
 sampleSize = n
-(i_lr = mml_logit(data, arities, sampleSize, x, y, sigma = 3, debug = T))
-# forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = T)
+(i_lr = mml_logit(data, arities, sampleSize, vars[indices], y, sigma = 3, debug = T))
+#forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
 ```
 
 ## Sanity check
@@ -172,5 +180,11 @@ i_lr
 * As suggested by Lloyd, did a sanity check by approximating 2nd derivatives using numerical methods. The
 sanity check was conducted on a simple example and the results are agreed with analytical solutions. 
 
+* mml smoothing 0.5 * number of states
 
+* mml informative increment per parameter value 
+
+* lattice constant 1/2*pi*e
+
+* first part of nb, double check 0.5 constant of log fisher
 
