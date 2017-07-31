@@ -66,8 +66,8 @@ mml_logit = function(data, arities, sampleSize, x, y, sigma = 3, debug = FALSE) 
   
   # mml score
   mml = nlogPrior + nlogLattice + 0.5 * logF + nll
-  lst = list(mml, nlogPrior, nlogLattice, logF, nll)
-  names(lst) = c("mml", "nlogPrior", "nlogLattice", "logF", "nll")
+  lst = list(nlogPrior + nlogLattice + 0.5 * logF, mml, nlogPrior, nlogLattice, logF, nll)
+  names(lst) = c("1st", "mml", "nlogPrior", "nlogLattice", "logF", "nll")
   
   if (debug) {
     return(lst)

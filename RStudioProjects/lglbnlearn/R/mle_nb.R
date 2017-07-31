@@ -9,7 +9,7 @@
 #' @param smoothing A value for parameter smoothing to avoid having 0 or 1 probabilities. 1 for laplacing 
 #' smoothing, 0.5 for mml smoothing. 
 #' @export
-mle_est_nb = function(data, vars, xIndices, yIndex, smoothing = 0.5) {
+mle_nb = function(data, vars, xIndices, yIndex, smoothing = 0.5) {
   lst = list()
   if (length(xIndices) > 0) {
     for (i in 1:length(xIndices)) {

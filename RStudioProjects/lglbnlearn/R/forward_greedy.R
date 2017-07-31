@@ -16,13 +16,16 @@
 #' NULL when score is mml_cpt or mml_nb. 
 #' @param indexListPerNodePerValue As explained by argument name. It is obtained by getting the detailed 
 #' information of the given data using the function getDataInfo(). It is not NULL only when score is mml_cpt.
+#' @param probSign A data frame with 1 and -1, which corresponds to the 1st and 2nd level of a varaible. 
+#' It is used for computing the FIM of Naive Bayes.
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 #' mml score. 
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective 
 #' function. 
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, score, base = exp(1), sigma = 3, 
-                          dataNumeric = NULL, indexListPerNodePerValue = NULL, debug = FALSE) {
+                          dataNumeric = NULL, indexListPerNodePerValue = NULL, probSign = NULL, 
+                          debug = FALSE) {
   
   options = c("mmlCPT", "mmlLogit", "mmlNB")
   if (!is.null(indexListPerNodePerValue)) {
@@ -45,7 +48,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
   } else if (scoreIndex == 2) {#logit
     minMsgLen = score(data, arities, sampleSize, c(), target, sigma = sigma)
   } else if (scoreIndex == 3) {#nb
-    minMsgLen = score(data, vars, arities, sampleSize, c(), target)
+    minMsgLen = score(data, probSign, vars, arities, sampleSize, c(), target)
   }
   
   if (debug) {
@@ -74,7 +77,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
       } else if (scoreIndex == 2) {#logit
         msgLenCurrent = score(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
       } else if (scoreIndex == 3) {#nb
-        msgLenCurrent = score(data, vars, arities, sampleSize, vars[inputIndices], target) 
+        msgLenCurrent = score(data, probSign, vars, arities, sampleSize, vars[inputIndices], target) 
       }
       
       if (debug) cat("parents =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")

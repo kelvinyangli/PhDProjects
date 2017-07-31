@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r global_options, include=F, warning=F, message=F, eval=T, echo=F, message=F}
-knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = T, eval = T)
 if (.Platform$OS.type == "windows") {
   dir = "C:/Users/"
 } else {
@@ -29,55 +29,84 @@ P(X_j = x|Y = y) &= \frac{count(x) \cup count(y)}{count(y)}
 \]
 
 ## Negative log likelihood of NB
-For a Naive Bayes model with binary variable, its parameters are $\{P(Y_i=T), P(X_{ij}|Y_i=T), P(X_{ij}|Y_i=F)\}$. To simply the notations, we use $\{p_{i0}, p_{ij1}, p_{ij2}\}$ to denote the above probabilities respectively. The likelihood of Naive Bayes given a data set is then
+For a Naive Bayes model with binary variable, its parameters are $\{P(Y_i=1), P(X_{ij}=1|Y_i=1), P(X_{ij}=1|Y_i=0)\}$. To simply the notations, we use $\{q_{i1}, p_{ij1}, p_{ij0}\}$ to denote the above probabilities respectively, and denote 
 \[
 \begin{aligned}
-l = \prod_i^n P(Y_i=T|\vec{X_i})^{Y_i} (1-P(Y_i=T|\vec{X_i}))^{1-Y_i}
+\pi_{i1} &= \prod_{j=1}^m p_{ij1}^{x_i}(1-p_{ij1})^{1-x_i} \\
+\pi_{i0} &= \prod_{j=1}^m p_{ij0}^{x_i}(1-p_{ij0})^{1-x_i} \\
+pxy_{i1} &= q_{i1}\pi_{i1} \\
+pxy_{i0} &= (1-q_{i1})\pi_{i0} \\
+p(\vec{X_i}) &= px_i = pxy_{i1} + pxy_{i0}
+\end{aligned}
+\]
+The likelihood of Naive Bayes given a data set is then
+\[
+\begin{aligned}
+l = \prod_i^n P(Y_i=1|\vec{X_i})^{Y_i} (1-P(Y_i=1|\vec{X_i}))^{1-Y_i}
 \end{aligned}
 \]
 where the posterior probability of $Y_i$ given a vector $\vec{X_i} = <X_{i1}, \dots, X_{im}>$ is 
 \[
 \begin{aligned}
-P(Y_i=T|\vec{X_i}) &= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(\vec{X_i})} \\
-&= \frac{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)}{P(Y_i=T)\prod_{j=1}^m P(X_{ij}|Y_i=T)+(1-P(Y_i=T))\prod_{j=1}^m P(X_{ij}|Y_i=F)} \\
-&= \frac{p_{i0}\prod_{j=1}^m p_{ij1}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}}
+P(Y_i=T|\vec{X_i}) &= \frac{P(Y_i=1)\prod_{j=1}^m P(X_{ij}=1|Y_i=1)^{X_i}(1-P(X_{ij}=1|Y_i=1))^{1-X_i}}{P(\vec{X_i})} \\
+&= \frac{q_{i1}\pi_{i1}}{px_i}
 \end{aligned}
 \]
 The negative loglikelihood
 \[
 \begin{aligned}
-L &= -\sum_{i=1}^n \left[Y_i\ln p(Y_i|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i|\vec{X_i}))\right] \\
-&= -\sum_{i=1}^n \left[Y_i \ln p_{i0} + (1-Y_i) \ln (1-p_{i0}) + Y_i \sum_{j=1}^m \ln p_{ij1} + (1-Y_i) \sum_{j=1}^m \ln p_{ij2} - \ln \left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)\right]
+L &= -\sum_{i=1}^n \left[Y_i\ln p(Y_i=1|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i=1|\vec{X_i}))\right] \\
+&= -\sum_{i=1}^n \left[Y_i \ln q_{i1} + (1-Y_i) \ln (1-q_{i1}) + Y_i \ln \pi_{i1} + (1-y_i) \ln \pi_{i0} - \ln px_i\right]
 \end{aligned}
 \]
 
-## Fisher information matrix
-The first derivatives of the above negative log likelihood w.r.t. each parameter are
+## First derivatives
+Before differentiating nll w.r.t. each parameter, we derive the followings first
 \[
 \begin{aligned}
-\frac{\partial L}{\partial p_{i0}} &= -\sum_{i=1}^n \left[\frac{Y_i}{p_{i0}} - \frac{1-Y_i}{1-p_{i0}} -\frac{\prod_{j=1}^m p_{ij1} - \prod_{j=1}^m p_{ij2}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}} \right] \\
-\frac{\partial L}{\partial p_{ik1}} &= -\sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}} - \frac{p_{i0}\prod_{j=1}^m p_{ik1}}{p_{ik1}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right] \\
-\frac{\partial L}{\partial p_{ik2}} &= -\sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik2}} - \frac{(1-p_{i0})\prod_{j=1}^m p_{ik2}}{p_{ik2}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right]
+\frac{\partial}{\partial q_{i1}}px_i &= \pi_{i1} - \pi_{i0} \\
+\frac{\partial}{\partial p_{ij1}}\pi_{i1} &= \frac{\pi_{i1}}{p_{ij1}^{x_{ij}}(p_{ij1}-1)^{1-x_{ij}}} \\
+\frac{\partial}{\partial p_{ij0}}\pi_{i0} &= \frac{\pi_{i0}}{p_{ij0}^{x_{ij}}(p_{ij0}-1)^{1-x_{ij}}} \\
+\frac{\partial}{\partial p_{ij1}}px_i &= \frac{\partial}{\partial p_{ij1}}pxy_{i1} = \frac{pxy_{i1}}{p_{ij1}^{x_{ij}}(p_{ij1}-1)^{1-x_{ij}}} \\
+\frac{\partial}{\partial p_{ij0}}px_i &= \frac{\partial}{\partial p_{ij0}}pxy_{i0} = \frac{pxy_{i0}}{p_{ij0}^{x_{ij}}(p_{ij0}-1)^{1-x_{ij}}}
 \end{aligned}
 \]
-The second derivatives are
+The first derivatives of the negative log likelihood w.r.t. each parameter are
 \[
 \begin{aligned}
-\frac{\partial^2L}{\partial p_{i0}^2} &= \sum_{i=1}^n \left[\frac{Y_i}{p_{i0}^2} + \frac{1-Y_i}{(1-p_{i0})^2} - \left(\frac{\prod_{j=1}^m p_{ij1} - \prod_{j=1}^m p_{ij2}}{p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}}\right)^2\right] \\
-\frac{\partial^2L}{\partial p_{ik1}} &= \sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}^2} - \left(\frac{p_{i0} \prod_{j=1}^mp_{ij1}}{p_{ik1}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right)^2\right] \\
-\frac{\partial^2L}{\partial p_{ik2}} &= \sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik2}^2} - \left(\frac{(1-p_{i0}) \prod_{j=1}^mp_{ij2}}{p_{ik2}\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)}\right)^2\right] \\
-\frac{\partial^2L}{\partial p_{i0}p_{ik1}} &= \sum_{i=1}^n \frac{\prod_{j=1}^mp_{ij1}p_{ij2}}{\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)^2}\frac{1}{p_{ik1}}\\
-\frac{\partial^2L}{\partial p_{i0}p_{ik2}} &= \sum_{i=1}^n \frac{\prod_{j=1}^mp_{ij1}p_{ij2}}{\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)^2}\frac{-1}{p_{ik2}}\\
-\frac{\partial^2L}{\partial p_{ik1}p_{ik2}} &= \sum_{i=1}^n \frac{\prod_{j=1}^mp_{ij1}p_{ij2}}{\left(p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}\right)^2}\frac{-p_{i0}(1-p_{i0})}{p_{ik1}p_{ik2}}
+\frac{\partial L}{\partial q_{i1}} &= -\sum_{i=1}^n \left[\frac{Y_i}{q_{i1}} - \frac{1-Y_i}{1-q_{i1}} -\frac{\pi_{i1}-\pi_{i0}}{px_i} \right] \\
+\frac{\partial L}{\partial p_{ik1}} &= -\sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}} - \frac{pxy_{i1}}{p_{ik1}^{x_{ij}}(p_{ik1}-1)^{1-x_{ij}}px_i}\right] \\
+\frac{\partial L}{\partial p_{ik0}} &= -\sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}} - \frac{pxy_{i0}}{p_{ik0}^{x_{ij}}(p_{ik0}-1)^{1-x_{ij}}px_i}\right] \\
 \end{aligned}
 \]
 
-Since FIM entries are expectations of the second derivatives, we need to take expectations for the first three second derivatives that contain $Y_i$. To simplify the notations, we use $p_x$ to denote $p_{i0}\prod_{j=1}^m p_{ij1} + (1-p_{i0})\prod_{j=1}^m p_{ij2}$. Then the expectations become
+## Second derivatives
+Diagonal entries 
 \[
 \begin{aligned}
-E\left(\frac{\partial^2L}{\partial p_{i0}^2}\right) &= \sum_{i=1}^n \left[\frac{\prod_{j=1}^m p_{ij1}}{p_{i0}p_x} + \frac{\prod_{j=1}^m p_{ij2}}{(1-p_{i0})p_x}- \left(\frac{\prod_{j=1}^m p_{ij1} - \prod_{j=1}^m p_{ij2}}{p_x}\right)^2\right] \\
-E\left(\frac{\partial^2L}{\partial p_{ik1}}\right) &= \sum_{i=1}^n \left[\frac{p_{i0}\prod_{j=1}^m p_{ij1}}{p_{ik1}^2p_x} - \left(\frac{p_{i0} \prod_{j=1}^mp_{ij1}}{p_{ik1}p_x}\right)^2\right] \\
-E\left(\frac{\partial^2L}{\partial p_{ik2}}\right) &= \sum_{i=1}^n \left[\frac{(1-p_{i0})\prod_{j=1}^m p_{ij2}}{p_{ik2}^2p_x} - \left(\frac{(1-p_{i0}) \prod_{j=1}^mp_{ij2}}{p_{ik2}p_x}\right)^2\right] \\
+\frac{\partial^2L}{\partial q_{i1}^2} &= \sum_{i=1}^n \left[\frac{Y_i}{q_{i1}^2} + \frac{1-Y_i}{(1-q_{i1})^2} - \left(\frac{\pi_{i1}-\pi_{i0}}{px_i}\right)^2\right] \\
+\frac{\partial^2L}{\partial p_{ik1}^2} &= \sum_{i=1}^n \left[\frac{Y_i}{\left(p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}\right)^2} - \left(\frac{pxy_{i1}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i}\right)^2\right] \\
+\frac{\partial^2L}{\partial p_{ik0}^2} &= \sum_{i=1}^n \left[\frac{1-Y_i}{\left(p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}\right)^2} - \left(\frac{pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i}\right)^2\right] \\
+\end{aligned}
+\]
+Off-diagonal entries
+\[
+\begin{aligned}
+\frac{\partial^2L}{\partial q_{i0}p_{ik1}} &= \sum_{i=1}^n \frac{\pi_{i1}\pi_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i^2} \\
+\frac{\partial^2L}{\partial q_{i0}p_{ik0}} &= \sum_{i=1}^n \frac{-\pi_{i1}\pi_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i^2} \\
+\frac{\partial^2L}{\partial p_{ik1}p_{il1}} &= \sum_{i=1}^n \frac{pxy_{i1}pxy_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}} p_{il1}^{x_{il}}(p_{il1}-1)^{1-x_{il}} px_i^2}, \text{ where } k \neq l \\
+\frac{\partial^2L}{\partial p_{ik0}p_{il0}} &= \sum_{i=1}^n \frac{pxy_{i1}pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}} p_{il0}^{x_{il}}(p_{il0}-1)^{1-x_{il}} px_i^2}, \text{ where } k \neq l \\
+\frac{\partial^2L}{\partial p_{ik1}p_{il0}} &= \sum_{i=1}^n \frac{-pxy_{i1}pxy_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}} p_{il0}^{x_{il}}(p_{il0}-1)^{1-x_{il}} px_i^2}, \forall k, l \in [1,m]
+\end{aligned}
+\]
+
+## FIM
+Since FIM entries are expectations of the second derivatives, we need to take expectations of the diagonal entries that contain $Y_i$,
+\[
+\begin{aligned}
+E\left(\frac{\partial^2L}{\partial q_{i1}^2}\right) &= \sum_{i=1}^n \left[\frac{\pi_{i1}}{q_{i1}px_i} + \frac{\pi_{i0}}{(1-q_{i1})px_i} - \left(\frac{\pi_{i1}-\pi_{i0}}{px_i}\right)^2\right] \\
+E\left(\frac{\partial^2L}{\partial p_{ik1}^2}\right) &= \sum_{i=1}^n \left[ \frac{pxy_{i1}}{\left(p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}\right)^2 px_i} - \left(\frac{pxy_{i1}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i}\right)^2\right] \\
+E\left(\frac{\partial^2L}{\partial p_{ik0}^2}\right) &= \sum_{i=1}^n \left[\frac{pxy_{i0}}{\left(p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}\right)^2 px_i} - \left(\frac{pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i}\right)^2\right] \\
 \end{aligned}
 \]
 
@@ -108,7 +137,7 @@ for (i in 2:nnodes(dag)) {
   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 }
 #dag = randDag(20, 4)
-graphviz.plot(dag)
+#graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
 sampleSize = n = 1000
 data = rbn(cpts, n)
@@ -124,8 +153,9 @@ yIndex = which(vars == y)
 
 ## Executing MML_NB
 ```{r, eval = T}
-indices = c(2,3,4,5,6,7,8,9,10,11)
-(i_nb = mml_nb(data, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
+indices = c(2,3,4)
+probSign = get_prob_sign(data)
+(i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
 #forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, debug = F)
 ```
 
@@ -134,6 +164,18 @@ indices = c(2,3,4,5,6,7,8,9,10,11)
 indexListPerNodePerValue = count_occurance(data, arities)
 #forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1), debug = F)
 (i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, indices, yIndex, logFactorialSheet, base = exp(1)))
+dagCPT = empty.graph(c(y, vars[indices]))
+for (i in 2:nnodes(dagCPT)) {
+  dagCPT = set.arc(dagCPT, nodes(dagCPT)[i], nodes(dagCPT)[1])
+}
+cptsEst = bn.fit(dagCPT, data[, c(yIndex, indices)], method = "bayes")
+ss = 0 
+for (i in 1:nrow(data)) {
+  valueIndices = as.numeric(data[i, c(yIndex, indices)])
+  ss = ss + log(do.call("[", c(list(cptsEst$Y$prob), as.list(valueIndices))))
+}
+cat("1st:", i_cpt + ss, "\n")
+cat("2nd:", -ss, "\n")
 ```
 The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
@@ -184,7 +226,11 @@ sanity check was conducted on a simple example and the results are agreed with a
 
 * mml informative increment per parameter value 
 
-* lattice constant 1/2*pi*e
+* lattice constant 1/2*pi*e for mml cpt
 
-* first part of nb, double check 0.5 constant of log fisher
+* first part of nb sometimes < 0 this is not right
+
+Questions: 
+* log factorial is stirling's approximate, so hardly get exact values, the smaller the sample size, the larger the difference, what to do? R upper limit is around factorial(170)
+
 

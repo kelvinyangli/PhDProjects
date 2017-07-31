@@ -1,0 +1,339 @@
+---
+title: "FIM sanity check"
+author: "kl"
+date: "28 July 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE,eval=F}
+knitr::opts_chunk$set(echo = TRUE)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+library(numDeriv)
+```
+
+## test hessian function
+```{r,eval=F}
+f = function(z) z[1]^3 + z[2]^3
+hessian(f, c(1,2))
+```
+
+```{r}
+dag = empty.graph(c("Y", "X1", "X2", "X3"))
+dag = set.arc(dag, "Y", "X1")
+dag = set.arc(dag, "Y", "X2")
+dag = set.arc(dag, "Y", "X3")
+cpts = randCPTs(dag, 2, 1)
+sampleSize = 1000
+data = rbn(cpts, sampleSize)
+temp = factor2numeric(data)
+temp = abs(temp - 1)
+arities = c(2,2,2,2)
+vars = names(data)
+x = c("X1", "X2", "X3")
+y = "Y"
+yIndex = which(colnames(data) == y)
+xIndices = which(colnames(data) %in% x)
+pars = mle_nb(data, vars, xIndices, yIndex, smoothing = 0.5)
+xx = c(pars$Y[[1]], pars$X1[1,1], pars$X2[1,1], pars$X3[1,1], pars$X1[1,2], pars$X2[1,2], pars$X3[1,2])
+probSign = get_prob_sign(data)
+```
+
+
+# negative likelihood 
+```{r}
+f = function(xx) {
+  ss = 0 
+  for (i in 1:nrow(temp)) {
+    yi = temp[i, 1]
+    pi1 = xx[1]
+    pij1 = abs(abs(temp[i, xIndices] - 1) - xx[xIndices])
+    pij0 = abs(abs(temp[i, xIndices] - 1) - xx[xIndices + length(x)])
+    px = pi1 * prod(pij1) + (1 - pi1) * prod(pij0)
+    ss = ss + yi * log(pi1) + (1 - yi) * log(1 - pi1) + yi * sum(log(pij1)) + (1 - yi) * sum(log(pij0)) - log(px)
+  }
+  return(-ss)
+}
+#f(xx)
+#mml_nb(data, probSign, vars, c(2,2,2,2), sampleSize, x, y, debug = TRUE)
+# the above nll and mml_nb returns the same value for nll, good!
+```
+
+```{r}
+#grad(func=f,x=xx)
+hh = hessian(f, xx)
+
+
+  
+  pars = mle_nb(data, vars, xIndices, yIndex, smoothing = 0.5) # mle of parameters with smoothing
+  # negative log likelihood
+  # this is partial nll if x is not empty
+  nll = -sum(apply(data, 1, nll_nb, pars = pars, xIndices = xIndices, yIndex = yIndex))
+  
+  # p(y=T)
+  py1 = pars[[length(pars)]][[1]]
+  # p(y=F)
+  py0 = pars[[length(pars)]][[2]]
+  prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 1)
+    # a vector of \prod_j p(x_ij|y=2nd value) = \prod_j p(x_ij|y=0)
+    prodPij0 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 2)
+    # a vector of p_xi 
+    px = py1 * prodPij1 + py0 * prodPij0
+    nll = nll + sum(log(px)) # add additional log(px) value to nll when x is not empty
+    # a matrix of p(x_j|y=T) and p(x_j|y=F)
+    # parameters are in the order of <p_ij1, p_ij0>
+    probsMatrix = c()
+    for (yValue in 1:arities[yIndex]) {
+      for (j in xIndices) {
+        probsMatrix = 
+          cbind(probsMatrix, apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = yValue))
+      }
+    }
+    
+    # FIM
+    fim = fim_nb(probSign, prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
+```
+
+```{r}
+hh
+fim
+log(det(hh))
+log(det(fim))
+log_determinant(fim)
+```
+
+# dl/dpi1 - numerical approximations are the same as analytical derivations, good!
+```{r, eval=F}
+# 1st derivative
+ss = 0
+for (i in 1:nrow(data)) {
+  yi = temp[i, 1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pi1 = xx[1]
+  px = pi1*prod(pij1)+(1-pi1)*prod(pij0)
+  ss = ss + (yi/pi1 - (1-yi)/(1-pi1) - (prod(pij1)-prod(pij0))/px)
+}
+-ss
+```
+
+
+# dl/dpik1
+```{r, eval=F}
+# 1st 
+ss = 0
+k = 1
+for (i in 1:nrow(data)) {
+  yi = temp[i, 1]
+  xik = temp[i, k+1]
+  c = ifelse(xik == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik1 = pij1[k]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + (yi*c/pik1 - c*px1/(px*pik1))
+}
+-ss
+```
+# dl/dpik0 - all correct now
+```{r, eval=F}
+ss = 0
+k = 2
+for (i in 1:nrow(data)) {
+  yi = temp[i, 1]
+  xik = temp[i, k+1]
+  c = ifelse(xik == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik0 = pij0[k]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + ((1-yi)*c/pik0 - c*px2/(px*pik0))
+}
+-ss
+```
+
+## FIM diagonal
+## 1 dl^2/di1^2
+```{r,eval=F}
+# 2nd derivative
+ss = 0
+for (i in 1:nrow(data)) {
+  yi = temp[i, 1]
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  px = pi1*prod(pij1) + (1-pi1)*prod(pij0)
+  ss = ss + (yi/pi1^2 + (1-yi)/(1-pi1)^2 - ((prod(pij1) - prod(pij0))/px)^2)
+}
+ss
+```
+
+## 2 dl^2/dik1^2
+```{r,eval=F}
+k = 2
+ss = 0
+for (i in 1:nrow(data)) {
+  yi = temp[i, 1]
+  xik = temp[i, k+1]
+  #c = ifelse(xik == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik1 = pij1[k]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + (yi/pik1^2 - (px1/(px*pik1))^2)
+}
+ss
+```
+
+## 3 dl^2/dpik0^2
+```{r,eval=F}
+# 2nd
+k = 2
+ss = 0
+for (i in 1:nrow(data)) {
+  yi = temp[i, 1]
+  xik = temp[i, k+1]
+  #c = ifelse(xik == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik0 = pij0[k]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + ((1-yi)/pik0^2 - (px2/(px*pik0))^2)
+}
+ss
+```
+
+## FIM off-diagonal
+## 4 dl^2/dpi1*dpik1
+```{r, eval=F}
+ss = 0
+k=2
+for (i in 1:nrow(data)) {
+  #yi = temp[i, 1]
+  xik = temp[i, k+1]
+  c = ifelse(xik == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik1 = pij1[k]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  pxi = px1 + px2
+  ss = ss + (prod(pij1)*prod(pij0)/pxi^2) * (c/pik1)
+}
+ss
+```
+
+## 5 dl^2/dpi1*dpik0
+```{r, eval=F}
+ss = 0
+k=2
+for (i in 1:nrow(data)) {
+  #yi = temp[i, 1]
+  xik = temp[i, k+1]
+  c = ifelse(xik == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik0 = pij0[k]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + (prod(pij1)*prod(pij0)/px^2) * (-c/pik0)
+}
+ss
+```
+
+## 6 dl^2/dpik1*dpil1, k != l
+```{r,eval=F}
+ss = 0
+k=1
+l=2
+for (i in 1:nrow(data)) {
+  #yi = temp[i, 1]
+  xik = temp[i, k+1]
+  xil = temp[i, l+1]
+  ck = ifelse(xik == 1, 1, -1)
+  cl = ifelse(xil == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik1 = pij1[k]
+  pil1 = pij1[l]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + (ck*cl*px1*px2)/(px^2*pik1*pil1)
+}
+ss
+```
+
+## 7 dl^2/dpik1*dpil0, k = or != l ???
+```{r,eval=F}
+ss = 0
+k=2
+l=2
+for (i in 1:nrow(data)) {
+  #yi = temp[i, 1]
+  xik = temp[i, k+1]
+  xil = temp[i, l+1]
+  ck = ifelse(xik == 1, 1, -1)
+  cl = ifelse(xil == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik1 = pij1[k]
+  pil0 = pij0[l]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss - (ck*cl*px1*px2)/(px^2*pik1*pil0)
+}
+ss
+```
+## 8 dl^2/dpik0*dpil0, k != l
+```{r,eval=F}
+ss = 0
+k=1
+l=2
+for (i in 1:nrow(data)) {
+  #yi = temp[i, 1]
+  xik = temp[i, k+1]
+  xil = temp[i, l+1]
+  ck = ifelse(xik == 1, 1, -1)
+  cl = ifelse(xil == 1, 1, -1)
+  pi1 = xx[1]
+  pij1 = abs(abs(temp[i,c(2,3)]-1)-xx[c(2,4)])
+  pij0 = abs(abs(temp[i,c(2,3)]-1)-xx[c(3,5)])
+  pik0 = pij0[k]
+  pil0 = pij0[l]
+  px1 = pi1*prod(pij1)
+  px2 = (1-pi1)*prod(pij0)
+  px = px1 + px2
+  ss = ss + (ck*cl*px1*px2)/(px^2*pik0*pil0)
+}
+ss
+```
+
+
+
+
+
+
+

@@ -6,7 +6,7 @@
 \usage{
 forward_greedy(data, arities, vars, sampleSize, target, score, base = exp(1),
   sigma = 3, dataNumeric = NULL, indexListPerNodePerValue = NULL,
-  debug = FALSE)
+  probSign = NULL, debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -31,6 +31,9 @@ NULL when score is mml_cpt or mml_nb.}
 
 \item{indexListPerNodePerValue}{As explained by argument name. It is obtained by getting the detailed 
 information of the given data using the function getDataInfo(). It is not NULL only when score is mml_cpt.}
+
+\item{probSign}{A data frame with 1 and -1, which corresponds to the 1st and 2nd level of a varaible. 
+It is used for computing the FIM of Naive Bayes.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 mml score.}

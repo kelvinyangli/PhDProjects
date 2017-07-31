@@ -2,8 +2,12 @@
 #'
 #' This function calculates the total MML score of the Naive Bayes model. It is derived from the general 
 #' MML87 formula, but for Naive Bayes only. The parameters used are not MML estimations but maximum 
-#' likelihood estimations due to simplicity. 
+#' likelihood estimations due to simplicity. The current version only works with binary variables. The free 
+#' parameter of a variable is the first value (or level) appeared in all values (or levels) sorted by 
+#' alphabetic order. 
 #' @param data A given data set. 
+#' @param probSign A data frame with 1 and -1, which corresponds to the 1st and 2nd level of a varaible. 
+#' It is used for computing the FIM of Naive Bayes.
 #' @param vars A vector of all variables. 
 #' @param arities A vector of variables arities.
 #' @param sampleSize Sample size of a given data set. 
@@ -11,13 +15,14 @@
 #' @param y The output variable. 
 #' @param debug A boolean variable to display each part of the MML score. 
 #' @export
-mml_nb = function(data, vars, arities, sampleSize, x, y, debug = FALSE) {
+mml_nb = function(data, probSign, vars, arities, sampleSize, x, y, debug = FALSE) {
   
   yIndex = which(colnames(data) == y)
   xIndices = which(colnames(data) %in% x)
   
-  pars = mle_est_nb(data, vars, xIndices, yIndex, smoothing = 0.5) # mle of parameters with smoothing
+  pars = mle_nb(data, vars, xIndices, yIndex, smoothing = 0.5) # mle of parameters with smoothing
   # negative log likelihood
+  # this is partial nll if x is not empty
   nll = -sum(apply(data, 1, nll_nb, pars = pars, xIndices = xIndices, yIndex = yIndex))
   
   # p(y=T)
@@ -25,27 +30,31 @@ mml_nb = function(data, vars, arities, sampleSize, x, y, debug = FALSE) {
   # p(y=F)
   py0 = pars[[length(pars)]][[2]]
   if (length(x) > 0) {# if x is not empty
-    # a vector of \prod_j p(x_ij|y=1)
+    # a vector of \prod_j p(x_ij|y=1st value) = \prod_j p(x_ij|y=1)
     prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 1)
-    # a vector of \prod_j p(x_ij|y=2)
+    # a vector of \prod_j p(x_ij|y=2nd value) = \prod_j p(x_ij|y=0)
     prodPij0 = apply(data, 1, prod_pijk, pars = pars, xIndices = xIndices, yValue = 2)
     # a vector of p_xi 
     px = py1 * prodPij1 + py0 * prodPij0
     nll = nll + sum(log(px)) # add additional log(px) value to nll when x is not empty
     # a matrix of p(x_j|y=T) and p(x_j|y=F)
+    # parameters are in the order of <p_ij1, p_ij0>
     probsMatrix = c()
-    for (j in xIndices) {
-      probsMatrix = 
-        cbind(probsMatrix, apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 1), apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = 2))
+    for (yValue in 1:arities[yIndex]) {
+      for (j in xIndices) {
+        probsMatrix = 
+          cbind(probsMatrix, apply(data, 1, p_ijk, pars = pars, xIndices = xIndices, xIndex = j, yValue = yValue))
+      }
     }
+    
     # FIM
-    fim = fim_nb(prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
-    # log determinant of FIM
+    fim = fim_nb(probSign, prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
+    # determinant of FIM
     detFIM = det(fim)
     # for some reason, we have negative determinant when there is a small number of input variables,
     # since the problem can't be resolved for now, I manually convert negative determinant into 
     # positive. Most of negative determinant are very small negative values, meaning close to 0. 
-    if (detFIM < 0) detFIM = -detFIM 
+    #if (detFIM < 0) detFIM = -detFIM 
     logF = log(detFIM)
     # number of free parameters
     d = nrow(fim)
@@ -54,8 +63,13 @@ mml_nb = function(data, vars, arities, sampleSize, x, y, debug = FALSE) {
     d = arities[yIndex] - 1
   }
   
+  #############################
   # log prior
-  logPrior = sum(unlist(lapply(pars, log)))
+  # for beta distribution with alpha = beta = 1, log prior = 0
+  # logPrior = sum(unlist(lapply(pars, log)))
+  logPrior = 0
+  #############################
+  
   # lattice constant
   k = c(0.083333, 0.080188, 0.077875, 0.07609, 0.07465, 0.07347, 0.07248, 0.07163)
   if (d <= length(k)) {

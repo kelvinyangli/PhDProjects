@@ -55,7 +55,7 @@ mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, paren
     
     # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
     logNumerator = log_factorial(logFactorialSheet, N_pa_i + arityChild - 1, base)
-    
+    #cat(logNumerator - logConstant - cumSum, "\n")
     nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
     
     #cat(logNumerator - logConstant - cumSum, "\n")

@@ -4,16 +4,20 @@
 \alias{fim_nb}
 \title{Calculate FIM of NB}
 \usage{
-fim_nb(prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
+fim_nb(probSign, prodPij1, prodPij0, px, probsMatrix, py1, py0, arities,
+  xIndices, yIndex)
 }
 \arguments{
+\item{probSign}{A data frame with 1 and -1, which corresponds to the 1st and 2nd level of a varaible. 
+It is used for computing the FIM of Naive Bayes.}
+
 \item{prodPij1}{A vector of \prod_j p(x_ij|y=1).}
 
 \item{prodPij0}{A vector of \prod_j p(x_ij|y=0).}
 
 \item{px}{A vector of py1 * prodPij1 + py0 * prodPij0.}
 
-\item{probsMatrix}{A matrix of p(x_j|y=1) and p(y_j|y=0)}
+\item{probsMatrix}{A matrix of p(x_j|y=1) and p(x_j|y=0)}
 
 \item{py1}{p(y=T)}
 
@@ -26,5 +30,11 @@ fim_nb(prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
 \item{yIndex}{The index of the output variable.}
 }
 \description{
-This function calculates the expected fisher information matrix of a Naive Bayes model.
+This function calculates the expected fisher information matrix of a Naive Bayes model. Analytical 
+solutions of the hessian of the nll have been numerically verified using the hessian() function
+in library(numDeriv). The expected hessian are not too far from the observed. In
+fact, only diagonal entries of the hessian contain y, so expectations need to be calculated. But the 
+learned fim can still have negative determinant (very small negative determinant, such as -1e-20). Maybe 
+this is due to underflow? FIM of NB doesn't seem to be positive definite like FIM of logit, so can't 
+use cholesky decomposition.
 }

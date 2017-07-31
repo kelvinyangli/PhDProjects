@@ -15,7 +15,9 @@ multi_pars_cal = function(indexListPerNodePerValue, commonParentsIndices, arityC
   cumSum = 0 
   for (j in 1:arityChild) {
     N_pa_i_x_j = length(intersect(commonParentsIndices, indexListPerNodePerValue[[targetIndex]][[j]]))
+    #cat(N_pa_i_x_j, "\n")
     cumSum = cumSum + log_factorial(logFactorialSheet, N_pa_i_x_j, base = base)
+    #cat(log_factorial(logFactorialSheet, N_pa_i_x_j, base = base), "\n")
   }
   return(cumSum)
 }

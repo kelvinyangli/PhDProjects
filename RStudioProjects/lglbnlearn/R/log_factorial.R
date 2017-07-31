@@ -7,13 +7,22 @@
 #' @param n A non-negative integer.  
 #' @param base The base of a logarithm. 
 #' @export
+# log_factorial = function(logFactorialSheet, n, base) {
+#   if (n < 2) {
+#     lf = 0
+#   } else if (n <= 10000) { # read from logFactorialSheet
+#     lf = logFactorialSheet[n, ceiling(exp(1)/base)]
+#   } else { # use stirling's approximation
+#     lf =   n * log(n, base) - n * log(exp(1), base) + 0.5 * (log(n, base) + log(2 * pi, base))
+#   }
+#   return(lf)
+# }
+
 log_factorial = function(logFactorialSheet, n, base) {
-  if (n < 2) {
-    lf = 0 
-  } else if (n <= 10000) { # read from logFactorialSheet 
-    lf = logFactorialSheet[n, ceiling(exp(1)/base)]
-  } else { # use stirling's approximation
-    lf =   n * log(n, base) - n * log(exp(1), base) + 0.5 * (log(n, base) + log(2 * pi, base))
+  if (n < 100) {
+    lf = log(factorial(n))
+  } else {
+    lf = n * log(n, base) - n * log(exp(1), base) + 0.5 * (log(n, base) + log(2 * pi, base))  
   }
   return(lf)
 }
