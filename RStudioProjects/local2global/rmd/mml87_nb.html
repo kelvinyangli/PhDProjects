@@ -223,11 +223,11 @@ I = -\left(\ln p_{i0} + \ln (1-p_{i0}) + \sum_{j=1}^m\left[\ln p_{ij1} + \ln (1-
 <div id="random-model" class="section level2">
 <h2>Random model</h2>
 <pre class="r"><code>dag = empty.graph(c(&quot;Y&quot;, paste0(&quot;X&quot;, 1:10)))
-for (i in 2:nnodes(dag)) {
+for (i in 2:9) {
     dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 }
-# dag = randDag(20, 4) graphviz.plot(dag)
-cpts = randCPTs(dag, 2, 1)
+# dag = randDag(10, 2) graphviz.plot(dag)
+cpts = randCPTs(dag, 2, 5)
 sampleSize = n = 1000
 data = rbn(cpts, n)
 vars = colnames(data)
@@ -241,15 +241,18 @@ yIndex = which(vars == y)
 <div id="executing-mml_nb" class="section level2">
 <h2>Executing MML_NB</h2>
 <pre class="r"><code>indices = c(2)
-(i_nb = mml_nb(data, vars, arities, sampleSize, x = vars[indices], 
+pars = mle_nb(data, vars, indices, yIndex, 0.5)
+probSign = get_prob_sign(data)
+(i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x = vars[indices], 
     y, debug = TRUE))</code></pre>
-<pre><code>## mml= 6.758038 
-## @ 1st part= -11.36205 
+<pre><code>## mml= -Inf 
+## @ 1st part= -Inf 
 ## *** -logPrior= 0 
-## *** logFisher= -18.06614 
+## *** detFIM= 0 
+## *** logFisher= -Inf 
 ## *** logLattice= -2.328975 
-## @ 2nd part=nll= 18.12008</code></pre>
-<pre><code>## [1] 6.758038</code></pre>
+## @ 2nd part=nll= 688.1394</code></pre>
+<pre><code>## [1] -Inf</code></pre>
 <pre class="r"><code># forward_greedy(data, arities, vars, sampleSize, y, score =
 # mml_nb, debug = F)</code></pre>
 </div>
@@ -261,7 +264,7 @@ yIndex = which(vars == y)
 # debug = F)
 (i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, 
     indices, yIndex, logFactorialSheet, base = exp(1)))</code></pre>
-<pre><code>## [1] 28.93729</code></pre>
+<pre><code>## [1] 703.8773</code></pre>
 <pre class="r"><code>dagCPT = empty.graph(c(y, vars[indices]))
 for (i in 2:nnodes(dagCPT)) {
     dagCPT = set.arc(dagCPT, nodes(dagCPT)[i], nodes(dagCPT)[1])
@@ -270,12 +273,12 @@ cptsEst = bn.fit(dagCPT, data[, c(yIndex, indices)], method = &quot;bayes&quot;)
 ss = 0
 for (i in 1:nrow(data)) {
     valueIndices = as.numeric(data[i, c(yIndex, indices)])
-    ss = ss + log(do.call(&quot;[&quot;, c(list(cptsEst$Y$prob), as.list(valueIndices))))
+    ss = ss + log(do.call(&quot;[&quot;, c(list(cptsEst[[1]]$prob), as.list(valueIndices))))
 }
 cat(&quot;1st:&quot;, i_cpt + ss, &quot;\n&quot;)</code></pre>
-<pre><code>## 1st: 10.99551</code></pre>
+<pre><code>## 1st: 15.73785</code></pre>
 <pre class="r"><code>cat(&quot;2nd:&quot;, -ss, &quot;\n&quot;)</code></pre>
-<pre><code>## 2nd: 17.94178</code></pre>
+<pre><code>## 2nd: 688.1394</code></pre>
 <p>The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!</p>
 </div>
 <div id="mml_logit" class="section level2">
@@ -286,79 +289,37 @@ sampleSize = n
 (i_lr = mml_logit(data, arities, sampleSize, vars[indices], y, 
     sigma = 3, debug = T))</code></pre>
 <pre><code>## $`1st`
-## [1] 12.61724
+## [1] 6.28859
 ## 
 ## $mml
-## [1] 30.29954
+## [1] 694.428
 ## 
 ## $nlogPrior
-## [1] 21.6813
+## [1] 3.002401
 ## 
 ## $nlogLattice
 ## [1] -1.523381
 ## 
 ## $logF
-## [1] -15.08136
+## [1] 9.61914
 ## 
 ## $nll
-## [1] 17.6823</code></pre>
+## [1] 688.1394</code></pre>
 <pre class="r"><code># forward_greedy(data, arities, vars, sampleSize, y, score =
 # mml_logit, dataNumeric = dataNumeric, debug = F)</code></pre>
 </div>
-<div id="sanity-check" class="section level2">
-<h2>Sanity check</h2>
-<p>This is a sanity check to ensure that nll is corrected calculated. The following code use gRain to compute the posterior probability <span class="math inline">\(P(Y_i|\vec{X_i})\)</span> based on the estimated cpts from data. The posterior probability given each data point is then used to compute the nll of the entire data set. The answer confirms that the above nll calculation is correct.</p>
-<pre class="r"><code>cptsEst = bn.fit(dag, data, method = &quot;bayes&quot;)
-obj = gRbase::compile(as.grain(cptsEst))
-post = querygrain(obj, nodes = names(data)[c(yIndex, xIndices)], 
-    type = &quot;conditional&quot;)
-nll2 = 0
-for (i in 1:nrow(data)) {
-    for (j in 1:length(x)) {
-        paste0(&quot;x&quot;, j) = data[i, xIndices[j]]
-    }
-    y = data[i, &quot;Y&quot;]
-    nll2 = nll2 + log(post[x1, x2, x3, y])
-}
--nll2</code></pre>
-</div>
 <div id="comparison" class="section level2">
 <h2>Comparison</h2>
-<pre class="r"><code>i_nb</code></pre>
-<pre><code>## [1] 6.758038</code></pre>
-<pre class="r"><code>i_cpt</code></pre>
-<pre><code>## [1] 28.93729</code></pre>
-<pre class="r"><code>i_lr</code></pre>
-<pre><code>## $`1st`
-## [1] 12.61724
-## 
-## $mml
-## [1] 30.29954
-## 
-## $nlogPrior
-## [1] 21.6813
-## 
-## $nlogLattice
-## [1] -1.523381
-## 
-## $logF
-## [1] -15.08136
-## 
-## $nll
-## [1] 17.6823</code></pre>
+<pre class="r"><code>i_nb
+i_cpt
+i_lr</code></pre>
 </div>
 <div id="observations" class="section level2">
 <h2>Observations</h2>
 <ul>
-<li><p>The above tests show that nll for both naive bayes and logit are close to nll using true cpts. But mml_nb is larger than mml_logit and mml_cpt even if the true model is a naive bayes model. This is likely to be caused by large message length for nb parameter priors and definitely large log(det(fim)) as compared with mml_logit. Could this because of the mml_logit is only for 1st order logit model, hence the model is simpler than a nb?</p></li>
-<li><p>In mml_nb, det(fim) are sometimes negative when X is a single variable. When Xs are two or more variables, it is less likely to have negative determinant. Not sure what’s the problem. This problem may have been fixed. But occasionally the determinant is still a small negative number, perhaps due to under flow.</p></li>
-<li><p>As suggested by Lloyd, did a sanity check by approximating 2nd derivatives using numerical methods. The sanity check was conducted on a simple example and the results are agreed with analytical solutions.</p></li>
-<li><p>mml smoothing 0.5 * number of states</p></li>
-<li><p>mml informative increment per parameter value</p></li>
-<li><p>lattice constant 1/2<em>pi</em>e for mml cpt</p></li>
-<li><p>first part of nb sometimes &lt; 0 this is not right</p></li>
+<li><p>In mml_nb, det(fim) are sometimes small negative value, not sure what’s the problem. In addition, sometimes det(fim) is very small positive value, hence log(det(fim)) is a large negative value, which makes the first part of mml_nb negative, this is not right!</p></li>
+<li><p>singular matrix, columns are not linearly independent</p></li>
 </ul>
-<p>Questions: * log factorial is stirling’s approximate, so hardly get exact values, the smaller the sample size, the larger the difference, what to do? R upper limit is around factorial(170)</p>
 </div>
 
 

@@ -7,7 +7,7 @@ output:
   pdf_document: default
 ---
 
-```{r global_options, include=F, warning=F, message=F, eval=T, echo=F, message=F}
+```{r global_options, include=F, warning=F, message=F, eval=F, echo=F, message=F}
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = T, eval = T)
 if (.Platform$OS.type == "windows") {
   dir = "C:/Users/"
@@ -15,8 +15,6 @@ if (.Platform$OS.type == "windows") {
   dir = "/home/"
 }
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
-
-logFactorialSheet = read.csv(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv")) 
 ```
 
 ## MLE of NB parameters
@@ -131,15 +129,15 @@ I = -\left(\ln p_{i0} + \ln (1-p_{i0}) + \sum_{j=1}^m\left[\ln p_{ij1} + \ln (1-
 where $d$ is the number of free parameters and $k_d$ is the lattice constant for each free parameter. 
 
 ## Random model
-```{r}
+```{r, eval=F}
 dag = empty.graph(c("Y", paste0("X", 1:10)))
-for (i in 2:nnodes(dag)) {
+for (i in 2:9) {
   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 }
-#dag = randDag(20, 4)
+#dag = randDag(10, 2)
 #graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
-sampleSize = n = 1000
+sampleSize = n = 10000
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -153,32 +151,15 @@ yIndex = which(vars == y)
 
 ## Executing MML_NB
 ```{r, eval = T}
-indices = c(2,3,4)
-probSign = get_prob_sign(data)
-(i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
-#forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, debug = F)
-```
-
-## MML_CPT
-```{r}
-indexListPerNodePerValue = count_occurance(data, arities)
-#forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1), debug = F)
-(i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, indices, yIndex, logFactorialSheet, base = exp(1)))
-dagCPT = empty.graph(c(y, vars[indices]))
-for (i in 2:nnodes(dagCPT)) {
-  dagCPT = set.arc(dagCPT, nodes(dagCPT)[i], nodes(dagCPT)[1])
+for (i in 2:length(vars)) {
+  indices = c(i)
+  pars = mle_nb(data, vars, indices, yIndex, 0.5)
+  probSign = get_prob_sign(data)
+  (i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
+  #forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, debug = F)
 }
-cptsEst = bn.fit(dagCPT, data[, c(yIndex, indices)], method = "bayes")
-ss = 0 
-for (i in 1:nrow(data)) {
-  valueIndices = as.numeric(data[i, c(yIndex, indices)])
-  ss = ss + log(do.call("[", c(list(cptsEst$Y$prob), as.list(valueIndices))))
-}
-cat("1st:", i_cpt + ss, "\n")
-cat("2nd:", -ss, "\n")
-```
-The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
+```
 ## MML_Logit
 
 ```{r}
@@ -189,48 +170,38 @@ sampleSize = n
 #forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
 ```
 
-## Sanity check
-This is a sanity check to ensure that nll is corrected calculated. The following code use gRain to compute the posterior probability $P(Y_i|\vec{X_i})$ based on the estimated cpts from data. The posterior probability given each data point is then used to compute the nll of the entire data set. The answer confirms that the above nll calculation is correct. 
-```{r, eval=F}
-cptsEst = bn.fit(dag, data, method = "bayes")
-obj = gRbase::compile(as.grain(cptsEst))
-post = querygrain(obj, nodes = names(data)[c(yIndex, xIndices)], type = "conditional")
-nll2 = 0
-for (i in 1:nrow(data)) {
-  for (j in 1:length(x)) {
-    paste0("x", j) = data[i, xIndices[j]]
-  }
-  y = data[i, "Y"]
-  nll2 = nll2 + log(post[x1, x2, x3, y])
+## MML_CPT
+```{r}
+indexListPerNodePerValue = count_occurance(data, arities)
+#forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1), debug = F)
+(i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, indices, yIndex, base = exp(1)))
+dagCPT = empty.graph(c(y, vars[indices]))
+for (i in 2:nnodes(dagCPT)) {
+  dagCPT = set.arc(dagCPT, nodes(dagCPT)[i], nodes(dagCPT)[1])
 }
--nll2
+cptsEst = bn.fit(dagCPT, data[, c(yIndex, indices)], method = "bayes")
+ss = 0 
+for (i in 1:nrow(data)) {
+  valueIndices = as.numeric(data[i, c(yIndex, indices)])
+  ss = ss + log(do.call("[", c(list(cptsEst[[1]]$prob), as.list(valueIndices))))
+}
+cat("@ 1st part:", i_cpt + ss, "\n")
+cat("@ 2nd part:", -ss, "\n")
 ```
+The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
 ## Comparison
-```{r, eval = T}
+```{r, eval = F}
 i_nb
 i_cpt
 i_lr
 ```
 
 ## Observations
+* In mml_nb, det(fim) are sometimes small negative value, not sure what's the problem. In addition, sometimes det(fim) is very small positive value, hence log(det(fim)) is a large negative value, which makes the first part of mml_nb negative, this is not right!
 
-* The above tests show that nll for both naive bayes and logit are close to nll using true cpts. But mml_nb is larger than mml_logit and mml_cpt even if the true model is a naive bayes model. This is likely to be  caused by large message length for nb parameter priors and definitely large log(det(fim)) as compared with mml_logit. Could this because of the mml_logit is only for 1st order logit model, hence the model is simpler than a nb? 
+* singular matrix, columns are not linearly independent
 
-* In mml_nb, det(fim) are sometimes negative when X is a single variable. When Xs are two or more variables, it is less likely to have negative determinant. Not sure what's the problem. This problem may have been fixed. But occasionally the determinant is still a small negative number, perhaps due to under flow. 
 
-* As suggested by Lloyd, did a sanity check by approximating 2nd derivatives using numerical methods. The
-sanity check was conducted on a simple example and the results are agreed with analytical solutions. 
-
-* mml smoothing 0.5 * number of states
-
-* mml informative increment per parameter value 
-
-* lattice constant 1/2*pi*e for mml cpt
-
-* first part of nb sometimes < 0 this is not right
-
-Questions: 
-* log factorial is stirling's approximate, so hardly get exact values, the smaller the sample size, the larger the difference, what to do? R upper limit is around factorial(170)
 
 

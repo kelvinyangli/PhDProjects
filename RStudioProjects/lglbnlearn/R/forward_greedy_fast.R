@@ -9,11 +9,9 @@
 #' @param sampleSize Sample size of the given data. 
 #' @param node The target node. 
 #' @param base The base of the logarithm. Default is the natural log. 
-#' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.
 #' @param debug A boolearn argument to display more details. 
 #' @export
-forward_greedy_fast = function(data, indexListPerNodePerValue, arities, sampleSize, node, logFactorialSheet,
-                                   base = exp(1), debug = FALSE) {
+forward_greedy_fast = function(data, indexListPerNodePerValue, arities, sampleSize, node, base = exp(1), debug = FALSE) {
   
   vars = names(data)
   targetIndex = which(vars == node) # get index of the target node
@@ -23,7 +21,7 @@ forward_greedy_fast = function(data, indexListPerNodePerValue, arities, sampleSi
   tempCachedIndicesList = list()
   
   minMsgLen = mml_cpt_fast(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, 
-                           c(), targetIndex, logFactorialSheet, base)
+                           c(), targetIndex, base)
   
   if (debug) {
     cat("Search: Forward greedy with mmlCPT \n")
@@ -45,7 +43,7 @@ forward_greedy_fast = function(data, indexListPerNodePerValue, arities, sampleSi
     for (i in 1:length(unCheckedIndices)) {
       parentsIndices = c(mb, unCheckedIndices[i])
       res = mml_cpt_fast(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, 
-                         parentsIndices, targetIndex, logFactorialSheet, base)
+                         parentsIndices, targetIndex, base)
       msgLenCurrent = res$msgLen
       #cachedIndicesList = res$cachedIndicesList
       

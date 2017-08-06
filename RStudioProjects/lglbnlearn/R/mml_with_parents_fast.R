@@ -8,11 +8,10 @@
 #' @param sampleSize Sample size of a given data set. 
 #' @param parentsIndices Indices of parents nodes. 
 #' @param targetIndex Index of the target node.  
-#' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.
 #' @param base The base of the logarithm.  
 #' @export
 mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, 
-                                 parentsIndices, targetIndex, logFactorialSheet, base) {
+                                 parentsIndices, targetIndex, base) {
   
   newAddedParentIndex = parentsIndices[length(parentsIndices)]
   arityChild = arities[targetIndex]
@@ -33,9 +32,9 @@ mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, ar
       N_pa_i = length(cachedIndicesList[[i]])
       # sum_i^arityChild log(N(pa_i, x_i))!
       cumSum = single_par_cal(indexListPerNodePerValue, cachedIndicesList[[i]], arityChild, targetIndex, 
-                              logFactorialSheet, base)
+                              base)
       # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
-      logNumerator = log_factorial(logFactorialSheet, N_pa_i + arityChild - 1, base)
+      logNumerator = log_gamma((N_pa_i + arityChild - 1 + 1))
       nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
     } 
     
@@ -47,9 +46,9 @@ mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, ar
         cachedIndicesList[[j]] = intersect(tempList[[i]], indexListPerNodePerValue[[newAddedParentIndex]][[ii]])
         N_pa_i = length(cachedIndicesList[[j]])
         cumSum = multi_pars_cal(indexListPerNodePerValue, cachedIndicesList[[j]], arityChild, targetIndex, 
-                                logFactorialSheet, base)
+                                base)
         # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
-        logNumerator = log_factorial(logFactorialSheet, N_pa_i + arityChild - 1, base)
+        logNumerator = log_gamma((N_pa_i + arityChild - 1) + 1) 
         nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
         j = j + 1
       } # end for ii

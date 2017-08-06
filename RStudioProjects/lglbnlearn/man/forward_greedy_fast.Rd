@@ -5,7 +5,7 @@
 \title{A faster version of a forward greedy search}
 \usage{
 forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, node,
-  logFactorialSheet, base = exp(1), debug = FALSE)
+  base = exp(1), debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -18,8 +18,6 @@ by the function count_occurance().}
 \item{sampleSize}{Sample size of the given data.}
 
 \item{node}{The target node.}
-
-\item{logFactorialSheet}{A pre-saved log factorial sheet for non-negative integers <= 10000.}
 
 \item{base}{The base of the logarithm. Default is the natural log.}
 

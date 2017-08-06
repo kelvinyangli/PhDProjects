@@ -38,9 +38,9 @@ fim_nb = function(probSign, prodPij1, prodPij0, px, probsMatrix, py1, py0, ariti
   # off diagonal entries
   cc = prodPij1 * prodPij0 / (px ^ 2) # a common contant 
   # 1. dl^2/qi0*qik1
-  fim[1, 2:(length(x) + 1)] = summation(cc / (probsMatrix[, 1:length(xIndices)] * probSign[, xIndices]))
+  fim[1, 2:(length(xIndices) + 1)] = summation(cc / (probsMatrix[, 1:length(xIndices)] * probSign[, xIndices]))
   # 2. dl^2/qi0*qik0
-  fim[1, (length(x) + 2):ncol(fim)] = 
+  fim[1, (length(xIndices) + 2):ncol(fim)] = 
     -summation(cc / (probsMatrix[, (length(xIndices) + 1):ncol(probsMatrix)] * probSign[, xIndices]))
   
   # only fill-in these entries when there are more than 1 x

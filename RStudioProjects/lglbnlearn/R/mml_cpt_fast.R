@@ -8,17 +8,15 @@
 #' @param sampleSize Sample size of a given data set. 
 #' @param parentsIndices Indices of parents nodes. 
 #' @param targetIndex Index of the target node.  
-#' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.
 #' @param base The base of the logarithm.  
 #' @export
 mml_cpt_fast = function(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, 
-                        parentsIndices, targetIndex, logFactorialSheet, base) {
+                        parentsIndices, targetIndex, base) {
   if (length(parentsIndices) < 1) {
-    res = mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex, 
-                              logFactorialSheet, base)
+    res = mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex, base)
   } else {
     res = mml_with_parents_fast(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize, 
-                                parentsIndices, targetIndex, logFactorialSheet, base)
+                                parentsIndices, targetIndex, base)
   }
   return(res)
 }

@@ -12,12 +12,13 @@
 #' @param base The base of logarithm. The default is the natural log. 
 #' @param sigma The standard derivation of the assumed Gaussian distribution for parameter prior. The 
 #' default value is 3 as suggested by the original paper. 
-#' @param dataNumeric The numeric format of the given data set. Variable values start from 0. If it is 
-#' NULL when score is mml_cpt or mml_nb. 
-#' @param indexListPerNodePerValue As explained by argument name. It is obtained by getting the detailed 
-#' information of the given data using the function getDataInfo(). It is not NULL only when score is mml_cpt.
-#' @param probSign A data frame with 1 and -1, which corresponds to the 1st and 2nd level of a varaible. 
-#' It is used for computing the FIM of Naive Bayes.
+#' @param dataNumeric This parameter is for mml_logit. The numeric format of the given data set. 
+#' Variable values start from 0. 
+#' @param indexListPerNodePerValue This parameter is for mml_cpt. As explained by argument name. 
+#' It is obtained by getting the detailed information of the given data using the function 
+#' count_occurance(). 
+#' @param probSign This parameter is for mml_nb. A data frame with 1 and -1, which corresponds to the 
+#' 1st and 2nd level of a varaible. 
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 #' mml score. 
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective 
@@ -44,7 +45,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
   # initialize minMsgLen as mml when target has no parents
   
   if (scoreIndex == 1) {#cpt
-    minMsgLen = score(nodeIndex, c(), indexListPerNodePerValue, arities, sampleSize, base)
+    minMsgLen = score(indexListPerNodePerValue, arities, sampleSize, c(), targetIndex, base = base)
   } else if (scoreIndex == 2) {#logit
     minMsgLen = score(data, arities, sampleSize, c(), target, sigma = sigma)
   } else if (scoreIndex == 3) {#nb
@@ -73,7 +74,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
       # msg len with at least 1 parent
       if (scoreIndex == 1) {# cpt
         msgLenCurrent = 
-          score(nodeIndex, inputIndices, indexListPerNodePerValue, arities, sampleSize, base)
+          score(indexListPerNodePerValue, arities, sampleSize, inputIndices, targetIndex, base = base)
       } else if (scoreIndex == 2) {#logit
         msgLenCurrent = score(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
       } else if (scoreIndex == 3) {#nb

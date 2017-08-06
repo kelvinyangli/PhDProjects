@@ -5,7 +5,7 @@ date: "21 July 2017"
 output: html_document
 ---
 
-```{r global_options, include=F, warning=F, message=F, eval=T, echo=F, message=F}
+```{r global_options, include=F, warning=F, eval=F, echo=F, message=F}
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
 if (.Platform$OS.type == "windows") {
   dir = "C:/Users/"
@@ -13,18 +13,16 @@ if (.Platform$OS.type == "windows") {
   dir = "/home/"
 }
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
-
-logFactorialSheet = read.csv(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/logFactorial_1to10000.csv")) 
-````
+```
 
 ## Random model
 ```{r}
-# dag = empty.graph(c("Y", paste0("X", 1:20)))
+# dag = empty.graph(c("Y", paste0("X", 1:7)))
 # for (i in 2:nnodes(dag)) {
 #   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 # }
 dag = randDag(15, 3)
-# graphviz.plot(dag)
+graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
 sampleSize = n = 1000
 data = rbn(cpts, n)
@@ -40,10 +38,12 @@ names(arities) = c()
 
 ## Executing MML_NB
 ```{r, eval = T}
-lst_nb = list()
+probSign = get_prob_sign(data)
+lst_nb = list() 
 for (i in 1:length(vars)) {
   y = vars[i]
-  lst_nb[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb)
+  lst_nb[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, probSign = probSign, debug = F)
+  forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, probSign = probSign, debug = T)
 }
 
 ```
@@ -54,7 +54,8 @@ indexListPerNodePerValue = count_occurance(data, arities)
 lst_cpt = list()
 for (i in 1:length(vars)) {
   y = vars[i]
-  lst_cpt[[i]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, logFactorialSheet, base = exp(1))
+  lst_cpt[[i]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1), debug = F)
+  forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, vars[1], base = exp(1), debug = T)
 }
 ```
 The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
@@ -68,7 +69,8 @@ sampleSize = n
 lst_logit = list()
 for (i in 1:length(vars)) {
   y = vars[i]
-  lst_logit[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric)
+  lst_logit[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
+  forward_greedy(data, arities, vars, sampleSize, vars[1], score = mml_logit, dataNumeric = dataNumeric, debug = T)
 }
 ```
 
@@ -76,7 +78,7 @@ for (i in 1:length(vars)) {
 ```{r}
 acc_nb = acc_cpt = acc_logit = matrix(0, nrow = length(vars), ncol = 2)
 for (i in 1:length(vars)) {
-  acc_nb[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_nb[[i]], vars, vars[i])  
+  acc_nb[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_nb[[i]], vars, vars[i])
 }
 
 for (i in 1:length(vars)) {

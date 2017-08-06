@@ -50,11 +50,11 @@ mml_nb = function(data, probSign, vars, arities, sampleSize, x, y, debug = FALSE
     # FIM
     fim = fim_nb(probSign, prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
     # determinant of FIM
-    detFIM = det(fim)
-    # for some reason, we have negative determinant when there is a small number of input variables,
-    # since the problem can't be resolved for now, I manually convert negative determinant into 
-    # positive. Most of negative determinant are very small negative values, meaning close to 0. 
-    #if (detFIM < 0) detFIM = -detFIM 
+    detFIM = det(fim) + 1 # manually add 1 to determinant to avoid 0 
+    # we still get negative or small positive determinant
+    # if the determinant is still negative after adding 1 in the previous step 
+    # we manually multiplies determinant by -1 
+    if (detFIM < 0) detFIM = -detFIM 
     logF = log(detFIM)
     # number of free parameters
     d = nrow(fim)
@@ -62,7 +62,8 @@ mml_nb = function(data, probSign, vars, arities, sampleSize, x, y, debug = FALSE
     logF = log(sampleSize * (1 / py1 + 1 / py0))
     d = arities[yIndex] - 1
   }
-  
+  # to avoid having negative 1st part, we manually force logF to be positive
+  if (logF < 0) logF = -1 * logF
   #############################
   # log prior
   # for beta distribution with alpha = beta = 1, log prior = 0
@@ -84,11 +85,12 @@ mml_nb = function(data, probSign, vars, arities, sampleSize, x, y, debug = FALSE
     cat("mml=", l, "\n")
     cat("@ 1st part=", l-nll, "\n")
     cat("*** -logPrior=", -logPrior, "\n")
+    cat("*** detFIM=", detFIM, "\n")
     cat("*** logFisher=", logF, "\n")
     cat("*** logLattice=", 0.5*d*(1+log(kd)), "\n")
     cat("@ 2nd part=nll=", nll, "\n")
   }
   
   return(l)
-  
+  #return(nll)
 }

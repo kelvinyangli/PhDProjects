@@ -5,7 +5,7 @@
 \title{Auxiliary function to mml_cpt_fast}
 \usage{
 mml_with_parents_fast(indexListPerNodePerValue, cachedIndicesList, arities,
-  sampleSize, parentsIndices, targetIndex, logFactorialSheet, base)
+  sampleSize, parentsIndices, targetIndex, base)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
@@ -20,8 +20,6 @@ by the function count_occurance().}
 \item{parentsIndices}{Indices of parents nodes.}
 
 \item{targetIndex}{Index of the target node.}
-
-\item{logFactorialSheet}{A pre-saved log factorial sheet for non-negative integers <= 10000.}
 
 \item{base}{The base of the logarithm.}
 }

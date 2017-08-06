@@ -26,14 +26,15 @@ forward_greedy(data, arities, vars, sampleSize, target, score, base = exp(1),
 \item{sigma}{The standard derivation of the assumed Gaussian distribution for parameter prior. The 
 default value is 3 as suggested by the original paper.}
 
-\item{dataNumeric}{The numeric format of the given data set. Variable values start from 0. If it is 
-NULL when score is mml_cpt or mml_nb.}
+\item{dataNumeric}{This parameter is for mml_logit. The numeric format of the given data set. 
+Variable values start from 0.}
 
-\item{indexListPerNodePerValue}{As explained by argument name. It is obtained by getting the detailed 
-information of the given data using the function getDataInfo(). It is not NULL only when score is mml_cpt.}
+\item{indexListPerNodePerValue}{This parameter is for mml_cpt. As explained by argument name. 
+It is obtained by getting the detailed information of the given data using the function 
+count_occurance().}
 
-\item{probSign}{A data frame with 1 and -1, which corresponds to the 1st and 2nd level of a varaible. 
-It is used for computing the FIM of Naive Bayes.}
+\item{probSign}{This parameter is for mml_nb. A data frame with 1 and -1, which corresponds to the 
+1st and 2nd level of a varaible.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 mml score.}

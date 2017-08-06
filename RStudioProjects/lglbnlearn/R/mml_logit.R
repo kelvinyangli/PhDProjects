@@ -39,7 +39,7 @@ mml_logit = function(data, arities, sampleSize, x, y, sigma = 3, debug = FALSE) 
       0.5 * log(2 * pi) + log(sigma) - 0.5 * log(arities[yIndex]) + 
       0.5 * beta ^ 2 / sigma ^ 2
     # negative log lattice
-    nlogLattice = 0.5 * (1 + log(0.083333))
+    logLattice = 0.5 * (1 + log(0.083333))
     # when no parent, fim = sum_i (exp(betaDotX) / (1 + exp(betaDotX)) ^ 2)
     # log det(fim)
     logF = log((exp(betaDotX) / (1 + exp(betaDotX)) ^ 2) * sampleSize)
@@ -58,21 +58,27 @@ mml_logit = function(data, arities, sampleSize, x, y, sigma = 3, debug = FALSE) 
       latticeConstant = min(k)
     }
     # negative log lattice constant
-    nlogLattice = 0.5 * nFreePars * (1 + log(latticeConstant))
+    logLattice = 0.5 * nFreePars * (1 + log(latticeConstant))
     fim = fim_logit(dataNumeric, betaDotX, xIndices, yIndex)
     # log det(fim)
     logF = log_determinant(fim)
   }
   
   # mml score
-  mml = nlogPrior + nlogLattice + 0.5 * logF + nll
-  lst = list(nlogPrior + nlogLattice + 0.5 * logF, mml, nlogPrior, nlogLattice, logF, nll)
-  names(lst) = c("1st", "mml", "nlogPrior", "nlogLattice", "logF", "nll")
+  mml = nlogPrior + logLattice + 0.5 * logF + nll
+  lst = list(nlogPrior + logLattice + 0.5 * logF, mml, nlogPrior, logLattice, logF, nll)
+  names(lst) = c("1st", "mml", "nlogPrior", "logLattice", "logF", "nll")
   
   if (debug) {
-    return(lst)
-  } else {
-    return(lst[[1]])  
+    cat("mml=", mml, "\n")
+    cat("@ 1st part=", mml-nll, "\n")
+    cat("*** -logPrior=", nlogPrior, "\n")
+    cat("*** detFIM=", exp(logF), "\n")
+    cat("*** logFisher=", logF, "\n")
+    cat("*** logLattice=", logLattice, "\n")
+    cat("@ 2nd part=nll=", nll, "\n")
   }
+  
+  return(mml)
   
 }

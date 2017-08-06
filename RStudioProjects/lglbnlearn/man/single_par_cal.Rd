@@ -5,7 +5,7 @@
 \title{Auxiliary function to mml_with_parents() and mml_with_parents_fast()}
 \usage{
 single_par_cal(indexListPerNodePerValue, commonParentsIndices, arityChild,
-  targetIndex, logFactorialSheet, base)
+  targetIndex, base)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
@@ -16,8 +16,6 @@ by the function count_occurance().}
 \item{arityChild}{}
 
 \item{targetIndex}{Index of the target node.}
-
-\item{logFactorialSheet}{A pre-saved log factorial sheet for non-negative integers <= 10000.}
 
 \item{base}{The base of the logarithm.}
 }

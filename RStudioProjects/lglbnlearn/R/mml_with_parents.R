@@ -7,11 +7,10 @@
 #' @param sampleSize sampleSize
 #' @param parentsIndices parentsIndices
 #' @param targetIndex targetIndex
-#' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.
 #' @param base base
 #' @export
 mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, parentsIndices, targetIndex, 
-                            logFactorialSheet, base) {
+                            base) {
   
   arityChild = arities[targetIndex]
   
@@ -36,7 +35,7 @@ mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, paren
       
       # sum_i^arityChild log(N(pa_i, x_i))!
       cumSum = single_par_cal(indexListPerNodePerValue, commonParentsIndices, arityChild, targetIndex, 
-                              logFactorialSheet, base)
+                              base)
       
     } else { # if more than 1 parent, use function to get potential combination
       
@@ -49,12 +48,12 @@ mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, paren
       N_pa_i = length(commonParentsIndices)
       
       cumSum = multi_pars_cal(indexListPerNodePerValue, commonParentsIndices, arityChild, targetIndex, 
-                              logFactorialSheet, base)
+                              base)
       
     } # end if else 
     
     # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
-    logNumerator = log_factorial(logFactorialSheet, N_pa_i + arityChild - 1, base)
+    logNumerator = log_gamma((N_pa_i + arityChild - 1) + 1)
     #cat(logNumerator - logConstant - cumSum, "\n")
     nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
     

@@ -7,19 +7,16 @@
 #' @param arities A vector of variable ariteis.
 #' @param sampleSize Sample size of a given data set. 
 #' @param targetIndex Index of the target node.  
-#' @param logFactorialSheet A pre-saved log factorial sheet for non-negative integers <= 10000.
 #' @param base The base of the logarithm.  
 #' @export
-mml_without_parents = function(indexListPerNodePerValue, arities, sampleSize, targetIndex, 
-                               log_factorial, base) {
+mml_without_parents = function(indexListPerNodePerValue, arities, sampleSize, targetIndex, base) {
   arity = arities[targetIndex]
-  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + 
-    log_factorial(logFactorialSheet, sampleSize + arity - 1, base) - 
+  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + log_gamma(sampleSize + arity - 1) - 
     log(factorial(arity - 1), base = base)
   cumSum = 0
   for (i in 1:arity) {
     N_x_i = length(indexListPerNodePerValue[[targetIndex]][[i]])
-    cumSum = cumSum + log_factorial(logFactorialSheet, N_x_i, base)
+    cumSum = cumSum + log_gamma(N_x_i + 1)
   }
   return(fixedTerm - cumSum)
 }

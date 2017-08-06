@@ -5,7 +5,7 @@
 \title{Auxiliary function to mml_cpt()}
 \usage{
 mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
-  targetIndex, logFactorialSheet, base)
+  targetIndex, base)
 }
 \arguments{
 \item{indexListPerNodePerValue}{}
@@ -17,8 +17,6 @@ mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
 \item{parentsIndices}{parentsIndices}
 
 \item{targetIndex}{targetIndex}
-
-\item{logFactorialSheet}{A pre-saved log factorial sheet for non-negative integers <= 10000.}
 
 \item{base}{base}
 }
