@@ -2,7 +2,7 @@
 #'
 #' This function store the occurance of each value of each node in a list in order to speed up the calculation
 #' of mml_cpt. 
-#' @param data A categorical data set.
+#' @param data A categorical (nominal or ordinal) data set.
 #' @param arities A list of arities for variables. 
 #' @export
 count_occurance = function(data, arities) {
