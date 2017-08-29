@@ -7,7 +7,7 @@
 count_occurance(data, arities)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A categorical (nominal or ordinal) data set.}
 
 \item{arities}{A list of arities for variables.}
 }

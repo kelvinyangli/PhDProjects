@@ -1,0 +1,87 @@
+---
+title: "MBPT_accuracy_test"
+author: "kl"
+date: "4 August 2017"
+output: html_document
+---
+
+This is to test the optimal mbpt returned by mml is a true subgraph of the local structure within a mb. If a connection between two variables are weak, it requires a lot more data to justify the existence of this arc. For otherwise, adding the true arc is going to increase the model complexity without reducing much of the negative accuracy. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+library(numDeriv)
+```
+
+```{r}
+dag = randDag(3, 2)
+cpts = randCPTs(dag, 2, 1)
+sampleSize = 100000
+data = rbn(cpts, sampleSize)
+graphviz.plot(dag)
+mbptsList = list()
+for (i in 1:8) mbptsList[[i]] = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/", i - 1, ".rds"))  # read pre-saved mbpts into memory 
+#real = TRUE
+maxMB = 7
+arities = sapply(data, nlevels)
+names(arities) = c()
+indexListPerNodePerValue = count_occurance(data, arities)
+vars = colnames(data)
+mbList = list()
+for (i in 1:length(vars)) mbList[[i]] = bnlearn::mb(dag, vars[i])
+for (i in 1:length(vars)) if (length(mbList[[i]]) > maxMB) mbList[[i]] = mbList[[i]][1:maxMB]
+i = 1
+target = vars[i]
+learnedMB = mbList[[i]]
+mmlCPTCach = mml_cpt_cach(indexListPerNodePerValue, arities, sampleSize, vars, target, learnedMB)
+mml_pt(mmlCPTCach, mbptsList, target, learnedMB)
+
+mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(2), 1)+
+mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(), 2) +
+mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(), 3)
+
+mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(), 1) +
+mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(1), 2)+
+mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(1,2), 3) 
+```
+
+## real model 
+CHILD and INSURANCE 
+
+```{r}
+child = readRDS("~/Documents/Experiments/UAI_exp/child/dag/child.rds")
+n = 500
+# datasets = list.files(paste0("~/Documents/Experiments/UAI_exp/child/data_csv/", n))
+# for (i in 1:length(datasets)) {
+#   data = read.csv(paste0("~/Documents/Experiments/UAI_exp/child/data_csv/", n, "/", datasets[i]))
+#   temp = data
+#   for (j in 1:ncol(data)) temp[,j] = as.factor(data[,j])
+#   vars = names(data)
+#   arities = sapply(temp, nlevels)
+#   names(arities) = c()
+#   indexListPerNodePerValue = count_occurance(temp, arities)
+#   lst = list()
+#   for (j in 1:length(vars)) {
+#     #lst[[j]] = forward_greedy(data, arities, vars, n, vars[j], mml_cpt)   
+#     lst[[j]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, n, vars[j], c())  
+#   }
+#   
+# }
+learned = learnMBPT(vars, mbList, mbptsList, dataInfo, n)
+  #localStrs = learned$localStrs
+  #mbpt_global = learned$mbpt
+  
+files = list.files(paste0("~/Documents/Experiments/UAI_exp/child/local_pt/", n))
+for (i in 1:10) {
+  lst = readRDS(paste0("~/Documents/Experiments/UAI_exp/child/local_pt/500/", files[i]))
+  for (j in 1:length(lst)) {
+    matrix2dag(lst[[j]])
+  }
+}
+
+```
