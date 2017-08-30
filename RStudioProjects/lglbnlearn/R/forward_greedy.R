@@ -49,7 +49,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
   } else if (scoreIndex == 2) {#logit
     minMsgLen = score(data, arities, sampleSize, c(), target, sigma = sigma)
   } else if (scoreIndex == 3) {#nb
-    minMsgLen = score(data, probSign, vars, arities, sampleSize, c(), target)
+    #minMsgLen = score(data, probSign, vars, arities, sampleSize, c(), target)
+    minMsgLen = score(data, targetIndex, c())
   }
   
   if (debug) {
@@ -78,7 +79,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
       } else if (scoreIndex == 2) {#logit
         msgLenCurrent = score(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
       } else if (scoreIndex == 3) {#nb
-        msgLenCurrent = score(data, probSign, vars, arities, sampleSize, vars[inputIndices], target) 
+        #msgLenCurrent = score(data, probSign, vars, arities, sampleSize, vars[inputIndices], target) 
+        msgLenCurrent = score(data, targetIndex, inputIndices)
       }
       
       if (debug) cat("parents =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")

@@ -11,7 +11,9 @@
 #' @export
 mml_without_parents = function(indexListPerNodePerValue, arities, sampleSize, targetIndex, base) {
   arity = arities[targetIndex]
-  fixedTerm = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base) + log_gamma(sampleSize + arity - 1) - 
+  #constantDiff = 0.5 * (arity - 1) * log((pi * exp(1) / 6), base = base)
+  constantDiff = 0
+  fixedTerm = constantDiff + log_gamma(sampleSize + arity - 1) - 
     log(factorial(arity - 1), base = base)
   cumSum = 0
   for (i in 1:arity) {

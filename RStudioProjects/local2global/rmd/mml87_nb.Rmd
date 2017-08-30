@@ -17,9 +17,54 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
+## mml_nb_adaptive
+```{r}
+# arities is arities[indices]
+# values is data[rowID, indices] is numerical format
+node_value_to_index = function(arities, values) {
+  index = values[1]
+  for (i in 2:length(values)) {
+    index = index + (values[i] - 1) * prod(arities[1:(i - 1)])
+  }
+  return(index)
+}
+
+# y is the target 
+# x is a set of Xs
+mml_nb_adaptive = function(data, yIndex, xIndices) {
+  # yIndex = which(names(data) == y)
+  # xIndices = which(names(data) %in% x)
+  #prob = 1
+  msgLen = 0
+  ycnt = rep(1, nlevels(data[, yIndex]))
+  xcnt = rep(1, prod(arities[c(xIndices, yIndex)]))
+  for (rowID in 1:nrow(data)) {
+    yValue = as.numeric(data[rowID, yIndex])
+    xValues = as.numeric(data[rowID, xIndices])
+    p = ycnt / sum(ycnt)
+    q = rep(0, length(xcnt))
+    probX = 0
+    for (i in 1:arities[yIndex]) {
+      q[((i - 1) * prod(arities[xIndices]) + 1):(prod(arities[xIndices]) * i)] = 
+        (xcnt[((i - 1) * prod(arities[xIndices]) + 1):(prod(arities[xIndices]) * i)] / 
+        sum(xcnt[((i - 1) * prod(arities[xIndices]) + 1):(prod(arities[xIndices]) * i)])) * p[i]
+      
+      index = node_value_to_index(arities[c(xIndices, yIndex)], c(xValues, i))
+      probX = probX + q[index]
+      if (i == yValue) s = index
+    }
+    #prob = prob * (q[s] / probX)
+    msgLen = msgLen - log(q[s] / probX)
+    ycnt[yValue] = ycnt[yValue] + 1
+    xcnt[s] = xcnt[s] + 1
+  }# end of each data point
+  return(msgLen)
+}
+```
+
 ## Random model
 ```{r, eval=T}
-nXs = 1
+nXs = 10
 dag = empty.graph(c("Y", paste0("X", 1:nXs)))
 for (i in 2:nnodes(dag)) {
   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
@@ -37,33 +82,51 @@ y = "Y"
 yIndex = which(vars == y)
 #xIndices = which(vars %in% x)
 #mb(dag, y)
-cpts
+#cpts
 ```
 
 ## Executing MML_NB
 ```{r, eval = T}
 #for (i in 2:length(vars)) {
-  i = 2:nnodes(dag)
+  i = 2:6
   indices = c(i)
+  I = mml_nb_adaptive(data, yIndex, indices)
   pars = mle_nb(data, vars, indices, yIndex, 0.5)
-  probSign = get_prob_sign(data)
-  (i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
+  nll = -sum(apply(data, 1, nll_nb, pars = pars, xIndices = indices, yIndex = yIndex))
+  # p(y=T)
+  py1 = pars[[length(pars)]][[1]]
+  # p(y=F)
+  py0 = pars[[length(pars)]][[2]]
+  if (length(indices) > 0) {# if x is not empty
+    # a vector of \prod_j p(x_ij|y=1st value) = \prod_j p(x_ij|y=1)
+    prodPij1 = apply(data, 1, prod_pijk, pars = pars, xIndices = indices, yValue = 1)
+    # a vector of \prod_j p(x_ij|y=2nd value) = \prod_j p(x_ij|y=0)
+    prodPij0 = apply(data, 1, prod_pijk, pars = pars, xIndices = indices, yValue = 2)
+    # a vector of p_xi 
+    px = py1 * prodPij1 + py0 * prodPij0
+    nll = nll + sum(log(px)) # add additional log(px) value to nll when x is not empty
+  }
+  # probSign = get_prob_sign(data)
+  # (i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
   #forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, probSign = probSign, debug = T)
 #}
+  cat("mml_nb=", I, "\n")
+  cat("@1st part=", I-nll, "\n")
+  cat("@2nd part=", nll, "\n")
+  
 
-```
 ## MML_Logit
 
-```{r}
+
 dataNumeric = factor2numeric(data)
 vars = names(data)
 sampleSize = n
-(i_lr = mml_logit(data, arities, sampleSize, vars[indices], y, sigma = 3, debug = T))
+i_lr = mml_logit(data, arities, sampleSize, vars[indices], y, sigma = 3, debug = T)
 #forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
-```
+
 
 ## MML_CPT
-```{r}
+
 indexListPerNodePerValue = count_occurance(data, arities)
 #forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1), debug = F)
 (i_cpt = mml_cpt(indexListPerNodePerValue, arities, sampleSize, indices, yIndex, base = exp(1)))
@@ -97,6 +160,11 @@ i_lr
 * try: change values of parameters to see how sensitive the log likelihood is 
 
 * try: plot the log likelihood to see its shape 
+
+* mml_nb_adaptive works well, comparing with mml_cpt, we don't add the extra bit for each parameter, because we don't know what's the difference b/w nb_adaptive and nb_87, but maybe we shouldn't add the extra bit for mml_cpt either because all we want to know is the message length of a node given its parents, we are not interested in the mml estimation of parameters 
+
+
+
 
 
 

@@ -22,8 +22,8 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 #   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 # }
 dag = randDag(15, 3)
-graphviz.plot(dag)
-cpts = randCPTs(dag, 2, 1)
+#graphviz.plot(dag)
+cpts = randCPTs(dag, 3, 1)
 sampleSize = n = 1000
 data = rbn(cpts, n)
 vars = colnames(data)
@@ -38,13 +38,19 @@ names(arities) = c()
 
 ## Executing MML_NB
 ```{r, eval = T}
-probSign = get_prob_sign(data)
+#probSign = get_prob_sign(data)
 lst_nb = list() 
 for (i in 1:length(vars)) {
   y = vars[i]
-  lst_nb[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, probSign = probSign, debug = F)
-  forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, probSign = probSign, debug = T)
+  lst_nb[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb_adaptive, debug = F)
+  #forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb, probSign = probSign, debug = T)
 }
+
+# Rprof("mml_nb.out")
+# forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb_adaptive, debug = F)
+# Rprof(NULL)
+# proftable("mml_nb.out")
+
 
 ```
 
@@ -55,14 +61,14 @@ lst_cpt = list()
 for (i in 1:length(vars)) {
   y = vars[i]
   lst_cpt[[i]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1), debug = F)
-  forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, vars[1], base = exp(1), debug = T)
+  #forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, vars[1], base = exp(1), debug = T)
 }
 ```
 The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
 ## MML_Logit
 
-```{r}
+```{r, eval = F}
 dataNumeric = factor2numeric(data)
 vars = names(data)
 sampleSize = n
@@ -70,7 +76,7 @@ lst_logit = list()
 for (i in 1:length(vars)) {
   y = vars[i]
   lst_logit[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
-  forward_greedy(data, arities, vars, sampleSize, vars[1], score = mml_logit, dataNumeric = dataNumeric, debug = T)
+  #forward_greedy(data, arities, vars, sampleSize, vars[1], score = mml_logit, dataNumeric = dataNumeric, debug = T)
 }
 ```
 
@@ -85,25 +91,76 @@ for (i in 1:length(vars)) {
   acc_cpt[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_cpt[[i]], vars, vars[i])  
 }
 
-for (i in 1:length(vars)) {
-  acc_logit[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_logit[[i]], vars, vars[i])  
-}
+# for (i in 1:length(vars)) {
+#   acc_logit[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_logit[[i]], vars, vars[i])  
+# }
 
 x1 = round(colMeans(acc_nb), 2)
 x2 = round(1.96 * apply(acc_nb, 2, sd) / sqrt(length(vars)), 2)
 x3 = round(colMeans(acc_cpt), 2)
 x4 = round(1.96 * apply(acc_cpt, 2, sd) / sqrt(length(vars)), 2)
-x5 = round(colMeans(acc_logit), 2)
-x6 = round(1.96 * apply(acc_logit, 2, sd) / sqrt(length(vars)), 2)
+# x5 = round(colMeans(acc_logit), 2)
+# x6 = round(1.96 * apply(acc_logit, 2, sd) / sqrt(length(vars)), 2)
 
 cat("mml_nb:", x1[1], "(", x2[1], ")", x1[2], "(", x2[2], ") \n")
 cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
-cat("mml_logit:", x5[1], "(", x6[1], ")", x5[2], "(", x6[2], ") \n")
+# cat("mml_logit:", x5[1], "(", x6[1], ")", x5[2], "(", x6[2], ") \n")
 ```
 
-## Findings
-* mml_cpt is almost always the best among logit and naive bayes. 
-* 
+## Real models
+Used a different log factorial estimation, so the results could be different from when previous UAI results
+```{r}
+score = "mml_cpt"
+model = "insurance3"
+sampleSize = 500
+datasets = list.files(paste0("~/Documents/Experiments/UAI_exp/", model, "/data_csv/", sampleSize, "/"))
+dag = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/dag/", model, ".rds"))
+vars = bnlearn::nodes(dag)
+for (i in 1:length(datasets)) {
+  data = read.csv(paste0("~/Documents/Experiments/UAI_exp/", model, "/data_csv/", sampleSize, "/", datasets[i]))  
+  data = numeric2categorical(data)
+  arities = sapply(data, nlevels)
+  names(arities) = c()
+  if (score == "mml_cpt") indexListPerNodePerValue = count_occurance(data, arities)
+  lst_learned = list() 
+  for (j in 1:length(vars)) {
+    y = vars[j]
+    if (score == "mml_nb") {
+      lst_learned[[j]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb_adaptive)
+    } else if (score == "mml_cpt") {
+      lst_learned[[j]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1))
+    }
+  }
+  lst_learned = symmetry_correction(vars, lst_learned, "AND")
+  filename = strsplit(datasets[i], ".csv")[[1]]
+  saveRDS(lst_learned, paste0("~/Documents/Experiments/", score, "/", model, "/mb_learned/", sampleSize, "/", filename, ".rds"))
+}
+```
+
+```{r}
+sampleSize = 500
+mb_true = list()
+for (i in 1:length(vars)) {
+  mb_true[[i]] = bnlearn::mb(dag, vars[i])
+}
+files = list.files(paste0("~/Documents/Experiments/", score, "/", model, "/mb_learned/", sampleSize))
+ed = rep(0, length(files)) 
+for (i in 1:length(files)) {
+  mb_learned = readRDS(paste0("~/Documents/Experiments/", score, "/", model, "/mb_learned/", sampleSize, "/", files[i]))
+  for (j in 1:length(vars)) {
+    y = vars[j]
+    ed[i] = ed[i] + edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y)
+  }
+}
+
+c = 1.96 * sd(ed) / sqrt(length(ed))
+cat(mean(ed), "+/-", c)
+```
+
+
+
+
+
 
 
 

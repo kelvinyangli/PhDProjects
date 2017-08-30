@@ -18,7 +18,8 @@ mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, ar
   numParents = length(parentsIndices)
   numParentsInstantiations = prod(arities[parentsIndices])
 
-  fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base)
+  #constantDiff = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base)
+  constantDiff = 0
   nonFixedTerm = 0
   # log((|x| - 1)!)
   logConstant = log(factorial(arityChild - 1), base)
@@ -56,7 +57,7 @@ mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, ar
     
   } # end else 
   
-  msgLen = fixedTerm + nonFixedTerm
+  msgLen = constantDiff + nonFixedTerm
   ls = list(msgLen = msgLen, cachedIndicesList = cachedIndicesList)
   return(ls)
   

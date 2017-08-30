@@ -18,8 +18,8 @@ mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, paren
   
   numParentsInstantiations = prod(arities[parentsIndices])
   
-  fixedTerm = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
-  
+  #constantDiff = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
+  constantDiff = 0
   nonFixedTerm = 0
   
   # log((|x| - 1)!)
@@ -60,6 +60,6 @@ mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, paren
     #cat(logNumerator - logConstant - cumSum, "\n")
   } # end for i
   
-  return(fixedTerm + nonFixedTerm)
+  return(constantDiff + nonFixedTerm)
   
 }

@@ -1,0 +1,23 @@
+---
+title: "Innovation showcase"
+author: "kl"
+date: "30 August 2017"
+output: html_document
+---
+
+## Julie and Nori workshop 
+what kind of people, in a granular level, rather than just institutions or organizations
+tangible industry example
+what is more important than how
+catchy title tells what to deliver not how to ...
+
+## Title
+modelling causality - reword causality (automate biz decisions)
+making biz decision beyond just correlation
+
+## Body
+primary content + support parts
+supports: 
+  - why
+  - how
+  - what

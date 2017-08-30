@@ -19,11 +19,18 @@ library(numDeriv)
 ```
 
 ```{r}
-dag = randDag(3, 2)
+# dag = randDag(3, 2)
+# nodes(dag) = c("X1", "Y", "X2")
+# graphviz.plot(dag)
+```
+
+```{r}
+#ag = randDag(2, 1)
+dag = empty.graph(c("X", "Y"))
+dag = set.arc(dag, "Y", "X")
 cpts = randCPTs(dag, 2, 1)
-sampleSize = 100000
+sampleSize = 10
 data = rbn(cpts, sampleSize)
-graphviz.plot(dag)
 mbptsList = list()
 for (i in 1:8) mbptsList[[i]] = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/", i - 1, ".rds"))  # read pre-saved mbpts into memory 
 #real = TRUE
@@ -35,19 +42,20 @@ vars = colnames(data)
 mbList = list()
 for (i in 1:length(vars)) mbList[[i]] = bnlearn::mb(dag, vars[i])
 for (i in 1:length(vars)) if (length(mbList[[i]]) > maxMB) mbList[[i]] = mbList[[i]][1:maxMB]
-i = 1
+```
+
+```{r}
+i = 2
 target = vars[i]
 learnedMB = mbList[[i]]
 mmlCPTCach = mml_cpt_cach(indexListPerNodePerValue, arities, sampleSize, vars, target, learnedMB)
-mml_pt(mmlCPTCach, mbptsList, target, learnedMB)
-
-mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(2), 1)+
-mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(), 2) +
-mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(), 3)
-
-mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(), 1) +
-mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(1), 2)+
-mml_cpt(indexListPerNodePerValue, arities, sampleSize, c(1,2), 3) 
+mbpts = mbptsList[[length(learnedMB) + 1]]
+mbpts = substitute_vars(mbpts, target, learnedMB)
+for (j in 1:length(mbpts)) {
+  I = mml_dag_fast(mbpts[[j]], mmlCPTCach)
+  cat(I, "\n")
+}
+#mml_pt(mmlCPTCach, mbptsList, target, learnedMB)
 ```
 
 ## real model 
