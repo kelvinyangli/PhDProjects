@@ -17,51 +17,6 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
-## mml_nb_adaptive
-```{r}
-# arities is arities[indices]
-# values is data[rowID, indices] is numerical format
-node_value_to_index = function(arities, values) {
-  index = values[1]
-  for (i in 2:length(values)) {
-    index = index + (values[i] - 1) * prod(arities[1:(i - 1)])
-  }
-  return(index)
-}
-
-# y is the target 
-# x is a set of Xs
-mml_nb_adaptive = function(data, yIndex, xIndices) {
-  # yIndex = which(names(data) == y)
-  # xIndices = which(names(data) %in% x)
-  #prob = 1
-  msgLen = 0
-  ycnt = rep(1, nlevels(data[, yIndex]))
-  xcnt = rep(1, prod(arities[c(xIndices, yIndex)]))
-  for (rowID in 1:nrow(data)) {
-    yValue = as.numeric(data[rowID, yIndex])
-    xValues = as.numeric(data[rowID, xIndices])
-    p = ycnt / sum(ycnt)
-    q = rep(0, length(xcnt))
-    probX = 0
-    for (i in 1:arities[yIndex]) {
-      q[((i - 1) * prod(arities[xIndices]) + 1):(prod(arities[xIndices]) * i)] = 
-        (xcnt[((i - 1) * prod(arities[xIndices]) + 1):(prod(arities[xIndices]) * i)] / 
-        sum(xcnt[((i - 1) * prod(arities[xIndices]) + 1):(prod(arities[xIndices]) * i)])) * p[i]
-      
-      index = node_value_to_index(arities[c(xIndices, yIndex)], c(xValues, i))
-      probX = probX + q[index]
-      if (i == yValue) s = index
-    }
-    #prob = prob * (q[s] / probX)
-    msgLen = msgLen - log(q[s] / probX)
-    ycnt[yValue] = ycnt[yValue] + 1
-    xcnt[s] = xcnt[s] + 1
-  }# end of each data point
-  return(msgLen)
-}
-```
-
 ## Random model
 ```{r, eval=T}
 nXs = 10
@@ -72,7 +27,7 @@ for (i in 2:nnodes(dag)) {
 #dag = randDag(10, 2)
 #graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
-sampleSize = n = 10000
+sampleSize = n = 1000
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -88,7 +43,7 @@ yIndex = which(vars == y)
 ## Executing MML_NB
 ```{r, eval = T}
 #for (i in 2:length(vars)) {
-  i = 2:6
+  i = 11
   indices = c(i)
   I = mml_nb_adaptive(data, yIndex, indices)
   pars = mle_nb(data, vars, indices, yIndex, 0.5)
@@ -162,6 +117,10 @@ i_lr
 * try: plot the log likelihood to see its shape 
 
 * mml_nb_adaptive works well, comparing with mml_cpt, we don't add the extra bit for each parameter, because we don't know what's the difference b/w nb_adaptive and nb_87, but maybe we shouldn't add the extra bit for mml_cpt either because all we want to know is the message length of a node given its parents, we are not interested in the mml estimation of parameters 
+
+* strange: after using a different log factorial approximation in mml_cpt, the results are worse than before
+
+* mml_nb_adaptive: the code works, and seems working ok, but the results using mml_nb alone comparing with mml_cpt are flucturating, think about this after mid-review.
 
 
 

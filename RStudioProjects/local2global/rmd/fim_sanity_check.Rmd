@@ -25,36 +25,60 @@ dag = randDag(10, 2)
 ```
 
 ```{r}
-cpts = randCPTs(dag, 2, 1)
-sampleSize = 1000
-data = rbn(cpts, sampleSize)
+# cpts = randCPTs(dag, 2, 1)
+# sampleSize = 1000
+# data = rbn(cpts, sampleSize)
 temp = factor2numeric(data)
 temp = abs(temp - 1)
-arities = sapply(data, nlevels)
-vars = names(data)
+# arities = sapply(data, nlevels)
+# vars = names(data)
 #x = c("X1")
 #y = "Y"
 #yIndex = which(colnames(data) == y)
 #xIndices = which(colnames(data) %in% x)
 #xx = c(pars$Y[[1]], pars$X1[1,1], pars$X1[1,2])
 #xx = c(pars$Y[[1]], pars$X1[1,1], pars$X2[1,1], pars$X3[1,1], pars$X1[1,2], pars$X2[1,2], pars$X3[1,2])
-probSign = get_prob_sign(data)
+# probSign = get_prob_sign(data)
 ```
 
 # negative likelihood 
 ```{r,eval=T}
 f = function(xx) {
-  ss = 0 
-  for (i in 1:nrow(temp)) {
-    yi = temp[i, 1]
-    pi1 = xx[1]
-    pij1 = abs(abs(temp[i, xIndices] - 1) - xx[xIndices])
-    pij0 = abs(abs(temp[i, xIndices] - 1) - xx[xIndices + length(x)])
-    px = pi1 * prod(pij1) + (1 - pi1) * prod(pij0)
-    ss = ss + yi * log(pi1) + (1 - yi) * log(1 - pi1) + yi * sum(log(pij1)) + (1 - yi) * sum(log(pij0)) - log(px)
+  #dataPoint, pars, xIndices, yIndex) {
+  ss = 0
+  for (i in 1:nrow(data)) {
+    if (length(xIndices) > 0) {
+    for (j in 1:length(xIndices)) {
+      if (as.numeric(data[i, yIndex]) == 1) {
+        yy = log(abs(as.numeric(data[i, xIndices[j]]) - 1 - xx[2]))
+      } else {
+        yy = log(abs(as.numeric(data[i, xIndices[j]]) - 1 - xx[3]))
+      }
+      ss = ss - yy
+    }
   }
-  return(-ss)
+  ss = ss - log(abs(as.numeric(data[i, yIndex]) - 1 - xx[1]))
+  }
+  
+  return(ss)
 }
+
+# f = function(xx) {
+#   ss = 0 
+#   for (i in 1:nrow(temp)) {
+#     yi = temp[i, 1]
+#     pi1 = xx[1]
+#     pij1 = abs(abs(temp[i, xIndices] - 1) - xx[xIndices])
+#     pij0 = abs(abs(temp[i, xIndices] - 1) - xx[xIndices + length(xIndices)])
+#     px = pi1 * prod(pij1) + (1 - pi1) * prod(pij0)
+#     ss = ss + yi * log(pi1) + (1 - yi) * log(1 - pi1) + yi * sum(log(pij1)) + (1 - yi) * sum(log(pij0)) - log(px)
+#     cat(i, "-", ss, "\n")
+#   }
+#   return(-ss)
+# }
+xIndices = indices
+xx = c(pars[[2]][1], pars[[1]][1], pars[[1]][3])
+f(xx)
 ```
 
 ```{r}
