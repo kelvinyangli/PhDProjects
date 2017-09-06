@@ -16,8 +16,8 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Motivation
 - Causal discovery refers to an algorithm-based automated process of reconstructing the generating causal model from observational data. 
-- Here is an example of a causal model, called the Alarm network. It is a medium-sized model with 37 variables, so learning back this generating model strcutre isn't too difficult with thousands of samples. 
-- But imagine a large structure contains hundreds/thousands of variables. In this case, neither approximate nor exact causal learners can finish the task within a reasonable time while still keep similar accuracy as for smaller models. 
+- Here is an example of a causal model, called the Alarm network. It is a medium-sized model with 37 variables, so learning back this generating model structure isn't too difficult with thousands of samples. 
+- But imagine a large structure contains hundreds/thousands of variables. In this case, neither exact nor approximate causal learners can finish the task within a reasonable time while still keep similar accuracy as for smaller models. 
 - The motivation of this project is to scale up causal discovery to large models, possibly contain hundreds of variables while still obtain state-of-the-art reconstruction accuracy. 
 - In early 2000, people started splitting the big problem into smaller ones and tackling them independently. This approach has been summarized as the local-to-global approach. 
 - To demonstrate how the LGL approach works, let's look at the Alarm network again. 
@@ -37,26 +37,28 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Minimum message length
 - Minimum message length, MML, is a scoring metric that we used throughout this project for the purpose of MB discovery, and both local and global structure learning. 
-- It was developed as a way to balance the complexity of a statistical model and the fit of this model to a given dataset. 
+- It was developed by C. W. in the 1960s as a way to balance the complexity of a statistical model and the fit of this model to a given dataset. 
 - MML is a two-part message length that is commonly written down in this form, where the 1st part is the message length of a hypothesis/model, and the 2nd part is the message length of data given the hypothesis. 
-- Since it is infeasible to calculate the strict MML in most cases, we use the MML87 approximations for the two parts. 
+- Since it is infeasible to calculate the strict MML in most cases, Wallace and Freeman proposed an approximation to the strict MML, which is known as MML87. 
 - The first term in I(H) is the message length for using the parameters $\theta$, and the last two terms depend upon the precision of these parameters. 
 - In the 2nd part, we have a negative log likelihood and the cost of using limited parameter precision. 
-- In general, most of these terms aren't too difficult to calculate, except for the Fisher, which is the determinant of the FIM, and the FIM is ...
+- In general, most of these terms aren't too difficult to calculate, except for the Fisher, which measures the sensitivity of the neg log likelihood to different parameter values. 
+- The Fisher is the determinant of the FIM, which is the expected 2nd deriv of the neg log likelihood. It isn't a pleasant thing to directly calculate the fisher for some models, such as the logit and NB models that you will see in a minute.  
 
 ## Markov blanket discovery 
 - The problem of learning the MB candidates of a varaible is call MB discovery. 
-- There are two major approaches in MB disc, the first approach uses CI-test to assess whether or not a variable belongs to the MB. This approach normally starts with empty set and gradually include candidates along its way. 
+- There are two major approaches in MB disc, the first approach uses CI-test to assess whether or not a variable belongs to the MB. This approach normally starts with empty set and gradually include candidates along its way. At the end of the inclusion step, there is a process to delete any false positives.  
 - The second approach learns local structures around the target and reads off the MB candidates from the learned sub-structure. 
 - The way we tackle this problem is similar as the first approach but not from a CI point of view. 
-- The definition of MB makes the smallest informative variable subset for a target. Therefore, we can use MML with an appropriate predictive model to search for such a subset. 
+- The definition of MB makes it the smallest informative variable subset for a target. Therefore, we can use MML with an appropriate predictive model to search for such a subset. 
 - The models we used are ...
 
 ## MB Disc using MML FOM
-- The FOM is a simple model by omitting the higher order interaction terms. In other words, it assumes the input variables' predictive power for the target are additive. It is a strong assumption that is unlikely to be real but captures a certain degree of information for the target. The benefit of having this assumption is to reduce the sample size for predicting the target. 
+- The FOM is a simple model by omitting the higher order interaction terms. In other words, it assumes the input variables' predictive power for the target are additive. It is a strong assumption that is unlikely to be real but captures a certain degree of information for the target. The benefit of having this assumption is to reduce the required sample size for predicting the target. 
 - Most work for FOM has been done in the 1st year. 
-- The message length of FOM can be calculated using this formula. 
-- However, the calculation is inefficient due the complexity of the FIM, which has no closed form solution for its determinant. 
+- The message length of FOM can be calculated using this formula.
+- Use MLE estimation instead. 
+- Because the complexity of the Fisher, it is inefficient to calculate the msg len of MML FOM. And this is only for binary target variable, if we generalize this to multinomial, the calculation will be even more difficult. 
 
 ## MB Disc using MML CPT 
 - Quite a different model we used is the conditional probability table.    
@@ -71,28 +73,31 @@ knitr::opts_chunk$set(echo = FALSE)
 ## MB disc using MML NB
 - While a CPT express the full expressive power of a parent set, it could cause a search to fail due to excessive 1st part of MML. 
 - A NB model requires fewer parameters than a CPT by assuming all inputs are children of the target with the conditional independence assumption. 
-- Same as the FOM case, direct calculation of the message length for NB is inefficient and unstable due to the complex Fisher. The detail of its Fisher is written in the report. 
-- Hence we use the adaptive code approach to calculate its MML score. 
+- Same as the FOM case, direct calculation of NB's message length using MML87 is quite inefficient and unstable due to the complex Fisher. The detail of its Fisher is written in the report. 
+- Hence we developed a way to use the adaptive code approach to calculate its msg len. 
+- We started working on this problem only recently, so I don't have a closed form formula for the adaptive code MML, but the idea is...
 - Explain an example, predict sex of a person based on height, weight, foot size
 
 ## The MBMML algorithm
 - Go through this algorithm 
 
 ## Experiments on MBMML+CPT's accuracy
-- The MBMML algorithm was tested against the SLL algorithm on 11 real models. For each model, we tested the algorithms on 3 different sample sizes. The average performance of these learners over 10 datasets are reported with a 95 per cent confidence intervals. 
-- The reported statistic is the edit dist, which is defined as the sum of false findings b/w the learned and true MBs. 
-- SLL is also a LGL causal disc algorithm that uses the concept of MB. It is an exact algorithm that intend to find the true model structure by using dynamic programming and the BDe metric. 
-- It is the 2nd MB disc approach that we mentioned early, i.e. by learning a sub-str around the target and reading off its MB. 
+- In this slide, there are two comparison results b/w MBMML and SLL and HITON. 
+- SLL is a LGL causal disc algorithm that intend to find the true model structure by using dynamic programming and the BDe metric. Its returned MB candidates are read off from the learned sub-structure around the target.  
+- HITON is a MB disc algorithm uses CI-test for variable inclusion. 
+- The experiments were conducted on 11 real models with 3 different sample sizes. For each sample size, the learning was repeated on 10 different datasets in order to report an averaged performance of these methods with 95 per cent confidence intervals. 
+- The reported statistic is the edit dist, which is defined as the minimum number of operations required to get from the learned to the true MB. Example...
 
 ## Bayesian model averaging
-- ...
+- So far, I have presented three different models for MB disc using MML. The CPT and NB treat input variables differntly from each other, the cpt pretends ... whilst the NB pretends ...
+- But it is arbitrary to fix a model str because we don't know the true model. 
 
 ## Markov blanket polytree
 - A polytree is a ...
 - We define a MBPT as ..., in other words, except the node Y, every other nodes in P can only be Y's parents, children and/or spouses. 
 - The motivation of learning polytrees within feature subsets is to reduce the complexity of local learning. 
 - As subgraphs of DAGs, the space of polytrees is much smaller than DAGs as we can see from this table. For a modern computer, it's not too bad to search through the entire space of polytrees with 7 nodes in the MB. 
-- Although we limited the local structures to be singly connected, polytrees provide sufficient connections for causal discovery. 
+- Although we limited the local structures to be singly connected, we conjecture polytrees provide sufficient connections for learning a global causal model.  
 
 ## Enumerating all MBPTs
 - In this slide, we introduce a way of calculating the number of MBPTs for a given MB size. 
