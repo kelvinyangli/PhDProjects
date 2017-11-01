@@ -27,7 +27,7 @@ for (i in 2:nnodes(dag)) {
 #dag = randDag(10, 2)
 #graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
-sampleSize = n = 1000
+sampleSize = n = 10000
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -41,9 +41,15 @@ yIndex = which(vars == y)
 ```
 
 ## Executing MML_NB
+```{r}
+probSign = get_prob_sign(data)
+(i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
+
+```
+
 ```{r, eval = T}
 #for (i in 2:length(vars)) {
-  i = 11
+  i = c(2)
   indices = c(i)
   I = mml_nb_adaptive(data, yIndex, indices)
   pars = mle_nb(data, vars, indices, yIndex, 0.5)
@@ -59,6 +65,8 @@ yIndex = which(vars == y)
     prodPij0 = apply(data, 1, prod_pijk, pars = pars, xIndices = indices, yValue = 2)
     # a vector of p_xi 
     px = py1 * prodPij1 + py0 * prodPij0
+    cat(nll, "\n")
+    cat(sum(log(px)), "\n")
     nll = nll + sum(log(px)) # add additional log(px) value to nll when x is not empty
   }
   # probSign = get_prob_sign(data)

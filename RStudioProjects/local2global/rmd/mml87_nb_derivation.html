@@ -124,76 +124,156 @@ $(document).ready(function () {
 </div>
 
 
-<div id="mle-of-nb-parameters" class="section level2">
-<h2>MLE of NB parameters</h2>
-<p>The MLE estimations of NB parameters are as follows: <span class="math display">\[
-\begin{aligned}
-P(Y=y) &amp;= \frac{count(y)}{n} \\
-P(X_j = x|Y = y) &amp;= \frac{count(x) \cup count(y)}{count(y)}
-\end{aligned}
-\]</span></p>
-</div>
+<!-- ## MLE of NB parameters -->
+<!-- The MLE estimations of NB parameters are as follows: -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- P(Y=y) &= \frac{count(y)}{n} \\ -->
+<!-- P(X_j = x|Y = y) &= \frac{count(x) \cup count(y)}{count(y)} -->
+<!-- \end{aligned} -->
+<!-- \] -->
 <div id="negative-log-likelihood-of-nb" class="section level2">
 <h2>Negative log likelihood of NB</h2>
-<p>For a Naive Bayes model with binary variable, its parameters are <span class="math inline">\(\{P(Y_i=1), P(X_{ij}=1|Y_i=1), P(X_{ij}=1|Y_i=0)\}\)</span>. To simply the notations, we use <span class="math inline">\(\{q_{i1}, p_{ij1}, p_{ij0}\}\)</span> to denote the above probabilities respectively, and denote <span class="math display">\[
-\begin{aligned}
-\pi_{i1} &amp;= \prod_{j=1}^m p_{ij1}^{x_i}(1-p_{ij1})^{1-x_i} \\
-\pi_{i0} &amp;= \prod_{j=1}^m p_{ij0}^{x_i}(1-p_{ij0})^{1-x_i} \\
-pxy_{i1} &amp;= q_{i1}\pi_{i1} \\
-pxy_{i0} &amp;= (1-q_{i1})\pi_{i0} \\
-p(\vec{X_i}) &amp;= px_i = pxy_{i1} + pxy_{i0}
-\end{aligned}
-\]</span> The likelihood of Naive Bayes given a data set is then <span class="math display">\[
-\begin{aligned}
-l = \prod_i^n P(Y_i=1|\vec{X_i})^{Y_i} (1-P(Y_i=1|\vec{X_i}))^{1-Y_i}
-\end{aligned}
-\]</span> where the posterior probability of <span class="math inline">\(Y_i\)</span> given a vector <span class="math inline">\(\vec{X_i} = &lt;X_{i1}, \dots, X_{im}&gt;\)</span> is <span class="math display">\[
-\begin{aligned}
-P(Y_i=T|\vec{X_i}) &amp;= \frac{P(Y_i=1)\prod_{j=1}^m P(X_{ij}=1|Y_i=1)^{X_i}(1-P(X_{ij}=1|Y_i=1))^{1-X_i}}{P(\vec{X_i})} \\
-&amp;= \frac{q_{i1}\pi_{i1}}{px_i}
-\end{aligned}
-\]</span> The negative loglikelihood <span class="math display">\[
-\begin{aligned}
-L &amp;= -\sum_{i=1}^n \left[Y_i\ln p(Y_i=1|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i=1|\vec{X_i}))\right] \\
-&amp;= -\sum_{i=1}^n \left[Y_i \ln q_{i1} + (1-Y_i) \ln (1-q_{i1}) + Y_i \ln \pi_{i1} + (1-y_i) \ln \pi_{i0} - \ln px_i\right]
-\end{aligned}
-\]</span></p>
-</div>
-<div id="first-derivatives" class="section level2">
-<h2>First derivatives</h2>
-<p>Before differentiating nll w.r.t. each parameter, we derive the followings first <span class="math display">\[
-\begin{aligned}
-\frac{\partial}{\partial q_{i1}}px_i &amp;= \pi_{i1} - \pi_{i0} \\
-\frac{\partial}{\partial p_{ij1}}\pi_{i1} &amp;= \frac{\pi_{i1}}{p_{ij1}^{x_{ij}}(p_{ij1}-1)^{1-x_{ij}}} \\
-\frac{\partial}{\partial p_{ij0}}\pi_{i0} &amp;= \frac{\pi_{i0}}{p_{ij0}^{x_{ij}}(p_{ij0}-1)^{1-x_{ij}}} \\
-\frac{\partial}{\partial p_{ij1}}px_i &amp;= \frac{\partial}{\partial p_{ij1}}pxy_{i1} = \frac{pxy_{i1}}{p_{ij1}^{x_{ij}}(p_{ij1}-1)^{1-x_{ij}}} \\
-\frac{\partial}{\partial p_{ij0}}px_i &amp;= \frac{\partial}{\partial p_{ij0}}pxy_{i0} = \frac{pxy_{i0}}{p_{ij0}^{x_{ij}}(p_{ij0}-1)^{1-x_{ij}}}
-\end{aligned}
-\]</span> The first derivatives of the negative log likelihood w.r.t. each parameter are <span class="math display">\[
-\begin{aligned}
-\frac{\partial L}{\partial q_{i1}} &amp;= -\sum_{i=1}^n \left[\frac{Y_i}{q_{i1}} - \frac{1-Y_i}{1-q_{i1}} -\frac{\pi_{i1}-\pi_{i0}}{px_i} \right] \\
-\frac{\partial L}{\partial p_{ik1}} &amp;= -\sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}} - \frac{pxy_{i1}}{p_{ik1}^{x_{ij}}(p_{ik1}-1)^{1-x_{ij}}px_i}\right] \\
-\frac{\partial L}{\partial p_{ik0}} &amp;= -\sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}} - \frac{pxy_{i0}}{p_{ik0}^{x_{ij}}(p_{ik0}-1)^{1-x_{ij}}px_i}\right] \\
-\end{aligned}
-\]</span></p>
-</div>
-<div id="second-derivatives" class="section level2">
-<h2>Second derivatives</h2>
-<p>Diagonal entries <span class="math display">\[
-\begin{aligned}
-\frac{\partial^2L}{\partial q_{i1}^2} &amp;= \sum_{i=1}^n \left[\frac{Y_i}{q_{i1}^2} + \frac{1-Y_i}{(1-q_{i1})^2} - \left(\frac{\pi_{i1}-\pi_{i0}}{px_i}\right)^2\right] \\
-\frac{\partial^2L}{\partial p_{ik1}^2} &amp;= \sum_{i=1}^n \left[\frac{Y_i}{\left(p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}\right)^2} - \left(\frac{pxy_{i1}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i}\right)^2\right] \\
-\frac{\partial^2L}{\partial p_{ik0}^2} &amp;= \sum_{i=1}^n \left[\frac{1-Y_i}{\left(p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}\right)^2} - \left(\frac{pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i}\right)^2\right] \\
-\end{aligned}
-\]</span> Off-diagonal entries <span class="math display">\[
-\begin{aligned}
-\frac{\partial^2L}{\partial q_{i0}p_{ik1}} &amp;= \sum_{i=1}^n \frac{\pi_{i1}\pi_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i^2} \\
-\frac{\partial^2L}{\partial q_{i0}p_{ik0}} &amp;= \sum_{i=1}^n \frac{-\pi_{i1}\pi_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i^2} \\
-\frac{\partial^2L}{\partial p_{ik1}p_{il1}} &amp;= \sum_{i=1}^n \frac{pxy_{i1}pxy_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}} p_{il1}^{x_{il}}(p_{il1}-1)^{1-x_{il}} px_i^2}, \text{ where } k \neq l \\
-\frac{\partial^2L}{\partial p_{ik0}p_{il0}} &amp;= \sum_{i=1}^n \frac{pxy_{i1}pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}} p_{il0}^{x_{il}}(p_{il0}-1)^{1-x_{il}} px_i^2}, \text{ where } k \neq l \\
-\frac{\partial^2L}{\partial p_{ik1}p_{il0}} &amp;= \sum_{i=1}^n \frac{-pxy_{i1}pxy_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}} p_{il0}^{x_{il}}(p_{il0}-1)^{1-x_{il}} px_i^2}, \forall k, l \in [1,m]
-\end{aligned}
-\]</span></p>
+<!-- Denote  -->
+<!-- \begin{align*} -->
+<!-- q(y) &= p(Y=y) \\ -->
+<!-- q_j(x|y) &= p(X_j=x|Y=y) \\ -->
+<!-- c(y) &= count(Y = y) \\ -->
+<!-- c_j(x, y) &= count(X_j = x \text{ & } Y = y) \\ -->
+<!-- c(x) &= count(\vec{X} = \vec{x}) -->
+<!-- \end{align*} -->
+The log likelihood of Naive Bayes given a data set is
+<span class="math display">\[\begin{align*}
+L &amp;= \ln \prod_{i=1}^n p(Y =y^{(i)} | \vec{X} = \vec{x}^{(i)}) \\
+&amp;= \ln \prod_{i=1}^n \frac{p(\vec{X} = \vec{x}^{(i)}|Y=y^{(i)}) p(Y=y^{(i)})}{\sum_{y \in \mathcal{Y}} p(\vec{X} = \vec{x}^{(i)}, Y=y^{(i)})} \\
+&amp;= \sum_{i=1}^n \left(\ln p(Y = y^{(i)}) + \ln p(\vec{X} = \vec{x}^{(i)}|Y=y^{(i)}) - \ln \sum_{y \in \mathcal{Y}} p(\vec{X} = \vec{x}^{(i)}, Y=y^{(i)}) \right) \\ 
+&amp;= \sum_{i=1}^n \left(\ln p(Y=y^{(i)}) + \ln \prod_{j=1}^m p(X_j = x_j^{(i)}|Y=y^{(i)}) - \ln \sum_{y \in \mathcal{Y}} \prod_{j=1}^m p(X_j = x_j^{(i)}|Y = y^{(i)}) p(Y=y^{(i)}) \right) \\ 
+&amp;= \sum_{i=1}^n \left(\ln q(y^{(i)}) + \ln \prod_{j=1}^m q_j(x^{(i)}|y^{(i)}) - \ln \sum_{y \in \mathcal{Y}} \prod_{j=1}^m q_j(x^{(i)}|y^{(i)}) q(y^{(i)}) \right) \\ 
+&amp;= \sum_{i=1}^n \ln q(y^{(i)}) + \sum_{i=1}^n \sum_{j=1}^m \ln q_j(x^{(i)}|y^{(i)}) - \sum_{i=1}^n \ln \sum_{y \in \mathcal{Y}} \prod_{j=1}^m q_j(x^{(i)}|y^{(i)}) q(y^{(i)})  \\ 
+&amp;= \sum_{y \in \mathcal{Y}} c(y)\ln q(y) + \sum_{j=1}^m \sum_{y \in \mathcal{Y}} \sum_{x \in \mathcal{X}_j} c_j(x, y) \ln q_j(x|y) - \sum_{x \in \mathcal{X}_j} c(x) \ln \sum_{y \in \mathcal{Y}} \prod_{j=1}^m q_j(x|y) q(y)
+\end{align*}\]</span>
+<p>where <span class="math inline">\(n\)</span> is sample size, <span class="math inline">\(m\)</span> is the number of <span class="math inline">\(X\)</span>s, <span class="math inline">\(\mathcal{Y}\)</span> and <span class="math inline">\(\mathcal{X}_j\)</span> are the values of <span class="math inline">\(Y\)</span> and <span class="math inline">\(X_j\)</span> respectively <span class="math inline">\(\forall j \in [1,m]\)</span>, <span class="math inline">\(c(\cdot) = count(\cdot)\)</span> counts the number of occurrence, <span class="math inline">\(q(y)\)</span> and <span class="math inline">\(q_j(x|y)\)</span> denote <span class="math inline">\(p(Y=y)\)</span> and <span class="math inline">\(p(X_j=x|Y=y)\)</span> respectively.</p>
+For binary NB, the above log likelihood can be written as
+<span class="math display">\[\begin{align*}
+L &amp;= c(y=1)\ln q(y) + c(y=0)\ln (1 - q(y)) \\
+&amp;+ \sum_{j=1}^m \left[c_j(x=1, y=1) \ln q_j(x=1|y=1) + c_j(x=0, y=1) \ln (1 - q_j(x=1|y=1))\right] \\
+&amp;+ \sum_{j=1}^m \left[c_j(x=1, y=0) \ln q_j(x=1|y=0) + c_j(x=0, y=0) \ln (1 - q_j(x=1|y=0))\right] \\
+&amp;- c(x=1) \ln \left[\prod_j q_j(x=1|y=1) q(y) + \prod_j q_j(x=1|y=0) (1-q(y)) \right] \\
+&amp;- c(x=0) \ln \left[\prod_j (1-q_j(x=1|y=1)) q(y) + \prod_j (1-q_j(x=1|y=0)) (1-q(y)) \right] \\
+\end{align*}\]</span>
+which can be simplified to
+<span class="math display">\[\begin{align*}
+L &amp;= \left[n_y \ln q + (n-n_y)\ln (1 - q)\right] \\
+&amp;+ \sum_{j=1}^m \left[n_{x1} \ln q_{j1} + (n_y - n_{x1}) \ln (1 - q_{j1}) 
++ n_{x0} \ln q_{j0} + (n - n_y - n_{x0}) \ln (1 - q_{j0})\right] \\
+&amp;- n_x \ln \left[\prod_j q_{j1} q + \prod_j q_{j0} (1-q) \right] 
+- (n-n_x) \ln \left[\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q) \right]
+\end{align*}\]</span>
+The first derivatives w.r.t. <span class="math inline">\(q, q_{j1}, q_{j0}\)</span> are
+<span class="math display">\[\begin{align*}
+\frac{\partial L}{\partial q} &amp;= \frac{n_y}{q} - \frac{n-n_y}{1-q} - \frac{n_x \left(\prod_j q_{j1} - \prod_j q_{j0}\right)}{\prod_j q_{j1} q + \prod_j q_{j0} (1-q)} - \frac{(n-n_x) \left(\prod_j (1-q_{j1}) - \prod_j (1-q_{j0})\right)}{\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)} \\ 
+
+\frac{\partial L}{\partial q_{k1}} &amp;= \frac{n_{x1}}{q_{k1}} - \frac{n_y - n_{x1}}{1-q_{k1}} - \frac{n_x \prod_{j \neq k} q_{j1} q}{\prod_j q_{j1} q + \prod_j q_{j0} (1-q)} + \frac{(n-n_x)\prod_{j \neq k} (1-q_{j1}) q}{\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)} \\
+
+\frac{\partial L}{\partial q_{k0}} &amp;= \frac{n_{x0}}{q_{k0}} - \frac{n - n_y - n_{x0}}{1-q_{k0}} - \frac{n_x \prod_{j \neq k} q_{j0} (1-q)}{\prod_j q_{j1} q + \prod_j q_{j0} (1-q)} + \frac{(n-n_x)\prod_{j \neq k} (1-q_{j0}) (1-q)}{\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)}
+\end{align*}\]</span>
+The second derivatives w.r.t. the parameters are
+<span class="math display">\[\begin{align*}
+\frac{\partial^2 L}{\partial q^2} &amp;= \frac{-n_y}{q^2} - \frac{n-n_y}{(1-q)^2} + \frac{n_x \left(\prod_j q_{j1} - \prod_j q_{j0}\right)^2}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x) \left(\prod_j (1-q_{j1}) - \prod_j (1-q_{j0})\right)^2}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q_{k1}^2} &amp;= \frac{-n_{x1}}{q_{k1}^2} - \frac{n_y - n_{x1}}{(1-q_{k1})^2} + \frac{n_x \left(\prod_{j \neq k} q_{j1} q\right)^2}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x)\left(\prod_{j \neq k} (1-q_{j1}) q\right)^2}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q_{k0}^2} &amp;= \frac{-n_{x0}}{q_{k0}^2} - \frac{n - n_y - n_{x0}}{(1-q_{k0})^2} + \frac{n_x \left(\prod_{j \neq k} q_{j0} (1-q)\right)^2}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x)\left(\prod_{j \neq k} (1-q_{j0}) (1-q)\right)^2}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q \partial q_{k1}} &amp;= -\frac{n_x \prod_{j \neq k} q_{j1} \prod_j q_{j0}}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x) \prod_{j \neq k} (1-q_{j1}) \prod_j (1 - q_{j0})}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q \partial q_{k0}} &amp;= \frac{n_x \prod_{j \neq k} q_{j0} \prod_j q_{j1}}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} - \frac{(n-n_x) \prod_{j \neq k} (1-q_{j0}) \prod_j (1 - q_{j1})}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q_{k1} \partial q_{l1}} &amp;= - \frac{n_x q (1 - q) \prod_{j \neq k, l} q_{j1} \prod_j q_{j0}}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x) q (1 - q) \prod_{j \neq k, l} (1-q_{j1}) \prod_j (1-q_{j0})}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q_{k0} \partial q_{l0}} &amp;= - \frac{n_x q (1 - q) \prod_{j \neq k, l} q_{j0} \prod_j q_{j1}}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x) q (1 - q) \prod_{j \neq k, l} (1-q_{j0}) \prod_j (1-q_{j1})}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+\frac{\partial^2 L}{\partial q_{k1} \partial q_{l0}} &amp;= \frac{n_x q (1 - q) \prod_{j \neq k} q_{j1} \prod_{j \neq l} q_{j0}}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x) q (1 - q) \prod_{j \neq k} (1-q_{j1}) \prod_{j \neq l} (1 - q_{j0})}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} 
+\end{align*}\]</span>
+Taking the expectation of the above 2nd derivatives that contains n_y
+<span class="math display">\[\begin{align*}
+E(\frac{\partial^2 L}{\partial q^2}) = &amp;-\frac{n_x \prod_j q_{j1}}{q\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)} - \frac{(n - n_x) \prod_j (1 - q_{j1})}{q\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)} \\
+&amp;- \frac{n_x \prod_j q_{j0}}{(1-q)\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)} - \frac{(n - n_x) \prod_j (1 - q_{j0})}{(1-q)\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)} \\
+&amp;+ \frac{n_x \left(\prod_j q_{j1} - \prod_j q_{j0}\right)^2}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x) \left(\prod_j (1-q_{j1}) - \prod_j (1-q_{j0})\right)^2}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+E(\frac{\partial^2 L}{\partial q_{k1}^2}) = &amp;-\frac{n \prod_j q_{j1} q}{q_{k1}^2} - \frac{n \prod_j (1-q_{j1}) q}{(1-q_{k1})^2} + \frac{n_x \left(\prod_{j \neq k} q_{j1} q\right)^2}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x)\left(\prod_{j \neq k} (1-q_{j1}) q\right)^2}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2} \\
+
+E(\frac{\partial^2 L}{\partial q_{k0}^2}) = &amp;-\frac{n \prod_j q_{j0} (1-q)}{q_{k0}^2} - \frac{n \prod_j (1-q_{j0}) (1-q)}{(1-q_{k0})^2} + \frac{n_x \left(\prod_{j \neq k} q_{j0} (1-q)\right)^2}{\left(\prod_j q_{j1} q + \prod_j q_{j0} (1-q)\right)^2} + \frac{(n-n_x)\left(\prod_{j \neq k} (1-q_{j0}) (1-q)\right)^2}{\left(\prod_j (1-q_{j1}) q + \prod_j (1-q_{j0}) (1-q)\right)^2}
+
+\end{align*}\]</span>
+<!-- To simply the notations, we use $\{q_{i1}, p_{ij1}, p_{ij0}\}$ to denote the above probabilities respectively, and denote -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- \pi_{i1} &= \prod_{j=1}^m p_{ij1}^{x_i}(1-p_{ij1})^{1-x_i} \\ -->
+<!-- \pi_{i0} &= \prod_{j=1}^m p_{ij0}^{x_i}(1-p_{ij0})^{1-x_i} \\ -->
+<!-- pxy_{i1} &= q_{i1}\pi_{i1} \\ -->
+<!-- pxy_{i0} &= (1-q_{i1})\pi_{i0} \\ -->
+<!-- p(\vec{X_i}) &= px_i = pxy_{i1} + pxy_{i0} -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- The likelihood of Naive Bayes given a data set is then -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- l = \prod_i^n P(Y_i=1|\vec{X_i})^{Y_i} (1-P(Y_i=1|\vec{X_i}))^{1-Y_i} -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- where the posterior probability of $Y_i$ given a vector $\vec{X_i} = <X_{i1}, \dots, X_{im}>$ is -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- P(Y_i=T|\vec{X_i}) &= \frac{P(Y_i=1)\prod_{j=1}^m P(X_{ij}=1|Y_i=1)^{X_i}(1-P(X_{ij}=1|Y_i=1))^{1-X_i}}{P(\vec{X_i})} \\ -->
+<!-- &= \frac{q_{i1}\pi_{i1}}{px_i} -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- The negative loglikelihood -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- L &= -\sum_{i=1}^n \left[Y_i\ln p(Y_i=1|\vec{X_i}) + (1-Y_i) \ln (1-p(Y_i=1|\vec{X_i}))\right] \\ -->
+<!-- &= -\sum_{i=1}^n \left[Y_i \ln q_{i1} + (1-Y_i) \ln (1-q_{i1}) + Y_i \ln \pi_{i1} + (1-y_i) \ln \pi_{i0} - \ln px_i\right] -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- ## First derivatives -->
+<!-- Before differentiating nll w.r.t. each parameter, we derive the followings first -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- \frac{\partial}{\partial q_{i1}}px_i &= \pi_{i1} - \pi_{i0} \\ -->
+<!-- \frac{\partial}{\partial p_{ij1}}\pi_{i1} &= \frac{\pi_{i1}}{p_{ij1}^{x_{ij}}(p_{ij1}-1)^{1-x_{ij}}} \\ -->
+<!-- \frac{\partial}{\partial p_{ij0}}\pi_{i0} &= \frac{\pi_{i0}}{p_{ij0}^{x_{ij}}(p_{ij0}-1)^{1-x_{ij}}} \\ -->
+<!-- \frac{\partial}{\partial p_{ij1}}px_i &= \frac{\partial}{\partial p_{ij1}}pxy_{i1} = \frac{pxy_{i1}}{p_{ij1}^{x_{ij}}(p_{ij1}-1)^{1-x_{ij}}} \\ -->
+<!-- \frac{\partial}{\partial p_{ij0}}px_i &= \frac{\partial}{\partial p_{ij0}}pxy_{i0} = \frac{pxy_{i0}}{p_{ij0}^{x_{ij}}(p_{ij0}-1)^{1-x_{ij}}} -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- The first derivatives of the negative log likelihood w.r.t. each parameter are -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- \frac{\partial L}{\partial q_{i1}} &= -\sum_{i=1}^n \left[\frac{Y_i}{q_{i1}} - \frac{1-Y_i}{1-q_{i1}} -\frac{\pi_{i1}-\pi_{i0}}{px_i} \right] \\ -->
+<!-- \frac{\partial L}{\partial p_{ik1}} &= -\sum_{i=1}^n \left[\frac{Y_i}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}} - \frac{pxy_{i1}}{p_{ik1}^{x_{ij}}(p_{ik1}-1)^{1-x_{ij}}px_i}\right] \\ -->
+<!-- \frac{\partial L}{\partial p_{ik0}} &= -\sum_{i=1}^n \left[\frac{1-Y_i}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}} - \frac{pxy_{i0}}{p_{ik0}^{x_{ij}}(p_{ik0}-1)^{1-x_{ij}}px_i}\right] \\ -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- ## Second derivatives -->
+<!-- Diagonal entries  -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- \frac{\partial^2L}{\partial q_{i1}^2} &= \sum_{i=1}^n \left[\frac{Y_i}{q_{i1}^2} + \frac{1-Y_i}{(1-q_{i1})^2} - \left(\frac{\pi_{i1}-\pi_{i0}}{px_i}\right)^2\right] \\ -->
+<!-- \frac{\partial^2L}{\partial p_{ik1}^2} &= \sum_{i=1}^n \left[\frac{Y_i}{\left(p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}\right)^2} - \left(\frac{pxy_{i1}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i}\right)^2\right] \\ -->
+<!-- \frac{\partial^2L}{\partial p_{ik0}^2} &= \sum_{i=1}^n \left[\frac{1-Y_i}{\left(p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}\right)^2} - \left(\frac{pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i}\right)^2\right] \\ -->
+<!-- \end{aligned} -->
+<!-- \] -->
+<!-- Off-diagonal entries -->
+<!-- \[ -->
+<!-- \begin{aligned} -->
+<!-- \frac{\partial^2L}{\partial q_{i0}p_{ik1}} &= \sum_{i=1}^n \frac{\pi_{i1}\pi_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}}px_i^2} \\ -->
+<!-- \frac{\partial^2L}{\partial q_{i0}p_{ik0}} &= \sum_{i=1}^n \frac{-\pi_{i1}\pi_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}}px_i^2} \\ -->
+<!-- \frac{\partial^2L}{\partial p_{ik1}p_{il1}} &= \sum_{i=1}^n \frac{pxy_{i1}pxy_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}} p_{il1}^{x_{il}}(p_{il1}-1)^{1-x_{il}} px_i^2}, \text{ where } k \neq l \\ -->
+<!-- \frac{\partial^2L}{\partial p_{ik0}p_{il0}} &= \sum_{i=1}^n \frac{pxy_{i1}pxy_{i0}}{p_{ik0}^{x_{ik}}(p_{ik0}-1)^{1-x_{ik}} p_{il0}^{x_{il}}(p_{il0}-1)^{1-x_{il}} px_i^2}, \text{ where } k \neq l \\ -->
+<!-- \frac{\partial^2L}{\partial p_{ik1}p_{il0}} &= \sum_{i=1}^n \frac{-pxy_{i1}pxy_{i0}}{p_{ik1}^{x_{ik}}(p_{ik1}-1)^{1-x_{ik}} p_{il0}^{x_{il}}(p_{il0}-1)^{1-x_{il}} px_i^2}, \forall k, l \in [1,m] -->
+<!-- \end{aligned} -->
+<!-- \] -->
 </div>
 <div id="fim" class="section level2">
 <h2>FIM</h2>

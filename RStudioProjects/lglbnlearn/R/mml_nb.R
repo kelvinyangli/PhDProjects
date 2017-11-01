@@ -49,7 +49,8 @@ mml_nb = function(data, probSign, vars, arities, sampleSize, x, y, debug = FALSE
     
     # FIM
     fim = fim_nb(probSign, prodPij1, prodPij0, px, probsMatrix, py1, py0, arities, xIndices, yIndex)
-    detFIM = det(fim)
+    logF = logDeterminant(fim)
+    # detFIM = det(fim)
     # #### determinant of FIM ####
     # detFIM = det(fim) + 1 # manually add 1 to determinant to avoid 0 
     # # we still get negative or small positive determinant
@@ -57,7 +58,7 @@ mml_nb = function(data, probSign, vars, arities, sampleSize, x, y, debug = FALSE
     # # we manually multiplies determinant by -1 
     # if (detFIM < 0) detFIM = -detFIM 
     # if (detFIM <= 1) detFIM = detFIM + 1
-    logF = log(detFIM)
+    # logF = log(detFIM)
     # number of free parameters
     d = nrow(fim)
   } else {# if x is empty fim is a 1x1 matrix 
