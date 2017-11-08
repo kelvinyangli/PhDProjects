@@ -1,7 +1,7 @@
 #' A forward greedy search function
 #'
 #' This is a forward greedy seearch function that can be used incorprate with an objective function mml
-#' cpt, logit, or naive bayes to discovery Markov blanket candidates. It is a greedy search, so the 
+#' cpt, logit, or naive bayes (adaptive code) to discovery Markov blanket candidates. It is a greedy search, so the 
 #' function will stop if there is no better option to add into the current Markov blanket. 
 #' @param data A categorical data set.
 #' @param arities A vector of variable arities in data, in the same order as the column names of data.
@@ -50,7 +50,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
     minMsgLen = score(data, arities, sampleSize, c(), target, sigma = sigma)
   } else if (scoreIndex == 3) {#nb
     #minMsgLen = score(data, probSign, vars, arities, sampleSize, c(), target)
-    minMsgLen = score(data, targetIndex, c())
+    minMsgLen = score(data, arities, targetIndex, c())
   }
   
   if (debug) {
@@ -80,7 +80,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
         msgLenCurrent = score(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
       } else if (scoreIndex == 3) {#nb
         #msgLenCurrent = score(data, probSign, vars, arities, sampleSize, vars[inputIndices], target) 
-        msgLenCurrent = score(data, targetIndex, inputIndices)
+        msgLenCurrent = score(data, arities, targetIndex, inputIndices)
       }
       
       if (debug) cat("parents =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
