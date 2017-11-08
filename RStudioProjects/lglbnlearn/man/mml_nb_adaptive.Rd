@@ -4,10 +4,12 @@
 \alias{mml_nb_adaptive}
 \title{MML Naive Bayes using adaptive code approach}
 \usage{
-mml_nb_adaptive(data, yIndex, xIndices)
+mml_nb_adaptive(data, arities, yIndex, xIndices)
 }
 \arguments{
 \item{data}{A categorical data set.}
+
+\item{arities}{A vector of variable arities.}
 
 \item{yIndex}{The target variable index.}
 

@@ -13,5 +13,5 @@ node_value_to_index(arities, values)
 }
 \description{
 This function converts the variable values to an index in the set of all combinations. For example, the values 
-c("A","A","A") is converted into 1, c("B","A","A") is converted into 2.
+c("A","A","A") is converted into 1, c("B","A","A") is converted to 2.
 }

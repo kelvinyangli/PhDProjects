@@ -21,13 +21,13 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 ```{r, eval=T}
 nXs = 10
 dag = empty.graph(c("Y", paste0("X", 1:nXs)))
-for (i in 2:nnodes(dag)) {
+for (i in 3:nnodes(dag)) {
   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 }
 #dag = randDag(10, 2)
 #graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
-sampleSize = n = 10000
+sampleSize = n = 1000
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -44,12 +44,11 @@ yIndex = which(vars == y)
 ```{r}
 probSign = get_prob_sign(data)
 (i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))
-
 ```
 
 ```{r, eval = T}
 #for (i in 2:length(vars)) {
-  i = c(2)
+  i = c(3)
   indices = c(i)
   I = mml_nb_adaptive(data, yIndex, indices)
   pars = mle_nb(data, vars, indices, yIndex, 0.5)
@@ -68,6 +67,8 @@ probSign = get_prob_sign(data)
     cat(nll, "\n")
     cat(sum(log(px)), "\n")
     nll = nll + sum(log(px)) # add additional log(px) value to nll when x is not empty
+    cat(nll, "\n")
+    cat("------------------------------- \n")
   }
   # probSign = get_prob_sign(data)
   # (i_nb = mml_nb(data, probSign, vars, arities, sampleSize, x=vars[indices], y, debug = TRUE))

@@ -67,13 +67,14 @@ f = function(freeParms) {
   return(-l + l2)
 }
 # freeParms = unlist(pars) # <p(Y=A), p(Y=B), p(X=A|Y=A), p(X=B|Y=A), p(X=A|Y=B), p(X=B|Y=B), ...>
+indices = c(3)
+pars = mle_nb(data, vars, indices, yIndex, 0.5)
 freeParms = c(pars[[1]][1], pars[[1]][3], pars[[2]][1])
 names(freeParms) = c()
 f(freeParms)
-```
 
 ## hessian diagonal entries (based on derivation)
-```{r}
+
 hhh = fim2 = matrix(0, 3,3)
 hhh[1,1] = -(-sum(table(data[, yIndex]) / c(freeParms[length(freeParms)]^2, (1 - freeParms[length(freeParms)])^2)) + 
 table(data[, indices])[1] * ((freeParms[1] - freeParms[2]) / (freeParms[1] * freeParms[3] + freeParms[2] * (1 - freeParms[3])))^2 + 
@@ -86,9 +87,9 @@ table(data[, indices])[2] * (freeParms[3] / ((1 - freeParms[1]) * freeParms[3] +
 hhh[3,3] = -(-sum(table(data[, c(indices, yIndex)])[, 2] / c(freeParms[2]^2, (1 - freeParms[2])^2)) + 
 table(data[, indices])[1] * ((1 - freeParms[3]) / (freeParms[1] * freeParms[3] + freeParms[2] * (1 - freeParms[3])))^2 + 
 table(data[, indices])[2] * ((1 - freeParms[3]) / ((1 - freeParms[1]) * freeParms[3] + (1 - freeParms[2]) * (1 - freeParms[3])))^2)
-```
+
 ## hessian off-diagonal entries
-```{r}
+
 hhh[1, 2] = - sum(c(-1, 1) * (table(data[, indices]) * c(freeParms[2], (1 - freeParms[2])) / (c(freeParms[1], (1 - freeParms[1])) * freeParms[3] + c(freeParms[2], (1 - freeParms[2])) * (1 - freeParms[3])) ^ 2))
 
 hhh[1, 3] = - sum(c(1, -1) * (table(data[, indices]) * c(freeParms[1], (1 - freeParms[1])) / (c(freeParms[1], (1 - freeParms[1])) * freeParms[3] + c(freeParms[2], (1 - freeParms[2])) * (1 - freeParms[3])) ^ 2))
@@ -98,10 +99,9 @@ hhh[1, 3] = - sum(c(1, -1) * (table(data[, indices]) * c(freeParms[1], (1 - free
 hhh[2, 3] = - sum(c(1, 1) * (table(data[, indices]) * freeParms[3] * (1 - freeParms[3]) / (c(freeParms[1], (1 - freeParms[1])) * freeParms[3] + c(freeParms[2], (1 - freeParms[2])) * (1 - freeParms[3])) ^ 2))
 
 hhh[lower.tri(hhh)] = hhh[upper.tri(hhh)]
-```
 
 ## expectation of hessian's diagonal entries
-```{r}
+
 fim2 = hhh
 fim2[1,1] = -(-sum(table(data[, indices]) * c(freeParms[1], 1 - freeParms[1]) / (freeParms[3] * c(freeParms[1] * freeParms[3] + freeParms[2] * (1 - freeParms[3]), (1 - freeParms[1]) * freeParms[3] + (1 - freeParms[2]) * (1 - freeParms[3])))) - sum(table(data[, indices]) * c(freeParms[2], 1 - freeParms[2]) / ((1 - freeParms[3]) * c(freeParms[1] * freeParms[3] + freeParms[2] * (1 - freeParms[3]), (1 - freeParms[1]) * freeParms[3] + (1 - freeParms[2]) * (1 - freeParms[3])))) + table(data[, indices])[1] * ((freeParms[1] - freeParms[2]) / (freeParms[1] * freeParms[3] + freeParms[2] * (1 - freeParms[3])))^2 + table(data[, indices])[2] * (((1 - freeParms[1]) - (1 - freeParms[2])) / ((1 - freeParms[1]) * freeParms[3] + (1 - freeParms[2]) * (1 - freeParms[3])))^2)
 
@@ -109,9 +109,11 @@ fim2[2,2] = -(-sum(n * freeParms[3] * c(freeParms[1], 1 - freeParms[1]) / c(free
 
 fim2[3,3] = -(-sum(n * (1 - freeParms[3]) * c(freeParms[2], 1 - freeParms[2]) / c(freeParms[2]^2, (1 - freeParms[2])^2)) + table(data[, indices])[1] * ((1 - freeParms[3]) / (freeParms[1] * freeParms[3] + freeParms[2] * (1 - freeParms[3])))^2 + table(data[, indices])[2] * ((1 - freeParms[3]) / ((1 - freeParms[1]) * freeParms[3] + (1 - freeParms[2]) * (1 - freeParms[3])))^2)
 
-log(det(fim))
-log(det(fim2))
-log(det(hhh))
+hh = hessian(f, freeParms)
+
+cat("fim", log(det(fim)), "\n")
+cat("fim2", log(det(fim2)), "\n")
+cat("hessian", log(det(hhh)), "\n")
 ```
 
 # negative likelihood 
@@ -156,7 +158,7 @@ f(xx)
 
 ```{r}
 #grad(f, freeParms)
-hh = hessian(f, freeParms)
+
   
 # yIndex = 1
 xIndices = indices

@@ -9,8 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
-creating an R package 
-run command in terminal in linux os
+## Install required packages in R
 
 ```{r}
 # sudo apt-get install libcurl4-openssl-dev libssl-dev 
@@ -18,6 +17,12 @@ install.packages("devtools")
 library(devtools)
 devtools::install_github("klutometis/roxygen") # install the developer version of the roxygen2 package 
 library(roxygen2)
+```
+
+## Update any changes in the package
+```{r}
+setwd("set_to_the_package_directory")
+document()
 ```
 
 <!-- # 1. create your package directory  -->
@@ -34,7 +39,7 @@ library(roxygen2)
 <!-- # check packages info  -->
 <!-- devtools::session_info() -->
 
-## Install package from terminal
+## Install package in linux from terminal
 Go to the directory that contains the package directory. In terminal, type
 
 ```{r}

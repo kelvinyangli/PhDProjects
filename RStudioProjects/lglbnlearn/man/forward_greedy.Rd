@@ -45,6 +45,6 @@ function.
 }
 \description{
 This is a forward greedy seearch function that can be used incorprate with an objective function mml
-cpt, logit, or naive bayes to discovery Markov blanket candidates. It is a greedy search, so the 
+cpt, logit, or naive bayes (adaptive code) to discovery Markov blanket candidates. It is a greedy search, so the 
 function will stop if there is no better option to add into the current Markov blanket.
 }

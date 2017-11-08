@@ -21,7 +21,7 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 # for (i in 2:nnodes(dag)) {
 #   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 # }
-dag = randDag(15, 3)
+dag = randDag(8, 2)
 #graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
 sampleSize = n = 1000
@@ -41,7 +41,7 @@ names(arities) = c()
 #probSign = get_prob_sign(data)
 lst_nb = list() 
 for (i in 1:length(vars)) {
-  i=4
+  #i=4
   y = vars[i]
   #forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb_adaptive, debug = T)
   lst_nb[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb_adaptive, debug = F)
@@ -114,14 +114,14 @@ cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
 Used a different log factorial estimation, so the results could be different from when previous UAI results
 ```{r}
 score = "mml_nb"
-model = "alarm"
+model = "insurance3"
 sampleSize = 500
 datasets = list.files(paste0("~/Documents/Experiments/UAI_exp/", model, "/data_csv/", sampleSize, "/"))
 dag = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/dag/", model, ".rds"))
 vars = bnlearn::nodes(dag)
 ```
 
-```{r}
+```{r, eval=F}
 for (i in 1:length(datasets)) {
   data = read.csv(paste0("~/Documents/Experiments/UAI_exp/", model, "/data_csv/", sampleSize, "/", datasets[i]))  
   data = numeric2categorical(data)
@@ -144,9 +144,9 @@ for (i in 1:length(datasets)) {
 ```
 
 ```{r}
-#model = "insurance3"
-#score = "mml_cpt"
-sampleSize = 500
+#model = "insurance"
+score = "mml_cpt"
+#sampleSize = 500
 mb_true = list()
 for (i in 1:length(vars)) {
   mb_true[[i]] = bnlearn::mb(dag, vars[i])
