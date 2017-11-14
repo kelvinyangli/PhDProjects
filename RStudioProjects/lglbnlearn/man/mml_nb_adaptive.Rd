@@ -4,16 +4,16 @@
 \alias{mml_nb_adaptive}
 \title{MML Naive Bayes using adaptive code approach}
 \usage{
-mml_nb_adaptive(data, arities, yIndex, xIndices)
+mml_nb_adaptive(data, arities, paIndex, chIndices)
 }
 \arguments{
 \item{data}{A categorical data set.}
 
 \item{arities}{A vector of variable arities.}
 
-\item{yIndex}{The target variable index.}
+\item{paIndex}{The target variable (or parent node) index.}
 
-\item{xIndices}{A vector of indices for the Xs.}
+\item{chIndices}{A vector of indices for the Xs (or child nodes).}
 }
 \description{
 This function calculates the mml score of a NB model using the adaptive code approach. It is much simpler than using
