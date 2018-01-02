@@ -21,10 +21,10 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 # for (i in 2:nnodes(dag)) {
 #   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 # }
-dag = randDag(8, 2)
-#graphviz.plot(dag)
+dag = randDag(10, 2)
+graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
-sampleSize = n = 1000
+sampleSize = n = 100
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -49,15 +49,13 @@ for (i in 1:length(vars)) {
 }
 
 # Rprof("mml_nb.out")
-# forward_greedy(data, arities, vars, sampleSize, y, score = mml_nb_adaptive, debug = F)
+# forward_greedy(data, arities, vars, sampleSize, "V4", score = mml_nb_adaptive, debug = F)
 # Rprof(NULL)
 # proftable("mml_nb.out")
 
 
-```
-
 ## MML_CPT
-```{r}
+
 indexListPerNodePerValue = count_occurance(data, arities)
 lst_cpt = list()
 for (i in 1:length(vars)) {
@@ -66,25 +64,10 @@ for (i in 1:length(vars)) {
   lst_cpt[[i]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1), debug = F)
   #forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, vars[1], base = exp(1), debug = T)
 }
-```
-The above mml + cpt is even smaller than mml + nb, which is expected to be shorter due to less number of parameters comparing with a full cpt!!!
 
-## MML_Logit
-
-```{r, eval = F}
-dataNumeric = factor2numeric(data)
-vars = names(data)
-sampleSize = n
-lst_logit = list()
-for (i in 1:length(vars)) {
-  y = vars[i]
-  lst_logit[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
-  #forward_greedy(data, arities, vars, sampleSize, vars[1], score = mml_logit, dataNumeric = dataNumeric, debug = T)
-}
-```
 
 ## Accuracy
-```{r}
+
 acc_nb = acc_cpt = acc_logit = matrix(0, nrow = length(vars), ncol = 2)
 for (i in 1:length(vars)) {
   acc_nb[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_nb[[i]], vars, vars[i])
@@ -105,23 +88,97 @@ x4 = round(1.96 * apply(acc_cpt, 2, sd) / sqrt(length(vars)), 2)
 # x5 = round(colMeans(acc_logit), 2)
 # x6 = round(1.96 * apply(acc_logit, 2, sd) / sqrt(length(vars)), 2)
 
+cat("--------Accuracy over all nodes-------- \n")
 cat("mml_nb:", x1[1], "(", x2[1], ")", x1[2], "(", x2[2], ") \n")
 cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
 # cat("mml_logit:", x5[1], "(", x6[1], ")", x5[2], "(", x6[2], ") \n")
+
+## Accuracy over root nodes
+vars2 = c()
+for (i in 1:length(vars)){
+  if (length(bnlearn::parents(dag, vars[i])) < 1) vars2 = c(vars2, i)
+}
+
+x1 = round(colMeans(acc_nb[vars2,]), 2)
+x2 = round(1.96 * apply(acc_nb[vars2,], 2, sd) / sqrt(length(vars)), 2)
+x3 = round(colMeans(acc_cpt[vars2,]), 2)
+x4 = round(1.96 * apply(acc_cpt[vars2,], 2, sd) / sqrt(length(vars)), 2)
+cat("--------Accuracy over root nodes-------- \n")
+cat("mml_nb:", x1[1], "(", x2[1], ")", x1[2], "(", x2[2], ") \n")
+cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
+
+lst_nb = symmetry_correction(vars, lst_nb, "AND")
+lst_cpt = symmetry_correction(vars, lst_cpt, "AND")
+
+acc_nb = acc_cpt = acc_logit = matrix(0, nrow = length(vars), ncol = 2)
+for (i in 1:length(vars)) {
+  acc_nb[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_nb[[i]], vars, vars[i])
+}
+
+for (i in 1:length(vars)) {
+  acc_cpt[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_cpt[[i]], vars, vars[i])  
+}
+
+# for (i in 1:length(vars)) {
+#   acc_logit[i, ] = classification_accuracy_mb(mb(dag, vars[i]), lst_logit[[i]], vars, vars[i])  
+# }
+
+x1 = round(colMeans(acc_nb), 2)
+x2 = round(1.96 * apply(acc_nb, 2, sd) / sqrt(length(vars)), 2)
+x3 = round(colMeans(acc_cpt), 2)
+x4 = round(1.96 * apply(acc_cpt, 2, sd) / sqrt(length(vars)), 2)
+# x5 = round(colMeans(acc_logit), 2)
+# x6 = round(1.96 * apply(acc_logit, 2, sd) / sqrt(length(vars)), 2)
+cat("-----------------symmetry correction----------------------- \n")
+cat("mml_nb:", x1[1], "(", x2[1], ")", x1[2], "(", x2[2], ") \n")
+cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
+# cat("mml_logit:", x5[1], "(", x6[1], ")", x5[2], "(", x6[2], ") \n")
+
+## Nodes that has no parents
+vars2 = c()
+for (i in 1:length(vars)){
+  if (length(bnlearn::parents(dag, vars[i])) < 1) vars2 = c(vars2, i)
+}
+
+x1 = round(colMeans(acc_nb[vars2,]), 2)
+x2 = round(1.96 * apply(acc_nb[vars2,], 2, sd) / sqrt(length(vars)), 2)
+x3 = round(colMeans(acc_cpt[vars2,]), 2)
+x4 = round(1.96 * apply(acc_cpt[vars2,], 2, sd) / sqrt(length(vars)), 2)
+cat("---------------------------------------- \n")
+cat("mml_nb:", x1[1], "(", x2[1], ")", x1[2], "(", x2[2], ") \n")
+cat("mml_cpt:", x3[1], "(", x4[1], ")", x3[2], "(", x4[2], ") \n")
 ```
+
+## MML_Logit
+
+```{r, eval = F}
+dataNumeric = factor2numeric(data)
+vars = names(data)
+sampleSize = n
+lst_logit = list()
+for (i in 1:length(vars)) {
+  y = vars[i]
+  lst_logit[[i]] = forward_greedy(data, arities, vars, sampleSize, y, score = mml_logit, dataNumeric = dataNumeric, debug = F)
+  #forward_greedy(data, arities, vars, sampleSize, vars[1], score = mml_logit, dataNumeric = dataNumeric, debug = T)
+}
+```
+
 
 ## Real models
 Used a different log factorial estimation, so the results could be different from when previous UAI results
 ```{r}
+model = "child"
+sampleSize = 5000
 score = "mml_nb"
-model = "insurance3"
-sampleSize = 500
+```
+
+```{r}
 datasets = list.files(paste0("~/Documents/Experiments/UAI_exp/", model, "/data_csv/", sampleSize, "/"))
 dag = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/dag/", model, ".rds"))
 vars = bnlearn::nodes(dag)
 ```
 
-```{r, eval=F}
+```{r}
 for (i in 1:length(datasets)) {
   data = read.csv(paste0("~/Documents/Experiments/UAI_exp/", model, "/data_csv/", sampleSize, "/", datasets[i]))  
   data = numeric2categorical(data)
@@ -137,36 +194,35 @@ for (i in 1:length(datasets)) {
       lst_learned[[j]] = forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, y, base = exp(1))
     }
   }
-  lst_learned = symmetry_correction(vars, lst_learned, "AND")
   filename = strsplit(datasets[i], ".csv")[[1]]
-  saveRDS(lst_learned, paste0("~/Documents/Experiments/", score, "/", model, "/mb_learned/", sampleSize, "/", filename, ".rds"))
+  saveRDS(lst_learned, paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/without_symmetry/", filename, ".rds"))
+  lst_learned = symmetry_correction(vars, lst_learned, "AND")
+  saveRDS(lst_learned, paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/with_symmetry/", filename, ".rds"))
 }
 ```
 
 ```{r}
 #model = "insurance"
-score = "mml_cpt"
+#score = "mml_nb"
 #sampleSize = 500
 mb_true = list()
 for (i in 1:length(vars)) {
   mb_true[[i]] = bnlearn::mb(dag, vars[i])
 }
-files = list.files(paste0("~/Documents/Experiments/", score, "/", model, "/mb_learned/", sampleSize))
-#files = list.files("~/Documents/Experiments/UAI_exp/insurance3/mb/500/")
-ed = rep(0, length(files)) 
+files = list.files(paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/with_symmetry/"))
+sum_ed = rep(0, length(files)) 
 for (i in 1:length(files)) {
-  mb_learned = readRDS(paste0("~/Documents/Experiments/", score, "/", model, "/mb_learned/", sampleSize, "/", files[i]))
-  #mb_learned = readRDS(paste0("~/Documents/Experiments/UAI_exp/insurance3/mb/500/", files[i]))
-  ee = c()
+  mb_learned = readRDS(paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/with_symmetry/", files[i]))
+  #ee = c()
   for (j in 1:length(vars)) {
     y = vars[j]
     #ee = c(ee, edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y))
-    ed[i] = ed[i] + edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y)
+    sum_ed[i] = sum_ed[i] + edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y)
   }
 }
 
-c = 1.96 * sd(ed) / sqrt(length(ed))
-cat(mean(ed), "+/-", c)
+c = 1.96 * sd(sum_ed) / sqrt(length(sum_ed))
+cat(mean(sum_ed), "+/-", c)
 ```
 
 ```{r}
