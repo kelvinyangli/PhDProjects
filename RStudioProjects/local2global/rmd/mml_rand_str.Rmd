@@ -1,0 +1,148 @@
+---
+title: "mml_rand_str"
+author: "kl"
+date: "6 January 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+dag = empty.graph(c("T", "V1", "V2", "V3", "V4"))
+dag = set.arc(dag, "V1", "T")
+dag = set.arc(dag, "T", "V2")
+dag = set.arc(dag, "V3", "V2")
+cpts = randCPTs(dag, 2, 1)
+n = 1000
+data = rbn(cpts, n)
+vars = colnames(data)
+arities = sapply(data, nlevels)
+names(arities) = c()
+```
+
+```{r}
+# a function to calculate the log of probability according to a pre-cal prob table and data
+log_score = function(data, adptProbs, targetIndex, n) {
+  
+  logScore = 0  
+  for (i in 1:n) {
+    
+    targetValue = as.numeric(data[i, targetIndex])
+    logScore = logScore + log(adptProbs[targetValue, i])
+      
+  }
+  
+  return(logScore)
+  
+}
+
+adpt_code_prob = function(data, arities, xIndex, yIndices, targetIndex, n) {
+  
+  probs = matrix(0.5, arities[targetIndex], n) 
+  cnt = rep(1, arities[xIndex]) # initializing cnt with 1
+  for (i in yIndices) {
+    
+    # make a high-dim list to store cnt
+    # each lvl in the list corresponds to a value of one parent of x
+    cnt = rep(list(cnt), arities[i])
+    
+  }
+  
+  for (i in 1:(nrow(data) - 1)) {# start adaptive counting for each data point
+    
+    indices = as.numeric(data[i, c(yIndices, xIndex)])
+    cnt[[matrix(indices, 1)]] = cnt[[matrix(indices, 1)]] + 1 # updating cnt
+    indices = as.numeric(data[i + 1, c(yIndices, xIndex)]) # computing prob from 2nd data point
+    for (k in 1:arities[targetIndex]) {# loop throughe each value of the target 
+      
+      indices[which(c(yIndices, xIndex) == targetIndex)] = k
+      probs[k, i + 1] = round(cnt[[matrix(indices, 1)]] / sum(cnt[[matrix(indices[-length(indices)], 1)]]), 2)
+      
+    }
+    
+  } # end adaptive counting
+  
+  return(probs)
+  
+}
+
+# check f when there is a sp
+mml_rand_str = function(str, data, arities, targetIndex, n) {
+
+  tempVars = bnlearn::nodes(str)
+  logScore = 0 
+  margProbs = matrix(1, arities[targetIndex], n)
+  for (x in tempVars) {
+    
+    # if it is the target or it has at least one parent,  
+    # then get the adaptive count of it given its parent set
+    pa = bnlearn::parents(str, x)
+    if (length(pa) > 0) {
+      
+      xIndex = which(vars == x)
+      paIndices = which(vars %in% pa)
+      adptProbs = adpt_code_prob(data, arities, xIndex, paIndices, targetIndex, n)
+      logScore = logScore + log_score(data, adptProbs, targetIndex, n)
+      margProbs = margProbs * adptProbs
+        
+    } # end if 
+    
+  }
+  
+  return(-(logScore - sum(log(apply(margProbs, 2, sum)))))
+  
+}
+
+```
+
+```{r}
+# this code doesn't calculate the msg len of T|V1,V2 right, where V1 and V2 are both parents of T
+# step 1: identify vars
+# step 2: sample a random str over the identified vars
+# step 3: identify the parent set of each var
+# step 4: get adaptive count of each var given its parent set
+
+str = empty.graph(c("T", "V1", "V2","V3"))
+str = set.arc(str, "V1", "T")
+str = set.arc(str, "V3", "V2")
+str = set.arc(str, "T", "V2")
+
+f(str, data, arities, targetIndex = 1, n)
+di = count_occurance(data, arities)
+mml_cpt(di, arities, n, c(2, 3,4), 1, base = exp(1))
+mml_nb_adaptive(data, arities, 1, c(2, 3,4))
+```
+
+```{r}
+di = count_occurance(data, arities)
+#forward_greedy_fast(data, di, arities, n, "T", debug = TRUE)
+tempVars = c("V2", "V3", "V4","T")
+mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/", length(tempVars) - 1, ".rds"))
+l = 0 
+for (i in 1:length(mbpts)) {
+  
+  pt = mbpts[[i]]
+  dimnames(pt) = rep(list(tempVars), 2)
+  pt = matrix2dag(pt)
+  pa = bnlearn::parents(pt, "T")
+  ch = bnlearn::children(pt, "T")
+  if (length(pa) == (length(tempVars) - 1)) {
+      
+    l = l + mml_cpt(di, arities, n, which(vars %in% pa), 1, base = exp(1))
+    
+  } else if (length(ch) == (length(tempVars) - 1)) {
+    
+    l = l + mml_nb_adaptive(data, arities, 1, which(vars %in% ch))
+    
+  } else {
+    
+    l = l + mml_rand_str(str, data, arities, 1, n)
+    
+  }
+  
+}
+
+l / length(mbpts)
+
+```
+
+
+

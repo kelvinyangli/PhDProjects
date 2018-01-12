@@ -21,10 +21,10 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 # for (i in 2:nnodes(dag)) {
 #   dag = set.arc(dag, nodes(dag)[1], nodes(dag)[i])
 # }
-dag = randDag(10, 2)
+dag = randDag(5, 2)
 graphviz.plot(dag)
 cpts = randCPTs(dag, 2, 1)
-sampleSize = n = 100
+sampleSize = n = 10
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -167,8 +167,8 @@ for (i in 1:length(vars)) {
 ## Real models
 Used a different log factorial estimation, so the results could be different from when previous UAI results
 ```{r}
-model = "child"
-sampleSize = 5000
+model = "alarm"
+sampleSize = 500
 score = "mml_nb"
 ```
 
@@ -202,33 +202,41 @@ for (i in 1:length(datasets)) {
 ```
 
 ```{r}
-#model = "insurance"
-#score = "mml_nb"
-#sampleSize = 500
+model = "insurance"
+score = "mml_nb"
+sampleSize = 500
+dag = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/dag/", model, ".rds"))
+vars = bnlearn::nodes(dag)
 mb_true = list()
 for (i in 1:length(vars)) {
   mb_true[[i]] = bnlearn::mb(dag, vars[i])
 }
-files = list.files(paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/with_symmetry/"))
-sum_ed = rep(0, length(files)) 
+files = list.files(paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/without_symmetry/"))
+sum_ed = rep(0, length(files))
+accuracy = c(0, 0)
 for (i in 1:length(files)) {
-  mb_learned = readRDS(paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/with_symmetry/", files[i]))
+  mb_learned = readRDS(paste0("~/Documents/Experiments/mb_discovery/", model, "/", score, "/", sampleSize, "/without_symmetry/", files[i]))
+  #mb_learned = symmetry_correction(vars, lst_learned, "OR")
   #ee = c()
   for (j in 1:length(vars)) {
+  #for (j in vars2) {
     y = vars[j]
-    #ee = c(ee, edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y))
-    sum_ed[i] = sum_ed[i] + edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y)
+    #cat(edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y), "\n")
+    accuracy = accuracy + classification_accuracy_mb(mb_true[[j]], mb_learned[[j]], vars, y)
+    #sum_ed[i] = sum_ed[i] + edit_dist_mb(mb_true[[j]], mb_learned[[j]], vars, y)
   }
 }
 
-c = 1.96 * sd(sum_ed) / sqrt(length(sum_ed))
-cat(mean(sum_ed), "+/-", c)
+accuracy/(10*length(vars))
+
+#c = 1.96 * sd(sum_ed) / sqrt(length(sum_ed))
+#cat(mean(sum_ed), "+/-", c)
 ```
 
 ```{r}
-248 240 256 226 264 266 248 254 300 238 cpt_current
-230 234 232 228 234 236 240 242 248 226 cpt_previous
-
+for (i in 1:length(vars)) {
+  cat(length(bnlearn::mb(dag, vars[i])) - length(bnlearn::parents(dag, vars[i])) - length(bnlearn::children(dag, vars[[i]])), "\n")
+}
 ```
 
 
