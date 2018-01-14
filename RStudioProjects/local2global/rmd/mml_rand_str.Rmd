@@ -20,6 +20,7 @@ data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
 names(arities) = c()
+di = count_occurance(data, arities)
 graphviz.plot(dag)
 ```
 
@@ -87,7 +88,7 @@ adpt_code_prob = function(data, arities, xIndex, yIndices, targetIndex, n) {
 }
 
 # check f when there is a sp
-mml_rand_str = function(str, data, vars, arities, targetIndex, n) {
+mml_rand_str = function(str, data, vars, arities, targetAdptProbs, targetIndex, n) {
 
   tempVars = bnlearn::nodes(str)
   logScore = 0 
@@ -108,9 +109,8 @@ mml_rand_str = function(str, data, vars, arities, targetIndex, n) {
     
     } else if (x == vars[targetIndex]) {
       
-      adptProbs = adpt_code_prob_no_pa(data, arities, xIndex, n)
-      logScore = logScore + log_score(data, adptProbs, targetIndex, n)
-      margProbs = margProbs * adptProbs
+      logScore = logScore + log_score(data, targetAdptProbs, targetIndex, n)
+      margProbs = margProbs * targetAdptProbs
       
     }
         
@@ -118,6 +118,81 @@ mml_rand_str = function(str, data, vars, arities, targetIndex, n) {
   
   return(-(logScore - sum(log(apply(margProbs, 2, sum)))))
   
+}
+
+# this code can be speed up by calculating probs(target) once and re-use it 
+# since the only case we cal the probs of a node that has no parents is when this node is the target
+# inf appear in mml score due to rounding error, fixed by removing round to 2nd digit
+# hardly add the 2nd var after 1st is added, identify problem
+f = function(data, arities, vars, target, n) {
+  
+  targetIndex = which(vars == target)
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  unchecked = vars[vars != target]
+  cmb = c()
+  #min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
+  min_l = mml_nb_adaptive(data, arities, targetIndex, c())
+  #cat(min_l, "\n")
+  repeat {
+    
+    temp_l = c()
+    for (x in unchecked) {
+      
+      tempVars = c(cmb, x, target)
+      mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/", length(tempVars) - 1, ".rds"))
+      l = 0 
+      for (i in 1:length(mbpts)) {
+        
+        pt = mbpts[[i]]
+        dimnames(pt) = rep(list(tempVars), 2)
+        pt = matrix2dag(pt)
+        pa = bnlearn::parents(pt, target)
+        ch = bnlearn::children(pt, target)
+        if (length(pa) == (length(tempVars) - 1)) {
+          
+          res = mml_cpt(di, arities, n, which(vars %in% pa), targetIndex, base = exp(1))        
+          l = l + res
+          #cat(res, "\n")
+        } else if (length(ch) == (length(tempVars) - 1)) {
+          
+          res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
+          l = l + res
+          #cat(res, "\n")
+        } else {
+          
+          res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
+          l = l + res
+          #cat(res, "\n")
+        }
+        #cat(l, "\n")
+      }
+      
+      avg_l = l / length(mbpts)
+      #cat(c(cmb, x), "--", avg_l, "\n")
+      
+      temp_l = c(temp_l, avg_l)
+      local_min_l = min(temp_l)
+      
+    }
+    
+    if (min_l > local_min_l) {
+        
+      toadd = unchecked[which.min(temp_l)]
+      cmb = c(cmb, toadd)
+      #cat("cmb:", cmb, "\n")
+      unchecked = unchecked[-which.min(temp_l)]
+      #cat("unchked", unchecked, "\n")
+      min_l = local_min_l
+        
+    }
+    
+    if ((length(unchecked) < 1) || (local_min_l > min_l)) break
+    
+  }
+
+  if (length(cmb) < 1) cmb = character(0)
+  return(cmb)
+
 }
 
 ```
@@ -140,74 +215,36 @@ di = count_occurance(data, arities)
 ```
 
 ```{r}
-di = count_occurance(data, arities)
-target = "V5"
-targetIndex = which(vars == target)
-unchecked = vars[vars != target]
-cmb = c()
-#min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
-min_l = mml_nb_adaptive(data, arities, targetIndex, c())
-cat(min_l, "\n")
-```
-
-```{r}
-# this code can be speed up by calculating probs(target) once and re-use it 
-# since the only case we cal the probs of a node that has no parents is when this node is the target
-# inf appear in mml score due to rounding error, fixed by removing round to 2nd digit
-# hardly add the 2nd var after 1st is added, identify problem
-temp_l = c()
-for (x in unchecked) {
-  
-  tempVars = c(cmb, x, target)
-  mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/", length(tempVars) - 1, ".rds"))
-  l = 0 
-  for (i in 1:length(mbpts)) {
-    
-    pt = mbpts[[i]]
-    dimnames(pt) = rep(list(tempVars), 2)
-    pt = matrix2dag(pt)
-    pa = bnlearn::parents(pt, target)
-    ch = bnlearn::children(pt, target)
-    if (length(pa) == (length(tempVars) - 1)) {
-      
-      res = mml_cpt(di, arities, n, which(vars %in% pa), targetIndex, base = exp(1))        
-      l = l + res
-      #cat(res, "\n")
-    } else if (length(ch) == (length(tempVars) - 1)) {
-      
-      res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
-      l = l + res
-      #cat(res, "\n")
-    } else {
-      
-      res = mml_rand_str(pt, data, vars, arities, targetIndex, n)
-      l = l + res
-      #cat(res, "\n")
-    }
-    #cat(l, "\n")
-  }
-  
-  avg_l = l / length(mbpts)
-  cat(c(cmb, x), "--", avg_l, "\n")
-  
-  temp_l = c(temp_l, avg_l)
-  local_min_l = min(temp_l)
+i = 1
+lrand = lcpt = lnb = list()
+for (target in vars) {
+  cat(i, "\n")
+  lrand[[i]] = f(data, arities, vars, target, n) 
+  lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
+  lnb[[i]] = forward_greedy(data, arities, vars, n, target, mml_nb_adaptive, debug = F)
+  i = i + 1
   
 }
 
-if (min_l > local_min_l) {
-    
-  toadd = unchecked[which.min(temp_l)]
-  cmb = c(cmb, toadd)
-  cat("cmb:", cmb, "\n")
-  unchecked = unchecked[-which.min(temp_l)]
-  cat("unchked", unchecked, "\n")
-  min_l = local_min_l
-    
+i = 1
+arand = acpt = anb = rep(0, length(vars))
+for (target in vars) {
+  
+  mbTrue = bnlearn::mb(dag, target)
+  arand[i] = mbEditDist(mbTrue, lrand[[i]], target, vars)
+  acpt[i] = mbEditDist(mbTrue, lcpt[[i]], target, vars)
+  anb[i] = mbEditDist(mbTrue, lnb[[i]], target, vars)
+  i = i + 1
+  
 }
 
+cat("rand str:", mean(arand), "\n")
+cat("cpt:", mean(acpt), "\n")
+cat("nb:", mean(anb), "\n")
 
 ```
+
+
 ```{r}
 # check when single target with no other nodes, why don't mml_cpt = mml_nb?
 # the problem of mml_cpt is the approx of log(factorial)
