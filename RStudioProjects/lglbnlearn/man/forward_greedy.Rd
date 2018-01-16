@@ -4,9 +4,9 @@
 \alias{forward_greedy}
 \title{A forward greedy search function}
 \usage{
-forward_greedy(data, arities, vars, sampleSize, target, score, base = exp(1),
-  sigma = 3, dataNumeric = NULL, indexListPerNodePerValue = NULL,
-  probSign = NULL, debug = FALSE)
+forward_greedy(data, arities, vars, sampleSize, target, model, base = exp(1),
+  sigma = 3, dataNumeric = NULL, varCnt = NULL, targetAdptProbs = NULL,
+  debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -19,7 +19,7 @@ forward_greedy(data, arities, vars, sampleSize, target, score, base = exp(1),
 
 \item{target}{The target node, whose Markov blanket we are interested in.}
 
-\item{score}{The objective function to pass to. Curernt choices are mml_cpt, mml_logit and mml_nb.}
+\item{model}{The options are cpt, logit (binary only), naive bayes and random models.}
 
 \item{base}{The base of logarithm. The default is the natural log.}
 
@@ -29,12 +29,12 @@ default value is 3 as suggested by the original paper.}
 \item{dataNumeric}{This parameter is for mml_logit. The numeric format of the given data set. 
 Variable values start from 0.}
 
-\item{indexListPerNodePerValue}{This parameter is for mml_cpt. As explained by argument name. 
+\item{varCnt}{This parameter is for mml_cpt. As explained by argument name. 
 It is obtained by getting the detailed information of the given data using the function 
 count_occurance().}
 
-\item{probSign}{This parameter is for mml_nb. A data frame with 1 and -1, which corresponds to the 
-1st and 2nd level of a varaible.}
+\item{targetAdptProbs}{This parameter is for mml_random. A matrix that stores the target's probability
+for each of its value and each data point. It is a arity(target) by n matrix.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 mml score.}

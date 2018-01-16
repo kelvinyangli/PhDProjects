@@ -13,14 +13,6 @@ output: pdf_document
 # dag = set.arc(dag, "V7", "V9")
 # dag = set.arc(dag, "V7", "V10")
 # #dag = set.arc(dag, "V9", "V10")
-dag = randDag(10, 2)
-cpts = randCPTs(dag, 2, 1)
-n = 100
-data = rbn(cpts, n)
-vars = colnames(data)
-arities = sapply(data, nlevels)
-names(arities) = c()
-di = count_occurance(data, arities)
 graphviz.plot(dag)
 ```
 
@@ -61,7 +53,7 @@ adpt_code_prob = function(data, arities, xIndex, yIndices, targetIndex, n) {
   
   probs = matrix(0.5, arities[targetIndex], n) 
   cnt = rep(1, arities[xIndex]) # initializing cnt with 1
-  for (i in yIndices) {
+  for (i in rev(yIndices)) {
     
     # make a high-dim list to store cnt
     # each lvl in the list corresponds to a value of one parent of x
@@ -124,7 +116,7 @@ mml_rand_str = function(str, data, vars, arities, targetAdptProbs, targetIndex, 
 # since the only case we cal the probs of a node that has no parents is when this node is the target
 # inf appear in mml score due to rounding error, fixed by removing round to 2nd digit
 # hardly add the 2nd var after 1st is added, identify problem
-f = function(data, arities, vars, target, n) {
+f = function(data, di, arities, vars, target, n, debug = FALSE) {
   
   targetIndex = which(vars == target)
   targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
@@ -132,15 +124,16 @@ f = function(data, arities, vars, target, n) {
   cmb = c()
   #min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
   min_l = mml_nb_adaptive(data, arities, targetIndex, c())
-  #cat(min_l, "\n")
+  if (debug) cat(min_l, "\n")
   repeat {
     
     temp_l = c()
     for (x in unchecked) {
       
       tempVars = c(cmb, x, target)
-      mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/", length(tempVars) - 1, ".rds"))
+      mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(tempVars) - 1, ".rds"))
       l = 0 
+      #l = rep(0, length(mbpts))
       for (i in 1:length(mbpts)) {
         
         pt = mbpts[[i]]
@@ -151,24 +144,24 @@ f = function(data, arities, vars, target, n) {
         if (length(pa) == (length(tempVars) - 1)) {
           
           res = mml_cpt(di, arities, n, which(vars %in% pa), targetIndex, base = exp(1))        
-          l = l + res
-          #cat(res, "\n")
+          if (debug) cat(i, res, "\n")
         } else if (length(ch) == (length(tempVars) - 1)) {
           
           res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
-          l = l + res
-          #cat(res, "\n")
+          if (debug) cat(i, res, "\n")
         } else {
           
           res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
-          l = l + res
-          #cat(res, "\n")
+          if (debug) cat(i, res, "\n")
         }
+        l = l + res
+        #l[i] = res
         #cat(l, "\n")
       }
       
       avg_l = l / length(mbpts)
-      #cat(c(cmb, x), "--", avg_l, "\n")
+      #avg_l = min(l)
+      if (debug) cat(c(cmb, x), "--", avg_l, "\n")
       
       temp_l = c(temp_l, avg_l)
       local_min_l = min(temp_l)
@@ -179,9 +172,9 @@ f = function(data, arities, vars, target, n) {
         
       toadd = unchecked[which.min(temp_l)]
       cmb = c(cmb, toadd)
-      #cat("cmb:", cmb, "\n")
+      if (debug) cat("cmb:", cmb, "\n")
       unchecked = unchecked[-which.min(temp_l)]
-      #cat("unchked", unchecked, "\n")
+      if (debug) cat("unchked", unchecked, "\n")
       min_l = local_min_l
         
     }
@@ -198,49 +191,69 @@ f = function(data, arities, vars, target, n) {
 ```
 
 ```{r}
-# this code doesn't calculate the msg len of T|V1,V2 right, where V1 and V2 are both parents of T
-# step 1: identify vars
-# step 2: sample a random str over the identified vars
-# step 3: identify the parent set of each var
-# step 4: get adaptive count of each var given its parent set
-
-str = empty.graph(c("T", "V1", "V2","V3"))
-str = set.arc(str, "V1", "T")
-str = set.arc(str, "V3", "V2")
-str = set.arc(str, "T", "V2")
-
+dag = randDag(5, 2)
+cpts = randCPTs(dag, 2, 1)
+n = 50
+data = rbn(cpts, n)
+# data = read.csv("~/Documents/Experiments/UAI_exp/")
+# data = numeric2categorical(data)
+# n = nrow(data)
+vars = colnames(data)
+arities = sapply(data, nlevels)
+names(arities) = c()
 di = count_occurance(data, arities)
-# mml_cpt(di, arities, n, c(2, 3,4), 1, base = exp(1))
-# mml_nb_adaptive(data, arities, 1, c(2, 3,4))
-```
 
-```{r}
 i = 1
 lrand = lcpt = lnb = list()
 for (target in vars) {
-  cat(i, "\n")
-  lrand[[i]] = f(data, arities, vars, target, n) 
+  
+  #cat(i, "\n")
+  targetIndex = which(vars == target)
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di, 
+                              targetAdptProbs = targetAdptProbs, debug = T)
+  #f(data, di, arities, vars, target, n, debug = T) 
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
-  lnb[[i]] = forward_greedy(data, arities, vars, n, target, mml_nb_adaptive, debug = F)
+  lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
   
 }
 
 i = 1
 arand = acpt = anb = rep(0, length(vars))
+crand = ccpt = cnb = matrix(0, length(vars), 2)
+m = p = c = s = 0
 for (target in vars) {
   
   mbTrue = bnlearn::mb(dag, target)
+  m = m + length(mbTrue)
+  p = p + length(bnlearn::parents(dag, target))
+  c = c + length(bnlearn::children(dag, target))
+  s = s + (length(mbTrue) - length(bnlearn::parents(dag, target)) - length(bnlearn::children(dag, target)))
   arand[i] = mbEditDist(mbTrue, lrand[[i]], target, vars)
+  crand[i, ] = classfication_accuracy_mb(mbTrue, lrand[[i]], vars, target)
   acpt[i] = mbEditDist(mbTrue, lcpt[[i]], target, vars)
+  ccpt[i, ] = classfication_accuracy_mb(mbTrue, lcpt[[i]], vars, target)
   anb[i] = mbEditDist(mbTrue, lnb[[i]], target, vars)
+  cnb[i, ] = classfication_accuracy_mb(mbTrue, lnb[[i]], vars, target)
   i = i + 1
   
 }
 
-cat("rand str:", mean(arand), "\n")
-cat("cpt:", mean(acpt), "\n")
-cat("nb:", mean(anb), "\n")
+nvars = length(vars)
+#graphviz.plot(dag)
+cat("stats: \n")
+cat("m=", m/nvars, "; p=", p/nvars, "; c=", c/nvars, "; s=", s/nvars, "\n")
+cat("rand str:", mean(arand), "+/-", 1.96 * sd(arand) / sqrt(n), "\n")
+cat("cpt:", mean(acpt), "+/-", 1.96 * sd(acpt) / sqrt(n), "\n")
+cat("nb:", mean(anb), "+/-", 1.96 * sd(anb) / sqrt(n), "\n")
+cat("---------------------- \n")
+cat(apply(crand, 2, mean), 2 * prod(apply(crand, 2, mean)) / sum(apply(crand, 2, mean)), "\n")
+cat(apply(ccpt, 2, mean), 2 * prod(apply(ccpt, 2, mean)) / sum(apply(ccpt, 2, mean)), "\n")
+cat(apply(cnb, 2, mean), 2 * prod(apply(cnb, 2, mean)) / sum(apply(cnb, 2, mean)), "\n")
+cat("---------------------- \n")
+# also report how many 100% mb discovery 
+
 
 ```
 

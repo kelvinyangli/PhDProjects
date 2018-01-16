@@ -8,53 +8,41 @@
 #' @param vars A vector of all variables in data, in the same order as the column names of data.
 #' @param sampleSize The sample size. That is, the number of rows of data. 
 #' @param target The target node, whose Markov blanket we are interested in. 
-#' @param score The objective function to pass to. Curernt choices are mml_cpt, mml_logit and mml_nb.  
+#' @param model The options are cpt, logit (binary only), naive bayes and random models. 
 #' @param base The base of logarithm. The default is the natural log. 
 #' @param sigma The standard derivation of the assumed Gaussian distribution for parameter prior. The 
 #' default value is 3 as suggested by the original paper. 
 #' @param dataNumeric This parameter is for mml_logit. The numeric format of the given data set. 
 #' Variable values start from 0. 
-#' @param indexListPerNodePerValue This parameter is for mml_cpt. As explained by argument name. 
+#' @param varCnt This parameter is for mml_cpt. As explained by argument name. 
 #' It is obtained by getting the detailed information of the given data using the function 
 #' count_occurance(). 
-#' @param probSign This parameter is for mml_nb. A data frame with 1 and -1, which corresponds to the 
-#' 1st and 2nd level of a varaible. 
+#' @param targetAdptProbs This parameter is for mml_random. A matrix that stores the target's probability
+#' for each of its value and each data point. It is a arity(target) by n matrix. 
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 #' mml score. 
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective 
 #' function. 
 #' @export
-forward_greedy = function(data, arities, vars, sampleSize, target, score, base = exp(1), sigma = 3, 
-                          dataNumeric = NULL, indexListPerNodePerValue = NULL, probSign = NULL, 
-                          debug = FALSE) {
-  
-  options = c("mmlCPT", "mmlLogit", "mmlNB")
-  if (!is.null(indexListPerNodePerValue)) {
-    scoreIndex = 1
-  } else if (!is.null(dataNumeric)) {
-    scoreIndex = 2
-  } else {
-    scoreIndex = 3
-  }
+forward_greedy = function(data, arities, vars, sampleSize, target, model, base = exp(1), sigma = 3, 
+                          dataNumeric = NULL, varCnt = NULL, targetAdptProbs = NULL, debug = FALSE) {
   
   targetIndex = which(vars == target) # get index of the target node
   nvars = length(vars)
   mb = c()
   unCheckedIndices = (1:nvars)[-targetIndex]
   
-  # initialize minMsgLen as mml when target has no parents
-  
-  if (scoreIndex == 1) {#cpt
-    minMsgLen = score(indexListPerNodePerValue, arities, sampleSize, c(), targetIndex, base = base)
-  } else if (scoreIndex == 2) {#logit
-    minMsgLen = score(data, arities, sampleSize, c(), target, sigma = sigma)
-  } else if (scoreIndex == 3) {#nb
-    #minMsgLen = score(data, probSign, vars, arities, sampleSize, c(), target)
-    minMsgLen = score(data, arities, targetIndex, c())
+  # initializing with empty model
+  if (model == "cpt") {#cpt
+    minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, base = base)
+  } else if (model == "logit") {#logit
+    minMsgLen = mml_logit(data, arities, sampleSize, c(), target, sigma = sigma)
+  } else {# nb or random
+    minMsgLen = mml_nb_adaptive(data, arities, targetIndex, c())
   }
   
   if (debug) {
-    cat("Search: Forward greedy with", options[scoreIndex], "\n")
+    cat("Search: Forward greedy with", model, " model \n")
     cat("0 parent:", minMsgLen, "\n")
   }
   
@@ -73,15 +61,45 @@ forward_greedy = function(data, arities, vars, sampleSize, target, score, base =
       inputIndices = c(mb, unCheckedIndices[i])
       
       # msg len with at least 1 parent
-      if (scoreIndex == 1) {# cpt
-        msgLenCurrent = 
-          score(indexListPerNodePerValue, arities, sampleSize, inputIndices, targetIndex, base = base)
-      } else if (scoreIndex == 2) {#logit
-        msgLenCurrent = score(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
-      } else if (scoreIndex == 3) {#nb
-        #msgLenCurrent = score(data, probSign, vars, arities, sampleSize, vars[inputIndices], target) 
-        msgLenCurrent = score(data, arities, targetIndex, inputIndices)
-      }
+      if (model == "cpt") {# cpt
+        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, inputIndices, 
+                              targetIndex, base = base)
+      } else if (model == "logit") {#logit
+        msgLenCurrent = mml_logit(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
+      } else if (model == "nb") {#nb
+        msgLenCurrent = mml_nb_adaptive(data, arities, targetIndex, inputIndices)
+      } else if (model == "random") {#random
+        mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
+                               length(inputIndices), ".rds"))
+        l = 0 
+        for (j in 1:length(mbpts)) {
+          
+          pt = mbpts[[j]]
+          dimnames(pt) = rep(list(vars[c(inputIndices, targetIndex)]), 2)
+          pt = matrix2dag(pt)
+          pa = bnlearn::parents(pt, target)
+          ch = bnlearn::children(pt, target)
+          if (length(pa) == length(inputIndices)) {
+        
+            res = mml_cpt(varCnt, arities, sampleSize, which(vars %in% pa), targetIndex, base = exp(1))       
+            
+          } else if (length(ch) == length(inputIndices)) {
+          
+            res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
+            
+          } else {
+            
+            res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, sampleSize)
+            
+          }
+          
+          l = l + res
+      
+        }
+        
+        msgLenCurrent = l / length(mbpts)
+        
+      }# end else if 
       
       if (debug) cat("parents =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
       
