@@ -5,15 +5,14 @@ date: "6 January 2018"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-# dag = empty.graph(c("V1", "V7", "V9", "V10"))
-# dag = set.arc(dag, "V1", "V7")
-# #dag = set.arc(dag, "V1", "V9")
-# #dag = set.arc(dag, "V1", "V10")
-# dag = set.arc(dag, "V7", "V9")
-# dag = set.arc(dag, "V7", "V10")
-# #dag = set.arc(dag, "V9", "V10")
-graphviz.plot(dag)
+```{r global_options, include=F, warning=F, eval=F, echo=F, message=F}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
 ```{r}
@@ -116,7 +115,7 @@ mml_rand_str = function(str, data, vars, arities, targetAdptProbs, targetIndex, 
 # since the only case we cal the probs of a node that has no parents is when this node is the target
 # inf appear in mml score due to rounding error, fixed by removing round to 2nd digit
 # hardly add the 2nd var after 1st is added, identify problem
-f = function(data, di, arities, vars, target, n, debug = FALSE) {
+f = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
   
   targetIndex = which(vars == target)
   targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
@@ -124,16 +123,17 @@ f = function(data, di, arities, vars, target, n, debug = FALSE) {
   cmb = c()
   #min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
   min_l = mml_nb_adaptive(data, arities, targetIndex, c())
-  if (debug) cat(min_l, "\n")
+  if (debug) cat(target, ":", min_l, "\n")
   repeat {
     
     temp_l = c()
+    mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(cmb) + 1, ".rds"))
+    
     for (x in unchecked) {
       
       tempVars = c(cmb, x, target)
-      mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(tempVars) - 1, ".rds"))
-      l = 0 
-      #l = rep(0, length(mbpts))
+      #l = 0 
+      l = rep(0, length(mbpts))
       for (i in 1:length(mbpts)) {
         
         pt = mbpts[[i]]
@@ -144,22 +144,27 @@ f = function(data, di, arities, vars, target, n, debug = FALSE) {
         if (length(pa) == (length(tempVars) - 1)) {
           
           res = mml_cpt(di, arities, n, which(vars %in% pa), targetIndex, base = exp(1))        
-          if (debug) cat(i, res, "\n")
+          
         } else if (length(ch) == (length(tempVars) - 1)) {
           
           res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
-          if (debug) cat(i, res, "\n")
+          
         } else {
           
           res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
-          if (debug) cat(i, res, "\n")
+      
         }
-        l = l + res
-        #l[i] = res
+        
+        if (debug) cat(i, res, is_substr(dag, pt), "\n")
+        #l = l + res
+        l[i] = res
         #cat(l, "\n")
       }
       
-      avg_l = l / length(mbpts)
+      #avg_l = l / length(mbpts)
+      ll = sum(l) / l
+      avg_l = sum(l * ll / sum(ll))
+      
       #avg_l = min(l)
       if (debug) cat(c(cmb, x), "--", avg_l, "\n")
       
@@ -188,11 +193,136 @@ f = function(data, di, arities, vars, target, n, debug = FALSE) {
 
 }
 
+f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
+  
+  targetIndex = which(vars == target)
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  unchecked = vars[vars != target]
+  cmb = c()
+  #min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
+  min_l = mml_nb_adaptive(data, arities, targetIndex, c())
+  if (debug) cat(target, ":", min_l, "\n")
+  repeat {
+    
+    temp_l = c()
+    mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(cmb) + 1, ".rds"))
+    
+    for (x in unchecked) {
+      
+      tempVars = c(cmb, x, target)
+      #l = 0 
+      l = rep(0, length(mbpts))
+      for (i in 1:length(mbpts)) {
+        
+        pt = mbpts[[i]]
+        dimnames(pt) = rep(list(tempVars), 2)
+        pt = matrix2dag(pt)
+        pa = bnlearn::parents(pt, target)
+        ch = bnlearn::children(pt, target)
+        if (length(pa) == (length(tempVars) - 1)) {
+          
+          res = mml_cpt(di, arities, n, which(vars %in% pa), targetIndex, base = exp(1))        
+          
+        } else if (length(ch) == (length(tempVars) - 1)) {
+          
+          res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
+          
+        } else {
+          
+          res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
+      
+        }
+        
+        if (debug) cat(i, res, is_substr(dag, pt), "\n")
+        #l = l + res
+        l[i] = res
+        #cat(l, "\n")
+      }
+      
+      #avg_l = l / length(mbpts)
+      if (length(mbpts) == 23) {
+        l = l[-c(15,16,19,20,23)] # remove less probable str for now  
+      } else if (length(mbpts) == 6) {
+        l = l[-6]
+      }
+      
+      ll = sum(l) / l
+      avg_l = sum(l * ll / sum(ll))
+      
+      #avg_l = min(l)
+      if (debug) cat(c(cmb, x), "--", avg_l, "\n")
+      
+      temp_l = c(temp_l, avg_l)
+      local_min_l = min(temp_l)
+      
+    }
+    
+    if (min_l > local_min_l) {
+        
+      toadd = unchecked[which.min(temp_l)]
+      cmb = c(cmb, toadd)
+      if (debug) cat("cmb:", cmb, "\n")
+      unchecked = unchecked[-which.min(temp_l)]
+      if (debug) cat("unchked", unchecked, "\n")
+      min_l = local_min_l
+        
+    }
+    
+    if ((length(unchecked) < 1) || (local_min_l > min_l)) break
+    
+  }
+
+  if (length(cmb) < 1) cmb = character(0)
+  return(cmb)
+
+}
+
+
+# a function to extract the local str from a dag 
+local_extraction = function(dag, varSubset) {
+  
+  localStr = empty.graph(varSubset)
+  for (i in 1:nrow(dag$arcs)) {
+    
+    if (prod(dag$arcs[i, ] %in% varSubset) == 1) {
+      
+      localStr = set.arc(localStr, dag$arcs[i, 1], dag$arcs[i, 2])
+      
+    }
+    
+  }
+  
+  return(localStr)
+  
+}
+
+# a function to report whether the current local str is a true sub str of the generating dag
+is_substr = function(dag, localStr) {
+  
+  contained = 1
+  for (i in 1:nrow(localStr$arcs)) {
+    
+    indexFrom = which(localStr$arcs[i, 1] == dag$arcs[, 1])
+    indexTo = which(localStr$arcs[i, 2] == dag$arcs[, 2])
+    if (length(intersect(indexFrom, indexTo)) < 1) {
+      
+      contained = 0
+      break
+      
+    }
+    
+  }
+  
+  return(contained)
+  
+}
+
+
 ```
 
 ```{r}
 dag = randDag(5, 2)
-cpts = randCPTs(dag, 2, 1)
+cpts = randCPTs(dag, 3, 1)
 n = 50
 data = rbn(cpts, n)
 # data = read.csv("~/Documents/Experiments/UAI_exp/")
@@ -202,17 +332,18 @@ vars = colnames(data)
 arities = sapply(data, nlevels)
 names(arities) = c()
 di = count_occurance(data, arities)
+nvars = length(vars)
 
 i = 1
-lrand = lcpt = lnb = list()
+lrand = lrand2 = lcpt = lnb = list()
 for (target in vars) {
   
   #cat(i, "\n")
   targetIndex = which(vars == target)
   targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  lrand2[[i]] = f(data,di,arities,vars,target,n)
   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di, 
                               targetAdptProbs = targetAdptProbs, debug = T)
-  #f(data, di, arities, vars, target, n, debug = T) 
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
   lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
@@ -220,50 +351,221 @@ for (target in vars) {
 }
 
 i = 1
-arand = acpt = anb = rep(0, length(vars))
-crand = ccpt = cnb = matrix(0, length(vars), 2)
-m = p = c = s = 0
+arand = arand2 = acpt = anb = rep(0, nvars)
+crand = crand2 = ccpt = cnb = matrix(0, nvars, 2)
+m = p = c = s = rep(0, nvars)
+mbl = list()
 for (target in vars) {
   
-  mbTrue = bnlearn::mb(dag, target)
-  m = m + length(mbTrue)
-  p = p + length(bnlearn::parents(dag, target))
-  c = c + length(bnlearn::children(dag, target))
-  s = s + (length(mbTrue) - length(bnlearn::parents(dag, target)) - length(bnlearn::children(dag, target)))
-  arand[i] = mbEditDist(mbTrue, lrand[[i]], target, vars)
-  crand[i, ] = classfication_accuracy_mb(mbTrue, lrand[[i]], vars, target)
-  acpt[i] = mbEditDist(mbTrue, lcpt[[i]], target, vars)
-  ccpt[i, ] = classfication_accuracy_mb(mbTrue, lcpt[[i]], vars, target)
-  anb[i] = mbEditDist(mbTrue, lnb[[i]], target, vars)
-  cnb[i, ] = classfication_accuracy_mb(mbTrue, lnb[[i]], vars, target)
+  mbl[[i]] = bnlearn::mb(dag, target)
+  m[i] = length(mbl[[i]])
+  p[i] = length(bnlearn::parents(dag, target))
+  c[i] = length(bnlearn::children(dag, target))
+  s[i] = m[i] - p[i] - c[i]
+  arand[i] = mbEditDist(mbl[[i]], lrand[[i]], target, vars)
+  crand[i, ] = classfication_accuracy_mb(mbl[[i]], lrand[[i]], vars, target)
+  arand2[i] = mbEditDist(mbl[[i]], lrand2[[i]], target, vars)
+  crand2[i, ] = classfication_accuracy_mb(mbl[[i]], lrand2[[i]], vars, target)
+  acpt[i] = mbEditDist(mbl[[i]], lcpt[[i]], target, vars)
+  ccpt[i, ] = classfication_accuracy_mb(mbl[[i]], lcpt[[i]], vars, target)
+  anb[i] = mbEditDist(mbl[[i]], lnb[[i]], target, vars)
+  cnb[i, ] = classfication_accuracy_mb(mbl[[i]], lnb[[i]], vars, target)
   i = i + 1
   
 }
 
+# sym check
+llrand = symmetry_correction(vars, lrand, "AND")
+llrand2 = symmetry_correction(vars, lrand2, "AND")
+llcpt = symmetry_correction(vars, lcpt, "AND")
+llnb = symmetry_correction(vars, lnb, "AND")
+aarand = aarand2 = aacpt = aanb = rep(0, nvars)
+ccrand = ccrand2 = cccpt = ccnb = matrix(0, nvars, 2)
+i = 1
+for (target in vars) {
+  
+  aarand[i] = mbEditDist(mbl[[i]], llrand[[i]], target, vars)
+  ccrand[i, ] = classfication_accuracy_mb(mbl[[i]], llrand[[i]], vars, target)
+  aarand2[i] = mbEditDist(mbl[[i]], llrand2[[i]], target, vars)
+  ccrand2[i, ] = classfication_accuracy_mb(mbl[[i]], llrand2[[i]], vars, target)
+  aacpt[i] = mbEditDist(mbl[[i]], llcpt[[i]], target, vars)
+  cccpt[i, ] = classfication_accuracy_mb(mbl[[i]], llcpt[[i]], vars, target)
+  aanb[i] = mbEditDist(mbl[[i]], llnb[[i]], target, vars)
+  ccnb[i, ] = classfication_accuracy_mb(mbl[[i]], llnb[[i]], vars, target)
+  i = i + 1
+  
+}
+
+
+#graphviz.plot(dag)
+cat("------------stats------------ \n")
+cat("m=", mean(m), "; p=", mean(p), "; c=", mean(c), "; s=", mean(s), "\n")
+cat("----------edit dist---------- \n")
+cat("rand:", mean(arand), "+/-", round(1.96 * sd(arand) / sqrt(n), 2), "\n")
+cat("rand2:", mean(arand2), "+/-", round(1.96 * sd(arand2) / sqrt(n), 2), "\n")
+cat("cpt:", mean(acpt), "+/-", round(1.96 * sd(acpt) / sqrt(n), 2), "\n")
+cat("nb:", mean(anb), "+/-", round(1.96 * sd(anb) / sqrt(n), 2), "\n")
+cat("-------pre rec f-measure-------- \n")
+pr = apply(crand, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+pr = apply(crand2, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+pr = apply(ccpt, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+pr = apply(cnb, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+cat("---------sym chk------------- \n")
+cat("----------edit dist---------- \n")
+cat("rand:", mean(aarand), "+/-", round(1.96 * sd(aarand) / sqrt(n), 2), "\n")
+cat("rand2:", mean(aarand2), "+/-", round(1.96 * sd(aarand2) / sqrt(n), 2), "\n")
+cat("cpt:", mean(aacpt), "+/-", round(1.96 * sd(aacpt) / sqrt(n), 2), "\n")
+cat("nb:", mean(aanb), "+/-", round(1.96 * sd(aanb) / sqrt(n), 2), "\n")
+cat("-------pre rec f-measure-------- \n")
+pr = apply(ccrand, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+pr = apply(ccrand2, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+pr = apply(cccpt, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+pr = apply(ccnb, 2, mean)
+cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+cat("------------break down---------- \n")
+ord = order(m)
+cat("mb size:", m[ord], "\n")
+cat("rand:", arand[ord], "\n")
+cat("rand2:", arand2[ord], "\n")
+cat("cpt:", acpt[ord], "\n")
+cat("nb:", anb[ord], "\n")
+cat("-------------all pa-------------\n")
+allPa = which(m == p)
+cat(arand[allPa], "\n")
+cat(arand2[allPa], "\n")
+cat(acpt[allPa], "\n")
+cat(anb[allPa], "\n")
+cat("-------------all ch-------------\n")
+allCh = which(m == c)
+cat(arand[allCh], "\n")
+cat(arand2[allCh], "\n")
+cat(acpt[allCh], "\n")
+cat(anb[allCh], "\n")
+cat("-------------mixture-------------\n")
+cat(arand[-c(allPa, allCh)], "\n")
+cat(arand2[-c(allPa, allCh)], "\n")
+cat(acpt[-c(allPa, allCh)], "\n")
+cat(anb[-c(allPa, allCh)], "\n")
+```
+
+## Testing mml_rand against cpt and nb on mb with pa and ch only. The first test fixes parameters but vary data, the edit dist are 3.82, 3.58, 2.8 for rand, cpt and nb over 50 datasets of 100 samples. The second test varies cpts and data, edit dist are 4, 3.54, 2.68 respectively. mml_nb wins!
+
+## If three parents only, rand 1.34, cpt 1.80, nb 1.28; if three children only, rand 1.9, cpt 2.08, nb 1.32;
+```{r}
+vars = paste0("V", c(1:4))
+nvars = length(vars)
+dag = empty.graph(vars)
+# dag = set.arc(dag, "V2", "V1")
+# dag = set.arc(dag, "V3", "V1")
+# dag = set.arc(dag, "V4", "V1")
+# dag = set.arc(dag, "V1", "V5")
+# dag = set.arc(dag, "V1", "V6")
+# dag = set.arc(dag, "V1", "V7")
+dag = set.arc(dag, "V1", "V2")
+dag = set.arc(dag, "V1", "V3")
+dag = set.arc(dag, "V1", "V4")
+
+arities = rep(2, nvars)
+target = "V1"
+targetIndex = which(vars == target)
+m = mb(dag, target)
+n = 100
+w = rep(0, 3)
+for (t in 1:50) {
+  
+  cat(t, w, "\n")
+  cpts = randCPTs(dag, 2, 1)
+  data = rbn(cpts, n)
+  di = count_occurance(data, arities)
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  lrand = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
+                                targetAdptProbs = targetAdptProbs, debug = F)
+  lcpt = forward_greedy_fast(data, di, arities, n, target, debug = F)
+  lnb = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
+  w[1] = w[1] + edit_dist_mb(m, lrand, vars, target)
+  w[2] = w[2] + edit_dist_mb(m, lcpt, vars, target)
+  w[3] = w[3] + edit_dist_mb(m, lnb, vars, target)
+  
+}
+w / t
+```
+
+## Testing with spouses, varying data only 3.88, 4.06, 3.48 over 50 runs. Varying both cpts and data, 4.28, 4.12, 3.86. Testing with spouses, varying data only using f() taking weighted average according to mml score, results are 3.54, 4.26, 3.2; varying both cpts and data, 4.22, 4.22, 3.78; if three parents and others are isolated, cpt 2.02, nb 2; if three children and others are isolated, cpt 1.86, nb 1.9; if two children two spouses only, 2.88, 3.34, 2.66; 
+```{r}
+vars = paste0("V", c(1,4,5,6,7))
+nvars = length(vars)
+dag = empty.graph(vars)
+# dag = set.arc(dag, "V2", "V1")
+# dag = set.arc(dag, "V3", "V1")
+# dag = set.arc(dag, "V4", "V1")
+dag = set.arc(dag, "V4", "V5")
+dag = set.arc(dag, "V1", "V5")
+dag = set.arc(dag, "V1", "V6")
+# dag = set.arc(dag, "V1", "V7")
+dag = set.arc(dag, "V7", "V6")
+arities = rep(2, nvars)
+target = "V1"
+targetIndex = which(vars == target)
+m = mb(dag, target)
+n = 100
+w = rep(0, 3)
+
+for (t in 1:50) {
+  
+  cat(t, ":", w, "\n")
+  cpts = randCPTs(dag, 2, 1)
+  data = rbn(cpts, n)
+  di = count_occurance(data, arities)
+  lrand = f(data,di,arities,vars,target,n)
+  
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  lrand = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
+                                targetAdptProbs = targetAdptProbs, debug = F)
+  lcpt = forward_greedy_fast(data, di, arities, n, target, debug = F)
+  lnb = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
+  w[1] = w[1] + edit_dist_mb(m, lrand, vars, target)
+  w[2] = w[2] + edit_dist_mb(m, lcpt, vars, target)
+  w[3] = w[3] + edit_dist_mb(m, lnb, vars, target)
+  
+}
+w / t
+```
+
+## using TOM prior in camml; also through in the true str score, it should win in most case, perhaps loss in small samples; testing random; sanity check, should be uniform, 100 smaples uniform is 100. 
+```{r}
+dag = randDag(7, 3)
+#graphviz.plot(dag)
+cpts = randCPTs(dag, 3, 1)
+n = 200
+data = rbn(cpts, n)
+vars = colnames(data)
+arities = sapply(data, nlevels)
+names(arities) = c()
+di = count_occurance(data, arities)
 nvars = length(vars)
 #graphviz.plot(dag)
-cat("stats: \n")
-cat("m=", m/nvars, "; p=", p/nvars, "; c=", c/nvars, "; s=", s/nvars, "\n")
-cat("rand str:", mean(arand), "+/-", 1.96 * sd(arand) / sqrt(n), "\n")
-cat("cpt:", mean(acpt), "+/-", 1.96 * sd(acpt) / sqrt(n), "\n")
-cat("nb:", mean(anb), "+/-", 1.96 * sd(anb) / sqrt(n), "\n")
-cat("---------------------- \n")
-cat(apply(crand, 2, mean), 2 * prod(apply(crand, 2, mean)) / sum(apply(crand, 2, mean)), "\n")
-cat(apply(ccpt, 2, mean), 2 * prod(apply(ccpt, 2, mean)) / sum(apply(ccpt, 2, mean)), "\n")
-cat(apply(cnb, 2, mean), 2 * prod(apply(cnb, 2, mean)) / sum(apply(cnb, 2, mean)), "\n")
-cat("---------------------- \n")
-# also report how many 100% mb discovery 
-
-
+for (target in vars) {
+  #target = "V1"
+  targetIndex = which(vars == target)
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  r1 = f(dag, data,di,arities,vars,target,n, debug = F)
+  r2 = f2(dag, data,di,arities,vars,target,n, debug = T)
+  cat(r1, "\n")
+  cat(r2, "\n")
+}
+# forward_greedy(data, arities, vars, n, target, "random", varCnt = di, targetAdptProbs = targetAdptProbs, debug = T)
+# str = local_extraction(dag, c(target, bnlearn::mb(dag, target)))
+# graphviz.plot(str)
+# mml_rand_str(str, data, vars, arities, targetAdptProbs, targetIndex, n)
 ```
 
 
-```{r}
-# check when single target with no other nodes, why don't mml_cpt = mml_nb?
-# the problem of mml_cpt is the approx of log(factorial)
-# use adpt code method for cpt, should increase acc 
-forward_greedy_fast(data, di, arities, n, target, debug = F)
-forward_greedy(data, arities, vars, n, target, mml_nb_adaptive, debug = F)
-```
 
 

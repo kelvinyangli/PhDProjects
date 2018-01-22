@@ -56,6 +56,11 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       break
     }
     
+    if (model == "random") {
+      mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
+                             length(mb) + 1, ".rds"))
+    }
+    
     # calculate mml of target given each unchecked node as input 
     for (i in 1:length(unCheckedIndices)) {
       inputIndices = c(mb, unCheckedIndices[i])
@@ -69,8 +74,6 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       } else if (model == "nb") {#nb
         msgLenCurrent = mml_nb_adaptive(data, arities, targetIndex, inputIndices)
       } else if (model == "random") {#random
-        mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
-                               length(inputIndices), ".rds"))
         l = 0 
         for (j in 1:length(mbpts)) {
           
