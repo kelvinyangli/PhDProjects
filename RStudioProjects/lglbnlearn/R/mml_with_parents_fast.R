@@ -35,7 +35,8 @@ mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, ar
       cumSum = single_par_cal(indexListPerNodePerValue, cachedIndicesList[[i]], arityChild, targetIndex, 
                               base)
       # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
-      logNumerator = log_gamma((N_pa_i + arityChild - 1 + 1))
+      # log_gamma(n+1) is an approximation of log(factorial(n))
+      logNumerator = log_gamma((N_pa_i + arityChild))
       nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
     } 
     
@@ -49,7 +50,7 @@ mml_with_parents_fast = function(indexListPerNodePerValue, cachedIndicesList, ar
         cumSum = multi_pars_cal(indexListPerNodePerValue, cachedIndicesList[[j]], arityChild, targetIndex, 
                                 base)
         # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
-        logNumerator = log_gamma((N_pa_i + arityChild - 1) + 1) 
+        logNumerator = log_gamma(N_pa_i + arityChild) 
         nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
         j = j + 1
       } # end for ii

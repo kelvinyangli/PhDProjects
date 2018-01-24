@@ -53,7 +53,8 @@ mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, paren
     } # end if else 
     
     # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
-    logNumerator = log_gamma((N_pa_i + arityChild - 1) + 1)
+    # log_gamma(n+1) is an approximation of log(factorial(n))
+    logNumerator = log_gamma(N_pa_i + arityChild)
     #cat(logNumerator - logConstant - cumSum, "\n")
     nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
     

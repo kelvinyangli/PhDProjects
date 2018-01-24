@@ -79,6 +79,7 @@ adpt_code_prob = function(data, arities, xIndex, yIndices, targetIndex, n) {
 }
 
 # check f when there is a sp
+# this code works for general dags as well
 mml_rand_str = function(str, data, vars, arities, targetAdptProbs, targetIndex, n) {
 
   tempVars = bnlearn::nodes(str)
@@ -156,7 +157,7 @@ f = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
         }
         
         if (debug) cat(i, res, is_substr(dag, pt), "\n")
-        #l = l + res
+        #l = l + res145.29
         l[i] = res
         #cat(l, "\n")
       }
@@ -199,9 +200,12 @@ f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
   targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
   unchecked = vars[vars != target]
   cmb = c()
-  #min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
   min_l = mml_nb_adaptive(data, arities, targetIndex, c())
-  if (debug) cat(target, ":", min_l, "\n")
+  str = local_extraction(dag, c(target, bnlearn::mb(dag, target)))
+  l_perfect = mml_rand_str(str, data, vars, arities, targetAdptProbs, targetIndex, n)
+  
+  if (debug) cat(target, "perfect model:", bnlearn::mb(dag, target), "--score:", l_perfect, "\n")
+  if (debug) cat("empty model:", min_l, "\n")
   repeat {
     
     temp_l = c()
@@ -210,7 +214,6 @@ f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
     for (x in unchecked) {
       
       tempVars = c(cmb, x, target)
-      #l = 0 
       l = rep(0, length(mbpts))
       for (i in 1:length(mbpts)) {
         
@@ -234,22 +237,27 @@ f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
         }
         
         if (debug) cat(i, res, is_substr(dag, pt), "\n")
-        #l = l + res
         l[i] = res
-        #cat(l, "\n")
       }
       
-      #avg_l = l / length(mbpts)
-      if (length(mbpts) == 23) {
-        l = l[-c(15,16,19,20,23)] # remove less probable str for now  
-      } else if (length(mbpts) == 6) {
+      if (length(tempVars) == 4) {
+        #l = l[-c(15,16,19,20,23)] # remove less probable str for now  
+        ntoms = c(6,2,2,2,2,2,2,6,3,5,3,5,3,5,3,5,3,5,3,5,6,6,6)
+        sec_l = c(l[1:4], mean(l[5:8]), mean(l[9:10]), mean(l[11:12]), mean(l[13:14]), mean(l[17:18]), l[21:22])
+        sec_prior = c(ntoms[1:4], sum(ntoms[5:8]), sum(ntoms[9:10]), sum(ntoms[11:12]), sum(ntoms[13:14]), sum(ntoms[17:18]), ntoms[21:22]) / sum(ntoms[-c(15,16,19,20,23)])
+      } else if (length(tempVars) == 3) {
+        ntoms = c(2, 1, 1, 2, 2)
         l = l[-6]
+        sec_l = c(l[1], mean(l[2:4]), l[5])
+        sec_prior = c(ntoms[1], sum(ntoms[2:4]), ntoms[5]) / sum(ntoms)
+      } else if (length(tempVars) == 2) {
+        sec_l = mean(l)
+        sec_prior = 1
       }
       
-      ll = sum(l) / l
-      avg_l = sum(l * ll / sum(ll))
       
-      #avg_l = min(l)
+      avg_l = sum(sec_l * sec_prior)
+      
       if (debug) cat(c(cmb, x), "--", avg_l, "\n")
       
       temp_l = c(temp_l, avg_l)
@@ -261,7 +269,7 @@ f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
         
       toadd = unchecked[which.min(temp_l)]
       cmb = c(cmb, toadd)
-      if (debug) cat("cmb:", cmb, "\n")
+      if (debug) cat("cmb:", cmb, "--", local_min_l, "\n")
       unchecked = unchecked[-which.min(temp_l)]
       if (debug) cat("unchked", unchecked, "\n")
       min_l = local_min_l
@@ -321,9 +329,9 @@ is_substr = function(dag, localStr) {
 ```
 
 ```{r}
-dag = randDag(5, 2)
+dag = randDag(10, 3)
 cpts = randCPTs(dag, 3, 1)
-n = 50
+n = 500
 data = rbn(cpts, n)
 # data = read.csv("~/Documents/Experiments/UAI_exp/")
 # data = numeric2categorical(data)
@@ -341,9 +349,11 @@ for (target in vars) {
   #cat(i, "\n")
   targetIndex = which(vars == target)
   targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
-  lrand2[[i]] = f(data,di,arities,vars,target,n)
-  lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di, 
-                              targetAdptProbs = targetAdptProbs, debug = T)
+  # f2 overally reduce mml score, not penalizing bad model and in favor to good models
+  # need to think about a more sutiable prior
+  lrand2[[i]] = f2(dag, data,di,arities,vars,target,n)
+  lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
+                              targetAdptProbs = targetAdptProbs, debug = F)
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
   lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
@@ -454,6 +464,9 @@ cat(arand2[-c(allPa, allCh)], "\n")
 cat(acpt[-c(allPa, allCh)], "\n")
 cat(anb[-c(allPa, allCh)], "\n")
 ```
+## observations:
+## when a true mb node is included for testing, the cpt model has lower score than the strs that are extended from the str that has the lowest score in the previous step; when a non-mb node is included for testing, the cpt model has higher score than the strs that are extended from the ...
+
 
 ## Testing mml_rand against cpt and nb on mb with pa and ch only. The first test fixes parameters but vary data, the edit dist are 3.82, 3.58, 2.8 for rand, cpt and nb over 50 datasets of 100 samples. The second test varies cpts and data, edit dist are 4, 3.54, 2.68 respectively. mml_nb wins!
 
@@ -538,12 +551,16 @@ for (t in 1:50) {
 w / t
 ```
 
-## using TOM prior in camml; also through in the true str score, it should win in most case, perhaps loss in small samples; testing random; sanity check, should be uniform, 100 smaples uniform is 100. 
+## using TOM prior in camml (f2 uses tom prior adds up to the sec level, results are occationaly better); 
+## also through in the true str score, it should win in most case, perhaps loss in small samples (exp results confirmed this, (subgraph of) true model has better score most of the time, but not always expecially under small samples); 
+## testing random; sanity check, should be uniform, 100 smaples uniform is 100. 
+
+## need a function to calculate tom prior, a function to generate sec
 ```{r}
 dag = randDag(7, 3)
 #graphviz.plot(dag)
 cpts = randCPTs(dag, 3, 1)
-n = 200
+n = 100
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -556,7 +573,7 @@ for (target in vars) {
   targetIndex = which(vars == target)
   targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
   r1 = f(dag, data,di,arities,vars,target,n, debug = F)
-  r2 = f2(dag, data,di,arities,vars,target,n, debug = T)
+  r2 = f2(dag, data,di,arities,vars,target,n, debug = F)
   cat(r1, "\n")
   cat(r2, "\n")
 }
@@ -565,6 +582,52 @@ for (target in vars) {
 # graphviz.plot(str)
 # mml_rand_str(str, data, vars, arities, targetAdptProbs, targetIndex, n)
 ```
+
+### testing true dag and true polytree's mml score
+```{r}
+vars = c("V1", "V2", "T")
+nvars = length(vars)
+dag = empty.graph(vars)
+dag = set.arc(dag, "T", "V1")
+dag = set.arc(dag, "T", "V2")
+dag = set.arc(dag, "V1", "V2")
+target = "T"
+targetIndex = which(vars == target)
+mbpts = readRDS("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs/2.rds")
+maxArity = 2
+n = 500
+nitr = 10
+r = rep(0, nitr)
+for (i in 1:nitr) {
+  l = rep(0, length(mbpts) + 1)
+  cpts = randCPTs(dag, maxArity, 1)
+  data = rbn(cpts, n)
+  arities = sapply(data, nlevels)
+  names(arities) = c()
+  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  l[length(l)] = mml_rand_str(dag, data, vars, arities, targetAdptProbs, targetIndex, n)
+  
+  for (j in 1:length(mbpts)) {
+    pt = mbpts[[j]]
+    dimnames(pt) = list(vars, vars)
+    pt = matrix2dag(pt)
+    l[j] = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
+  }
+  cat(l, "\n")
+  r[i] = which.min(l)
+}
+
+length(which(r == 1))
+length(which(r == 2))
+length(which(r == 3))
+length(which(r == 4))
+length(which(r == 5))
+length(which(r == 6))
+length(which(r == 7))
+
+```
+
+
 
 
 
