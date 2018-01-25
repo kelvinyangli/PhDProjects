@@ -17,15 +17,17 @@
 #' @param varCnt This parameter is for mml_cpt. As explained by argument name. 
 #' It is obtained by getting the detailed information of the given data using the function 
 #' count_occurance(). 
-#' @param targetAdptProbs This parameter is for mml_random. A matrix that stores the target's probability
-#' for each of its value and each data point. It is a arity(target) by n matrix. 
+#' @param targetProbsAdpt This parameter is for mml_random_adaptive(). A matrix that stores the target's 
+#' probability for each of its value at each data point. The matrix has dimension arity(target) by n. 
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 #' mml score. 
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective 
 #' function. 
+#' @keywords This function has dependencies on mml_cpt(), mml_logit(), mml_nb_adaptive(), 
+#' mml_rand_adaptive(). 
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, model, base = exp(1), sigma = 3, 
-                          dataNumeric = NULL, varCnt = NULL, targetAdptProbs = NULL, debug = FALSE) {
+                          dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL, debug = FALSE) {
   
   targetIndex = which(vars == target) # get index of the target node
   nvars = length(vars)
@@ -34,11 +36,17 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
   
   # initializing with empty model
   if (model == "cpt") {#cpt
+    
     minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, base = base)
+    
   } else if (model == "logit") {#logit
+    
     minMsgLen = mml_logit(data, arities, sampleSize, c(), target, sigma = sigma)
+    
   } else {# nb or random
+    
     minMsgLen = mml_nb_adaptive(data, arities, targetIndex, c())
+    
   }
   
   if (debug) {
@@ -49,58 +57,43 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
   # repeat the process of computing mml for remaining unCheckedIndices
   # if unCheckedIndices is empty or all msg len > min msg len then stop 
   repeat {
+    
     index = 0 # initialize index to 0
     
     if (length(unCheckedIndices) == 0) {
+      
       if (debug) cat("MB is full! \n")
       break
+      
     }
     
     if (model == "random") {
-      mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
+      
+      strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
                              length(mb) + 1, ".rds"))
+      
     }
     
     # calculate mml of target given each unchecked node as input 
     for (i in 1:length(unCheckedIndices)) {
+      
       inputIndices = c(mb, unCheckedIndices[i])
-      
-      # msg len with at least 1 parent
       if (model == "cpt") {# cpt
-        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, inputIndices, 
-                              targetIndex, base = base)
+        
+        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, inputIndices, targetIndex, base = base)
+        
       } else if (model == "logit") {#logit
+        
         msgLenCurrent = mml_logit(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
+        
       } else if (model == "nb") {#nb
+        
         msgLenCurrent = mml_nb_adaptive(data, arities, targetIndex, inputIndices)
+        
       } else if (model == "random") {#random
-        l = 0 
-        for (j in 1:length(mbpts)) {
-          
-          pt = mbpts[[j]]
-          dimnames(pt) = rep(list(vars[c(inputIndices, targetIndex)]), 2)
-          pt = matrix2dag(pt)
-          pa = bnlearn::parents(pt, target)
-          ch = bnlearn::children(pt, target)
-          if (length(pa) == length(inputIndices)) {
         
-            res = mml_cpt(varCnt, arities, sampleSize, which(vars %in% pa), targetIndex, base = exp(1))       
-            
-          } else if (length(ch) == length(inputIndices)) {
-          
-            res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
-            
-          } else {
-            
-            res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, sampleSize)
-            
-          }
-          
-          l = l + res
-      
-        }
-        
-        msgLenCurrent = l / length(mbpts)
+        msgLenCurrent = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, 
+                                          targetProbsAdpt, strList, inputIndices, debug = debug)
         
       }# end else if 
       
@@ -110,26 +103,39 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       # and record the current index
       # else go to the next available node
       if (msgLenCurrent < minMsgLen) { 
+        
         minMsgLen = msgLenCurrent
         index = i
-      }  
+        
+      }
+      
     } # end for each unchecked node
     
     if (index == 0) {# if no better choice then break 
+      
       if (debug) cat("Stop! No better choice for MB! \n")
       break 
+      
     } else {
+      
       if (debug) cat("add", vars[unCheckedIndices[index]], "into mb \n")
       # add the node index with the minimum msg len into mb and remove it from unCheckedIndices
       mb = c(mb, unCheckedIndices[index])
       if (debug) {
+        
         cat("current mb is {", vars[mb], "} with msg len", minMsgLen, "\n")
         cat("------------------------------- \n")
+        
       }
+      
       unCheckedIndices = unCheckedIndices[-index]
+      
     } 
+    
   } # end repeat
   
   return(vars[mb])
   
 }
+
+

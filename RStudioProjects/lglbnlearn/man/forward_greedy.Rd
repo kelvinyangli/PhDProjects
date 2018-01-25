@@ -5,7 +5,7 @@
 \title{A forward greedy search function}
 \usage{
 forward_greedy(data, arities, vars, sampleSize, target, model, base = exp(1),
-  sigma = 3, dataNumeric = NULL, varCnt = NULL, targetAdptProbs = NULL,
+  sigma = 3, dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL,
   debug = FALSE)
 }
 \arguments{
@@ -33,8 +33,8 @@ Variable values start from 0.}
 It is obtained by getting the detailed information of the given data using the function 
 count_occurance().}
 
-\item{targetAdptProbs}{This parameter is for mml_random. A matrix that stores the target's probability
-for each of its value and each data point. It is a arity(target) by n matrix.}
+\item{targetProbsAdpt}{This parameter is for mml_random_adaptive(). A matrix that stores the target's 
+probability for each of its value at each data point. The matrix has dimension arity(target) by n.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 mml score.}
@@ -48,3 +48,12 @@ This is a forward greedy seearch function that can be used incorprate with an ob
 cpt, logit, or naive bayes (adaptive code) to discovery Markov blanket candidates. It is a greedy search, so the 
 function will stop if there is no better option to add into the current Markov blanket.
 }
+\keyword{This}
+\keyword{dependencies}
+\keyword{function}
+\keyword{has}
+\keyword{mml_cpt(),}
+\keyword{mml_logit(),}
+\keyword{mml_nb_adaptive(),}
+\keyword{mml_rand_adaptive().}
+\keyword{on}

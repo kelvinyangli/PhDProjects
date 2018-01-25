@@ -16,102 +16,6 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 ```
 
 ```{r}
-# a function to calculate the log of probability according to a pre-cal prob table and data
-log_score = function(data, adptProbs, targetIndex, n) {
-  
-  logScore = 0  
-  for (i in 1:n) {
-    
-    targetValue = as.numeric(data[i, targetIndex])
-    logScore = logScore + log(adptProbs[targetValue, i])
-      
-  }
-  
-  return(logScore)
-  
-}
-
-adpt_code_prob_no_pa = function(data, arities, xIndex, n) {
-  
-  probs = matrix(0.5, arities[xIndex], n)
-  cnt = rep(1, arities[xIndex]) # initializing cnt with 1
-  for (i in 1:(nrow(data) - 1)) {
-    
-    xValue = as.numeric(data[i, xIndex])
-    cnt[xValue] = cnt[xValue] + 1 # updating cnt
-    probs[, i + 1] = cnt / sum(cnt)
-    
-  }
-  
-  return(probs)
-  
-}
-
-
-adpt_code_prob = function(data, arities, xIndex, yIndices, targetIndex, n) {
-  
-  probs = matrix(0.5, arities[targetIndex], n) 
-  cnt = rep(1, arities[xIndex]) # initializing cnt with 1
-  for (i in rev(yIndices)) {
-    
-    # make a high-dim list to store cnt
-    # each lvl in the list corresponds to a value of one parent of x
-    cnt = rep(list(cnt), arities[i])
-    
-  }
-  
-  for (i in 1:(nrow(data) - 1)) {# start adaptive counting for each data point
-  
-    indices = as.numeric(data[i, c(yIndices, xIndex)])
-    cnt[[matrix(indices, 1)]] = cnt[[matrix(indices, 1)]] + 1 # updating cnt
-    indices = as.numeric(data[i + 1, c(yIndices, xIndex)]) # computing prob from 2nd data point
-    for (k in 1:arities[targetIndex]) {# loop throughe each value of the target 
-      
-      indices[which(c(yIndices, xIndex) == targetIndex)] = k
-      probs[k, i + 1] = cnt[[matrix(indices, 1)]] / sum(cnt[[matrix(indices[-length(indices)], 1)]])
-      
-    }
-    
-  } # end adaptive counting
-  
-  return(probs)
-  
-}
-
-# check f when there is a sp
-# this code works for general dags as well
-mml_rand_str = function(str, data, vars, arities, targetAdptProbs, targetIndex, n) {
-
-  tempVars = bnlearn::nodes(str)
-  logScore = 0 
-  margProbs = matrix(1, arities[targetIndex], n)
-  for (x in tempVars) {
-    
-    # if it is the target or it has at least one parent,  
-    # then get the adaptive count of it given its parent set
-    xIndex = which(vars == x)
-    pa = bnlearn::parents(str, x)
-    paIndices = which(vars %in% pa)
-    
-    if (length(pa) > 0) {
-      
-      adptProbs = adpt_code_prob(data, arities, xIndex, paIndices, targetIndex, n)
-      logScore = logScore + log_score(data, adptProbs, targetIndex, n)
-      margProbs = margProbs * adptProbs
-    
-    } else if (x == vars[targetIndex]) {
-      
-      logScore = logScore + log_score(data, targetAdptProbs, targetIndex, n)
-      margProbs = margProbs * targetAdptProbs
-      
-    }
-        
-  }
-  
-  return(-(logScore - sum(log(apply(margProbs, 2, sum)))))
-  
-}
-
 # this code can be speed up by calculating probs(target) once and re-use it 
 # since the only case we cal the probs of a node that has no parents is when this node is the target
 # inf appear in mml score due to rounding error, fixed by removing round to 2nd digit
@@ -119,7 +23,7 @@ mml_rand_str = function(str, data, vars, arities, targetAdptProbs, targetIndex, 
 f = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
   
   targetIndex = which(vars == target)
-  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   unchecked = vars[vars != target]
   cmb = c()
   #min_l = mml_cpt(di, arities, n, c(), targetIndex, base = exp(1))
@@ -140,8 +44,8 @@ f = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
         pt = mbpts[[i]]
         dimnames(pt) = rep(list(tempVars), 2)
         pt = matrix2dag(pt)
-        pa = bnlearn::parents(pt, target)
-        ch = bnlearn::children(pt, target)
+        pa = bnlearn::parents(str, vars[targetIndex])
+        ch = bnlearn::children(str, vars[targetIndex])
         if (length(pa) == (length(tempVars) - 1)) {
           
           res = mml_cpt(di, arities, n, which(vars %in% pa), targetIndex, base = exp(1))        
@@ -152,20 +56,19 @@ f = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
           
         } else {
           
-          res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
+          res = mml_fixed_str_adaptive(data, vars, arities, n, targetIndex, targetProbsAdpt, pt)
       
         }
         
         if (debug) cat(i, res, is_substr(dag, pt), "\n")
-        #l = l + res145.29
         l[i] = res
         #cat(l, "\n")
       }
       
       #avg_l = l / length(mbpts)
-      ll = sum(l) / l
-      avg_l = sum(l * ll / sum(ll))
-      
+      #ll = sum(l) / l
+      #avg_l = sum(l * ll / sum(ll))
+      avg_l = msg_len_ave(l)
       #avg_l = min(l)
       if (debug) cat(c(cmb, x), "--", avg_l, "\n")
       
@@ -193,16 +96,18 @@ f = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
   return(cmb)
 
 }
+```
 
+```{r}
 f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
   
   targetIndex = which(vars == target)
-  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   unchecked = vars[vars != target]
   cmb = c()
   min_l = mml_nb_adaptive(data, arities, targetIndex, c())
   str = local_extraction(dag, c(target, bnlearn::mb(dag, target)))
-  l_perfect = mml_rand_str(str, data, vars, arities, targetAdptProbs, targetIndex, n)
+  l_perfect = mml_fixed_str_adaptive(data, vars, arities, n, targetIndex, targetProbsAdpt, str)
   
   if (debug) cat(target, "perfect model:", bnlearn::mb(dag, target), "--score:", l_perfect, "\n")
   if (debug) cat("empty model:", min_l, "\n")
@@ -232,7 +137,7 @@ f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
           
         } else {
           
-          res = mml_rand_str(pt, data, vars, arities, targetAdptProbs, targetIndex, n)
+          res = mml_fixed_str_adaptive(data, vars, arities, n, targetIndex, targetProbsAdpt, pt)
       
         }
         
@@ -329,9 +234,9 @@ is_substr = function(dag, localStr) {
 ```
 
 ```{r}
-dag = randDag(10, 3)
+dag = randDag(5, 3)
 cpts = randCPTs(dag, 3, 1)
-n = 500
+n = 100
 data = rbn(cpts, n)
 # data = read.csv("~/Documents/Experiments/UAI_exp/")
 # data = numeric2categorical(data)
@@ -348,12 +253,13 @@ for (target in vars) {
   
   #cat(i, "\n")
   targetIndex = which(vars == target)
-  targetAdptProbs = adpt_code_prob_no_pa(data, arities, targetIndex, n)
+  targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   # f2 overally reduce mml score, not penalizing bad model and in favor to good models
   # need to think about a more sutiable prior
-  lrand2[[i]] = f2(dag, data,di,arities,vars,target,n)
+  lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
+  #lrand[[i]] = f(dag,data,di,arities,vars,target,n)
   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
-                              targetAdptProbs = targetAdptProbs, debug = F)
+                              targetProbsAdpt = targetProbsAdpt, debug = F)
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
   lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
