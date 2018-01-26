@@ -5,7 +5,7 @@
 \title{MML random Markov blanket models using adaptive code approach}
 \usage{
 mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex,
-  targetProbsAdpt, strList, mbIndices, debug = FALSE)
+  targetProbsAdpt, strList, mbIndices, weights, debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -25,10 +25,12 @@ count_occurance().}
 \item{targetProbsAdpt}{A matrix that stores the target's probability for each of its value at each 
 data point. The matrix has dimension arity(target) by n.}
 
-\item{strList}{A list of random (or all) Markov blanket structures to go through. Each structure is 
+\item{strList}{A list of random (or all) Markov blanket models (structures) to go through. Each structure is 
 stored in a matrix format.}
 
 \item{mbIndices}{The indices of potential Markov blanket variables.}
+
+\item{weights}{A vector of weights for random Markov blanket models.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 mml score.}
@@ -52,5 +54,5 @@ under each Markov blanket model. The output is a weighted average over all messa
 \keyword{mml_cpt(),}
 \keyword{mml_fixed_str_adaptive(),}
 \keyword{mml_nb_adaptive(),}
-\keyword{msg_len_ave(),}
+\keyword{msg_len_weighted_avg(),}
 \keyword{on}

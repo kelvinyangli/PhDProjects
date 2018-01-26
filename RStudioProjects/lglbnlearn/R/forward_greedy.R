@@ -19,15 +19,20 @@
 #' count_occurance(). 
 #' @param targetProbsAdpt This parameter is for mml_random_adaptive(). A matrix that stores the target's 
 #' probability for each of its value at each data point. The matrix has dimension arity(target) by n. 
+#' @param prior A character parameter with options "uniform", "tom" and "bayes" indicate the uniform 
+#' prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths 
+#' for random structures. The Bayesian prior starts with the uniform prior then calculates the 
+#' posteriors and use them as priors for the next step.  
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 #' mml score. 
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective 
 #' function. 
 #' @keywords This function has dependencies on mml_cpt(), mml_logit(), mml_nb_adaptive(), 
-#' mml_rand_adaptive(). 
+#' mml_rand_str_adaptive(). 
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, model, base = exp(1), sigma = 3, 
-                          dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL, debug = FALSE) {
+                          dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL, prior = "uniform", 
+                          debug = FALSE) {
   
   targetIndex = which(vars == target) # get index of the target node
   nvars = length(vars)
@@ -72,6 +77,12 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
                              length(mb) + 1, ".rds"))
       
+      if (prior == "uniform") {
+        
+        weights = rep(1 / length(strList), length(strList))
+         
+      }
+      
     }
     
     # calculate mml of target given each unchecked node as input 
@@ -93,7 +104,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       } else if (model == "random") {#random
         
         msgLenCurrent = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, 
-                                          targetProbsAdpt, strList, inputIndices, debug = debug)
+                                          targetProbsAdpt, strList, inputIndices, weights, debug = debug)
         
       }# end else if 
       

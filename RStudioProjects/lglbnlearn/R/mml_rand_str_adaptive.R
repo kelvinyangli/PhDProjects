@@ -12,9 +12,10 @@
 #' @param targetIndex The target node's index in vars, whose Markov blanket we are interested in. 
 #' @param targetProbsAdpt A matrix that stores the target's probability for each of its value at each 
 #' data point. The matrix has dimension arity(target) by n. 
-#' @param strList A list of random (or all) Markov blanket structures to go through. Each structure is 
+#' @param strList A list of random (or all) Markov blanket models (structures) to go through. Each structure is 
 #' stored in a matrix format. 
 #' @param mbIndices The indices of potential Markov blanket variables. 
+#' @param weights A vector of weights for random Markov blanket models. 
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 #' mml score. 
 #' @return The function outputs the weighted average message length over all given structures. Noticing it is 
@@ -22,10 +23,10 @@
 #' message length, not to average the message lengths directly. This is done by the function msg_len_ave() 
 #' function.
 #' @keywords This function has dependencies on mml_cpt(), mml_nb_adaptive(), mml_fixed_str_adaptive(),
-#' msg_len_ave(), matrix2dag(), is_substr().
+#' msg_len_weighted_avg(), matrix2dag(), is_substr().
 #' @export
 mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, targetIndex, targetProbsAdpt, 
-                             strList, mbIndices, debug = FALSE) {
+                             strList, mbIndices, weights, debug = FALSE) {
   
   l = rep(0, length(strList)) 
   for (j in 1:length(strList)) {# calculate mml(T|mb) for each structure in the given structure list
@@ -56,7 +57,9 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
   
   # the function msg_len_ave averages the probabilities then returns an averaged message length based 
   # on the averaged probability
-  avgL = msg_len_ave(l) 
+  # avgL = msg_len_ave(l) 
+  
+  avgL = msg_len_weighted_avg(l, weights)
   return(avgL)
   
 }

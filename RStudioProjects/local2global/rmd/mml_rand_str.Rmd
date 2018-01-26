@@ -234,24 +234,34 @@ is_substr = function(dag, localStr) {
 ```
 
 ```{r}
-dag = randDag(5, 3)
-cpts = randCPTs(dag, 3, 1)
+#for (itr in 1:3) {
+  
+nvars = 5
+maxpa = 2
+dag_sd = randSeed()
+set.seed(87843)
+dag = randDag(nvars, maxpa)
+
+maxarity = 2
+beta = 1
+cpts_sd = randSeed()
+set.seed(479177)
+cpts = randCPTs(dag, maxarity, beta)
+
 n = 100
+data_sd = randSeed()
+set.seed(544837)
 data = rbn(cpts, n)
-# data = read.csv("~/Documents/Experiments/UAI_exp/")
-# data = numeric2categorical(data)
-# n = nrow(data)
 vars = colnames(data)
 arities = sapply(data, nlevels)
 names(arities) = c()
 di = count_occurance(data, arities)
 nvars = length(vars)
-
 i = 1
 lrand = lrand2 = lcpt = lnb = list()
 for (target in vars) {
   
-  #cat(i, "\n")
+  cat(i, "\n")
   targetIndex = which(vars == target)
   targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   # f2 overally reduce mml score, not penalizing bad model and in favor to good models
@@ -259,7 +269,7 @@ for (target in vars) {
   lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
   #lrand[[i]] = f(dag,data,di,arities,vars,target,n)
   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, debug = F)
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
   lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
@@ -312,64 +322,89 @@ for (target in vars) {
   
 }
 
+dag_stats = c(nvars, maxpa, maxarity, n)
 
-#graphviz.plot(dag)
-cat("------------stats------------ \n")
-cat("m=", mean(m), "; p=", mean(p), "; c=", mean(c), "; s=", mean(s), "\n")
-cat("----------edit dist---------- \n")
-cat("rand:", mean(arand), "+/-", round(1.96 * sd(arand) / sqrt(n), 2), "\n")
-cat("rand2:", mean(arand2), "+/-", round(1.96 * sd(arand2) / sqrt(n), 2), "\n")
-cat("cpt:", mean(acpt), "+/-", round(1.96 * sd(acpt) / sqrt(n), 2), "\n")
-cat("nb:", mean(anb), "+/-", round(1.96 * sd(anb) / sqrt(n), 2), "\n")
-cat("-------pre rec f-measure-------- \n")
-pr = apply(crand, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-pr = apply(crand2, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-pr = apply(ccpt, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-pr = apply(cnb, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-cat("---------sym chk------------- \n")
-cat("----------edit dist---------- \n")
-cat("rand:", mean(aarand), "+/-", round(1.96 * sd(aarand) / sqrt(n), 2), "\n")
-cat("rand2:", mean(aarand2), "+/-", round(1.96 * sd(aarand2) / sqrt(n), 2), "\n")
-cat("cpt:", mean(aacpt), "+/-", round(1.96 * sd(aacpt) / sqrt(n), 2), "\n")
-cat("nb:", mean(aanb), "+/-", round(1.96 * sd(aanb) / sqrt(n), 2), "\n")
-cat("-------pre rec f-measure-------- \n")
-pr = apply(ccrand, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-pr = apply(ccrand2, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-pr = apply(cccpt, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-pr = apply(ccnb, 2, mean)
-cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
-cat("------------break down---------- \n")
-ord = order(m)
-cat("mb size:", m[ord], "\n")
-cat("rand:", arand[ord], "\n")
-cat("rand2:", arand2[ord], "\n")
-cat("cpt:", acpt[ord], "\n")
-cat("nb:", anb[ord], "\n")
-cat("-------------all pa-------------\n")
-allPa = which(m == p)
-cat(arand[allPa], "\n")
-cat(arand2[allPa], "\n")
-cat(acpt[allPa], "\n")
-cat(anb[allPa], "\n")
-cat("-------------all ch-------------\n")
-allCh = which(m == c)
-cat(arand[allCh], "\n")
-cat(arand2[allCh], "\n")
-cat(acpt[allCh], "\n")
-cat(anb[allCh], "\n")
-cat("-------------mixture-------------\n")
-cat(arand[-c(allPa, allCh)], "\n")
-cat(arand2[-c(allPa, allCh)], "\n")
-cat(acpt[-c(allPa, allCh)], "\n")
-cat(anb[-c(allPa, allCh)], "\n")
+ed_cpt = paste(round(mean(acpt), 2), round(1.96 * sd(acpt) / sqrt(n), 2))
+ed_nb = paste(round(mean(anb), 2), round(1.96 * sd(anb) / sqrt(n), 2))
+ed_rand = paste(round(mean(arand), 2), round(1.96 * sd(arand) / sqrt(n), 2))
+ed_rand2 = paste(round(mean(arand2), 2), round(1.96 * sd(arand2) / sqrt(n), 2))
+
+line = matrix(c(dag_stats, ed_cpt, ed_nb, ed_rand, ed_rand2), 1, 8)
+#write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+
+pred_cpt = paste(round(apply(ccpt, 2, mean), 2), collapse = " ")
+pred_nb = paste(round(apply(cnb, 2, mean), 2), collapse = " ")
+pred_rand = paste(round(apply(crand, 2, mean), 2), collapse = " ")
+pred_rand2 = paste(round(apply(crand2, 2, mean), 2), collapse = " ")
+
+line = matrix(c(0, dag_sd, cpts_sd, data_sd, pred_cpt, pred_nb, pred_rand, pred_rand2), 1, 8)
+#write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+
+#}
 ```
+
+
+```{r}
+# #graphviz.plot(dag)
+# cat("------------stats------------ \n")
+# cat("m=", mean(m), "; p=", mean(p), "; c=", mean(c), "; s=", mean(s), "\n")
+# cat("----------edit dist---------- \n")
+# cat("rand:", mean(arand), "+/-", round(1.96 * sd(arand) / sqrt(n), 2), "\n")
+# cat("rand2:", mean(arand2), "+/-", round(1.96 * sd(arand2) / sqrt(n), 2), "\n")
+# cat("cpt:", mean(acpt), "+/-", round(1.96 * sd(acpt) / sqrt(n), 2), "\n")
+# cat("nb:", mean(anb), "+/-", round(1.96 * sd(anb) / sqrt(n), 2), "\n")
+# cat("-------pre rec f-measure-------- \n")
+# pr = apply(crand, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# pr = apply(crand2, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# pr = apply(ccpt, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# pr = apply(cnb, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# cat("---------sym chk------------- \n")
+# cat("----------edit dist---------- \n")
+# cat("rand:", mean(aarand), "+/-", round(1.96 * sd(aarand) / sqrt(n), 2), "\n")
+# cat("rand2:", mean(aarand2), "+/-", round(1.96 * sd(aarand2) / sqrt(n), 2), "\n")
+# cat("cpt:", mean(aacpt), "+/-", round(1.96 * sd(aacpt) / sqrt(n), 2), "\n")
+# cat("nb:", mean(aanb), "+/-", round(1.96 * sd(aanb) / sqrt(n), 2), "\n")
+# cat("-------pre rec f-measure-------- \n")
+# pr = apply(ccrand, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# pr = apply(ccrand2, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# pr = apply(cccpt, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# pr = apply(ccnb, 2, mean)
+# cat(round(pr, 2), round(2 * prod(pr) / sum(pr), 2), "\n")
+# cat("------------break down---------- \n")
+# ord = order(m)
+# cat("mb size:", m[ord], "\n")
+# cat("rand:", arand[ord], "\n")
+# cat("rand2:", arand2[ord], "\n")
+# cat("cpt:", acpt[ord], "\n")
+# cat("nb:", anb[ord], "\n")
+# cat("-------------all pa-------------\n")
+# allPa = which(m == p)
+# cat(arand[allPa], "\n")
+# cat(arand2[allPa], "\n")
+# cat(acpt[allPa], "\n")
+# cat(anb[allPa], "\n")
+# cat("-------------all ch-------------\n")
+# allCh = which(m == c)
+# cat(arand[allCh], "\n")
+# cat(arand2[allCh], "\n")
+# cat(acpt[allCh], "\n")
+# cat(anb[allCh], "\n")
+# cat("-------------mixture-------------\n")
+# cat(arand[-c(allPa, allCh)], "\n")
+# cat(arand2[-c(allPa, allCh)], "\n")
+# cat(acpt[-c(allPa, allCh)], "\n")
+# cat(anb[-c(allPa, allCh)], "\n")
+```
+
+
+
 ## observations:
 ## when a true mb node is included for testing, the cpt model has lower score than the strs that are extended from the str that has the lowest score in the previous step; when a non-mb node is included for testing, the cpt model has higher score than the strs that are extended from the ...
 

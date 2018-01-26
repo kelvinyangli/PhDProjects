@@ -6,7 +6,7 @@
 \usage{
 forward_greedy(data, arities, vars, sampleSize, target, model, base = exp(1),
   sigma = 3, dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL,
-  debug = FALSE)
+  prior = "uniform", debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -36,6 +36,11 @@ count_occurance().}
 \item{targetProbsAdpt}{This parameter is for mml_random_adaptive(). A matrix that stores the target's 
 probability for each of its value at each data point. The matrix has dimension arity(target) by n.}
 
+\item{prior}{A character parameter with options "uniform", "tom" and "bayes" indicate the uniform 
+prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths 
+for random structures. The Bayesian prior starts with the uniform prior then calculates the 
+posteriors and use them as priors for the next step.}
+
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
 mml score.}
 }
@@ -55,5 +60,5 @@ function will stop if there is no better option to add into the current Markov b
 \keyword{mml_cpt(),}
 \keyword{mml_logit(),}
 \keyword{mml_nb_adaptive(),}
-\keyword{mml_rand_adaptive().}
+\keyword{mml_rand_str_adaptive().}
 \keyword{on}
