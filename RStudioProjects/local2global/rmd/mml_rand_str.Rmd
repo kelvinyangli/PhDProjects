@@ -15,7 +15,7 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
-## Testing on real models
+## Testing on real models. Due to computation time, only tested on the 1st dataset for 500 samples. In terms of the sum of edit distance over all vars, cpt 24, nb 27, rand 20. 
 ```{r}
 dir = "~/Documents/Experiments/UAI_exp/child/"
 dag = readRDS(paste0(dir, "dag/child.rds"))
@@ -30,24 +30,27 @@ for (i in 1:nvars) {
   mbtrue[[i]] = bnlearn::mb(dag, vars[i])
 }
 
-ed = rep(0, nvars)
+edcpt = edrand = ednb = rep(0, nvars)
 ed = rep(list(ed), length(datasets))
 
 for (i in 1:length(datasets)) {
   
-  mbrand = list()
+  mbcpt = mbnb = mbrand = list()
   data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[i]))
   data = numeric2categorical(data)
   arities = sapply(data, nlevels)
   names(arities) = c()
   di = count_occurance(data, arities)
-  for (j in 7:7) {
-    cat(j, "\n")
-    targetProbsAdpt = probs_adaptive(data, arities, n, j)
-    mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)  
-    ed[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
-    
+  for (j in 1:nvars) {
+    # cat(j, "\n")
+    # targetProbsAdpt = probs_adaptive(data, arities, n, j)
+    # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
+    #                           targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)  
+    # ed[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+    # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
+    # edcpt[j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
+    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
+    ednb[j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
   }
   
 }
