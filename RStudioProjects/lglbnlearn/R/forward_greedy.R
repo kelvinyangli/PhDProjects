@@ -76,6 +76,13 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       
       strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
                              length(mb) + 1, ".rds"))
+      # randomly sample several structures if there are too many
+      if (length(strList) > 10) {
+        
+        strIndices = sample(length(strList), 10) 
+        strList = strList[strIndices]
+        
+      }
       
       if (prior == "uniform") {
         
