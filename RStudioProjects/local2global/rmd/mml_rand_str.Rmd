@@ -15,6 +15,7 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
+## Splitting MBPTs into SECs.
 ```{r}
 for (m in 1:7) {
   mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", m, ".rds"))
@@ -36,6 +37,20 @@ for (m in 1:7) {
   #cat(m, "--", length(mbpts), "--", length(ecs), "\n")
   saveRDS(ecsInd, paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/", m, ".rds"))
   saveRDS(ecs, paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECs/", m, ".rds"))
+}
+
+ind = list()
+for (m in 1:7) {
+  temp = c()
+  mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECs/", m, ".rds"))
+  for (i in 1:length(mbpts)) {
+    str = mbpts[[i]]
+    if (sum(str[1:(ncol(str) - 2), ncol(str) - 1]) > 0) {
+      temp = c(temp, i)
+    }
+  }
+  cat(temp, "\n")
+  ind[[m]] = temp
 }
 ```
 
@@ -73,7 +88,7 @@ for (i in 1:length(datasets)) {
     cat(i, "--", j, "\n")
     targetProbsAdpt = probs_adaptive(data, arities, n, j)
     mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
     
     # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
@@ -97,16 +112,16 @@ for (i in 1:length(datasets)) {
 #   ednb_sym[j] = mbEditDist(mbtrue[[j]], mbnb_sym[[j]], vars[j], vars)
 # }
 
-# model = "mml_rand"
-# files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/500/without_symmetry/"))
-# for (i in 1:length(files)) {
-#   mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/500/without_symmetry/", files[i]))
-#   for (j in 1:length(mbrand)) {
-#     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
-#   }
-# }
-# mean(unlist(lapply(edrand, sum)))
-# round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
+model = "mml_rand"
+files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/with_symmetry/"))
+for (i in 1:length(files)) {
+  mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/with_symmetry/", files[i]))
+  for (j in 1:length(mbrand)) {
+    edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+  }
+}
+mean(unlist(lapply(edrand, sum)))
+round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
 ```
 
 ## An alternative mml_rand function that uses differnt prior for averaging msg len

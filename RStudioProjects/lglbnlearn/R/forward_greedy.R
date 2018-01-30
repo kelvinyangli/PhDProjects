@@ -27,7 +27,7 @@
 #' mml score. 
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective 
 #' function. 
-#' @keywords This function has dependencies on mml_cpt(), mml_logit(), mml_nb_adaptive(), 
+#' @keywords This function has dependencies on resample(), mml_cpt(), mml_logit(), mml_nb_adaptive(), 
 #' mml_rand_str_adaptive(). 
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, model, base = exp(1), sigma = 3, 
@@ -42,6 +42,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
 
     cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
     cachInd = 1 # starting cachPTs index from 1
+    nSECs = c(1, 4, 14, 64, 332, 1924, 12294) # give the number of SECs for each mb size
+    ignored = readRDS("~/Documents/PhDProjects/RStudioProjects/local2global/ignored_strs.rds")
 
   }
   
@@ -80,15 +82,25 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
     
     if (model == "random") {
       
-      strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
-                             length(mb) + 1, ".rds"))
-      # randomly sample several structures if there are too many
-      if (length(strList) > 10) {
+      # random sampling over SEC space if there are more than 10 SECs
+      if (nSECs[length(mb) + 1] > 10) {
         
-        strIndices = sample(length(strList), 10) 
-        strList = strList[strIndices]
+        sampledSECIndices = sample((1:nSECs[length(mb) + 1])[-ignored[[length(mb) + 1]]], 10)
+        sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/", 
+                                     length(mb) + 1, ".rds"))[sampledSECIndices]
+        
+      } else {# else use all SECs
+        
+        sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/", 
+                                     length(mb) + 1, ".rds"))
         
       }
+      
+      # sampling 1 structure from each sampled SEC 
+      # since strs belong to the same SEC have similar scores
+      sampledStrIndices = sapply(sampledSECs, resample, size = 1)
+      strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered//", 
+                               length(mb) + 1, ".rds"))[sampledStrIndices]
       
       if (prior == "uniform") {
         
@@ -96,7 +108,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
          
       }
       
-    }
+    } # end if "random"
     
     # calculate mml of target given each unchecked node as input 
     for (i in 1:length(unCheckedIndices)) {

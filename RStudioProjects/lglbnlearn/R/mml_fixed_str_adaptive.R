@@ -33,11 +33,13 @@ mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, 
       
       ind = which(names(cachPTs) == paste(c(curIndex, curPaIndices), collapse = ""))
       if (length(ind) > 0) {
-        cat(paste(c(curIndex, curPaIndices), collapse = ""), " using existing PT \n")
+        
+        #cat(paste(c(curIndex, curPaIndices), collapse = ""), " using existing PT \n")
         condProbsAdpt = cachPTs[[ind]]
         
       } else {# cach condProbsAdpt if it hasn't been cached
-        cat("cal new PT, name", paste(c(curIndex, curPaIndices), collapse = ""), "\n")
+        
+        #cat("cal new PT, name", paste(c(curIndex, curPaIndices), collapse = ""), "\n")
         condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, curIndex, curPaIndices)
         cachPTs[[cachInd]] = condProbsAdpt 
         # assign an unique name as primary key to look up existing cached PTs
