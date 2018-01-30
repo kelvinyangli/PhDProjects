@@ -26,7 +26,7 @@
 #' msg_len_weighted_avg(), matrix2dag(), is_substr().
 #' @export
 mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, targetIndex, targetProbsAdpt, 
-                             strList, mbIndices, weights, debug = FALSE) {
+                                 cachPTs, cachInd, strList, mbIndices, weights, debug = FALSE) {
   
   l = rep(0, length(strList)) 
   for (j in 1:length(strList)) {# calculate mml(T|mb) for each structure in the given structure list
@@ -46,7 +46,11 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
       
     } else {# if there is a mixture of parents, children and spouses
       
-      res = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, targetProbsAdpt, str)
+      lst = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, targetProbsAdpt, 
+                                   cachPTs, cachInd, str)
+      res = lst$llh
+      cachPTs = lst$cachPTs
+      cachInd = lst$cachInd
       
     }
     
@@ -55,12 +59,12 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
     
   }
   
-  # the function msg_len_ave averages the probabilities then returns an averaged message length based 
+  # the function msg_len_weighted_avg averages the probabilities then returns an averaged message length based 
   # on the averaged probability
-  # avgL = msg_len_ave(l) 
-  
   avgL = msg_len_weighted_avg(l, weights)
-  return(avgL)
+  lst = list(avgL = avgL, cachPTs = cachPTs, cachInd = cachInd)
+  
+  return(lst)
   
 }
 

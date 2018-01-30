@@ -5,7 +5,8 @@
 \title{MML random Markov blanket models using adaptive code approach}
 \usage{
 mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex,
-  targetProbsAdpt, strList, mbIndices, weights, debug = FALSE)
+  targetProbsAdpt, cachPTs, cachInd, strList, mbIndices, weights,
+  debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}

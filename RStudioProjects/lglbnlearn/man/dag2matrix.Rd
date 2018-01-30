@@ -2,12 +2,14 @@
 % Please edit documentation in R/dag2matrix.R
 \name{dag2matrix}
 \alias{dag2matrix}
-\title{A function to convert a dag from the bnlearn format to an adjacency matrix}
+\title{A function to convert a bnlearn format dag to its adjacency matrix}
 \usage{
 dag2matrix(dag)
 }
+\arguments{
+\item{dag}{A dag or partial dag in bnlearn format.}
+}
 \description{
-This converts a dag stored in the bnlearn format to an adjacency matrix contains 0s and 1s. A directed arc 
-V1 -> V2 has a corresponding value 1 at the matrix entry [v1, v2]. Matrix column and row names are in the order
-of bnlearn::nodes(dag).
+This function converts a bnlearn format dag to its adjacency matrix. The dag can be either directed or partially
+directed.
 }

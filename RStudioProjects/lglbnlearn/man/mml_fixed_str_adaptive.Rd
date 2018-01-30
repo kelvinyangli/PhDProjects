@@ -5,7 +5,7 @@
 \title{MML for a fixed Markov blanket model using adaptive code approach}
 \usage{
 mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex,
-  targetProbsAdpt, str)
+  targetProbsAdpt, cachPTs, cachInd, str)
 }
 \arguments{
 \item{data}{A categorical data set.}

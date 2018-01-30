@@ -3,6 +3,7 @@
 export(classification_accuracy_mb)
 export(cond_probs_adaptive)
 export(count_occurance)
+export(dag2matrix)
 export(edit_dist_mb)
 export(factor2numeric)
 export(fim_logit)

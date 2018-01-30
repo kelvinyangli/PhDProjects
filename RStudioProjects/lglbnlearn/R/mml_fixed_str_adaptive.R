@@ -14,9 +14,10 @@
 #' @return The function outputs the message length of a fixed structure. 
 #' @keywords This function has dependencies on cond_probs_adaptive(), log_prob_adaptive().  
 #' @export
-mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, targetProbsAdpt, str) {
+mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, targetProbsAdpt, 
+                                  cachPTs, cachInd, str) {
   
-  lp = 0 
+  lp = 0 # log probability
   # a matrix to store the normalizting constant in p(T|Xs)
   margProbs = matrix(1, arities[targetIndex], sampleSize)
   tempVars = bnlearn::nodes(str)
@@ -30,9 +31,24 @@ mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, 
     
     if (length(curPaIndices) > 0) {
       
-      condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, curIndex, curPaIndices)
+      ind = which(names(cachPTs) == paste(c(curIndex, curPaIndices), collapse = ""))
+      if (length(ind) > 0) {
+        cat(paste(c(curIndex, curPaIndices), collapse = ""), " using existing PT \n")
+        condProbsAdpt = cachPTs[[ind]]
+        
+      } else {# cach condProbsAdpt if it hasn't been cached
+        cat("cal new PT, name", paste(c(curIndex, curPaIndices), collapse = ""), "\n")
+        condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, curIndex, curPaIndices)
+        cachPTs[[cachInd]] = condProbsAdpt 
+        # assign an unique name as primary key to look up existing cached PTs
+        names(cachPTs)[cachInd] = paste(c(curIndex, curPaIndices), collapse = "")
+        cachInd = cachInd + 1 
+        
+      }
+      
       lp = lp + log_prob_adaptive(data, sampleSize, targetIndex, condProbsAdpt)
       margProbs = margProbs * condProbsAdpt
+      
       
     } else if (curIndex == targetIndex) {
       
@@ -43,8 +59,10 @@ mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, 
     
   }
   
-  # return log(p(T|Xs))
-  return(-(lp - sum(log(apply(margProbs, 2, sum)))))
+  
+  llh = -(lp - sum(log(apply(margProbs, 2, sum)))) # log(p(T|Xs))
+  lst = list(llh = llh, cachPTs = cachPTs, cachInd = cachInd)
+  return(lst)
   
 }
 

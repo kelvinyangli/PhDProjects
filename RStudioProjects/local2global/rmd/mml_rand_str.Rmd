@@ -15,11 +15,38 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
-## Testing on real models. Due to computation time, only tested on the 1st dataset for 500 samples. In terms of the sum of edit distance over all vars, cpt 24, nb 27, rand 20. 
+```{r}
+for (m in 1:7) {
+  mbpts = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", m, ".rds"))
+  ecs = ecsInd = list()
+  k = 2
+  ecs[[1]] = dag2matrix(cpdag(matrix2dag(mbpts[[1]])))
+  ecsInd[[1]] = 1
+  for (i in 2:length(mbpts)) {
+    res = dag2matrix(cpdag(matrix2dag(mbpts[[i]])))
+    ind = which(unlist(lapply(ecs, all.equal, current = res)) == "TRUE") 
+    if (length(ind) > 0) {
+      ecsInd[[ind]] = c(ecsInd[[ind]], i)
+    } else {
+      ecs[[k]] = res
+      ecsInd[[k]] = i
+      k = k + 1
+    }
+  }
+  #cat(m, "--", length(mbpts), "--", length(ecs), "\n")
+  saveRDS(ecsInd, paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/", m, ".rds"))
+  saveRDS(ecs, paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECs/", m, ".rds"))
+}
+```
+
+## Testing on real models. Due to computation time, only tested on the 1st dataset for 500 samples. In terms of the sum of edit distance over all vars, rand 20--22, cpt 24--16, nb 27--36. On 5000 samples, rand 12--4, cpt 15--10, nb 17--20.
+
+## without sym: rand 24.5--2.11; cpt 25.5--1.02; nb 24.4--2.82; 
+## with sym: rand 25.4--3.79; cpt 18--1.94; 31.2--4.61; find a way to drop the ed for rand after symmetry check!!!
 ```{r}
 dir = "~/Documents/Experiments/UAI_exp/child/"
 dag = readRDS(paste0(dir, "dag/child.rds"))
-n = 500
+n = 1000
 datasets = list.files(paste0(dir, "data_csv/", n, "/"))
 nvars = 20
 vars = paste0("V", 1:nvars)
@@ -30,11 +57,12 @@ for (i in 1:nvars) {
   mbtrue[[i]] = bnlearn::mb(dag, vars[i])
 }
 
-edcpt = edrand = ednb = rep(0, nvars)
-ed = rep(list(ed), length(datasets))
+# edcpt = edrand = ednb = rep(0, nvars)
+ed = rep(0, nvars)
+edcpt = edrand = ednb = edrand_sym = rep(list(ed), length(datasets))
 
 for (i in 1:length(datasets)) {
-  
+  #i = 1
   mbcpt = mbnb = mbrand = list()
   data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[i]))
   data = numeric2categorical(data)
@@ -42,19 +70,43 @@ for (i in 1:length(datasets)) {
   names(arities) = c()
   di = count_occurance(data, arities)
   for (j in 1:nvars) {
-    # cat(j, "\n")
-    # targetProbsAdpt = probs_adaptive(data, arities, n, j)
-    # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-    #                           targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)  
-    # ed[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+    cat(i, "--", j, "\n")
+    targetProbsAdpt = probs_adaptive(data, arities, n, j)
+    mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)
+    edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+    
     # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
-    # edcpt[j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
-    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
-    ednb[j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
+    # edcpt[[i]][j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
+    # mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
+    # ednb[[i]][j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
   }
-  
+  filename = strsplit(datasets[i], ".csv")[[1]]
+  mbrand_sym = symmetry_correction(vars, mbrand, "AND")
+  saveRDS(mbrand, paste0("~/Documents/Experiments/mb_discovery/child/mml_rand/", n, "/without_symmetry/", filename, ".rds"))
+  saveRDS(mbrand_sym, paste0("~/Documents/Experiments/mb_discovery/child/mml_rand/", n, "/with_symmetry/", filename, ".rds"))
 }
 
+# mbrand_sym = symmetry_correction(vars, mbrand, "AND")
+# mbcpt_sym = symmetry_correction(vars, mbcpt, "AND")
+# mbnb_sym = symmetry_correction(vars, mbnb, "AND")
+# edrand_sym = edcpt_sym = ednb_sym = rep(0, nvars)
+# for (j in 1:nvars) {
+#   edrand_sym[j] = mbEditDist(mbtrue[[j]], mbrand_sym[[j]], vars[j], vars)
+#   edcpt_sym[j] = mbEditDist(mbtrue[[j]], mbcpt_sym[[j]], vars[j], vars)
+#   ednb_sym[j] = mbEditDist(mbtrue[[j]], mbnb_sym[[j]], vars[j], vars)
+# }
+
+# model = "mml_rand"
+# files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/500/without_symmetry/"))
+# for (i in 1:length(files)) {
+#   mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/500/without_symmetry/", files[i]))
+#   for (j in 1:length(mbrand)) {
+#     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+#   }
+# }
+# mean(unlist(lapply(edrand, sum)))
+# round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
 ```
 
 ## An alternative mml_rand function that uses differnt prior for averaging msg len
@@ -209,7 +261,7 @@ cpts_sd = randSeed()
 set.seed(479177)
 cpts = randCPTs(dag, maxarity, beta)
 
-n = 100
+n = 1000
 data_sd = randSeed()
 set.seed(544837)
 data = rbn(cpts, n)
@@ -223,6 +275,7 @@ lrand = lrand2 = lcpt = lnb = list()
 for (target in vars) {
   
   cat(i, "\n")
+  target = "V2"
   targetIndex = which(vars == target)
   targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   # f2 overally reduce mml score, not penalizing bad model and in favor to good models
@@ -230,7 +283,7 @@ for (target in vars) {
   lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
   #lrand[[i]] = f(dag,data,di,arities,vars,target,n)
   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
   lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
@@ -266,6 +319,14 @@ llrand = symmetry_correction(vars, lrand, "AND")
 llrand2 = symmetry_correction(vars, lrand2, "AND")
 llcpt = symmetry_correction(vars, lcpt, "AND")
 llnb = symmetry_correction(vars, lnb, "AND")
+
+
+#########
+nvars = 20
+vars = paste0("V", 1:nvars)
+
+
+#########
 aarand = aarand2 = aacpt = aanb = rep(0, nvars)
 ccrand = ccrand2 = cccpt = ccnb = matrix(0, nvars, 2)
 i = 1

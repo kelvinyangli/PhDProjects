@@ -1,8 +1,9 @@
-#' A function to convert a dag from the bnlearn format to an adjacency matrix
+#' A function to convert a bnlearn format dag to its adjacency matrix
 #'
-#' This converts a dag stored in the bnlearn format to an adjacency matrix contains 0s and 1s. A directed arc 
-#' V1 -> V2 has a corresponding value 1 at the matrix entry [v1, v2]. Matrix column and row names are in the order
-#' of bnlearn::nodes(dag).
+#' This function converts a bnlearn format dag to its adjacency matrix. The dag can be either directed or partially
+#' directed. 
+#' @param dag A dag or partial dag in bnlearn format. 
+#' @export
 
 dag2matrix = function(dag) {
   
@@ -11,21 +12,11 @@ dag2matrix = function(dag) {
   
   mtx = matrix(0, nrow = nvars, ncol = nvars, dimnames = list(vars, vars))
   
-  for (i in 1:nvars) {
+  for (i in 1:nrow(dag$arcs)) {
     
-    children = dag$nodes[[i]]$children # set of children of node i
+    mtx[dag$arcs[i, 1], dag$arcs[i, 2]] = 1
     
-    if (length(children) > 0) {
-      
-      for (j in 1:length(children)) {
-        
-        mtx[i, which(vars == children[j])] = 1
-        
-      } # end for j
-      
-    } # end if 
-    
-  } # end for i
+  }
   
   return(mtx)
   

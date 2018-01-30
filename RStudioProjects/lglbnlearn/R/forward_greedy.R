@@ -38,6 +38,12 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
   nvars = length(vars)
   mb = c()
   unCheckedIndices = (1:nvars)[-targetIndex]
+  if (model == "random") {
+
+    cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+    cachInd = 1 # starting cachPTs index from 1
+
+  }
   
   # initializing with empty model
   if (model == "cpt") {#cpt
@@ -110,8 +116,11 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
         
       } else if (model == "random") {#random
         
-        msgLenCurrent = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, 
-                                          targetProbsAdpt, strList, inputIndices, weights, debug = debug)
+        res = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, targetProbsAdpt, 
+                                    cachPTs, cachInd, strList, inputIndices, weights, debug = debug)
+        msgLenCurrent = res$avgL
+        cachPTs = res$cachPTs
+        cachInd = res$cachInd
         
       }# end else if 
       
