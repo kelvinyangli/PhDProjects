@@ -43,6 +43,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
     cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
     cachInd = 1 # starting cachPTs index from 1
     nSECs = c(1, 4, 14, 64, 332, 1924, 12294) # give the number of SECs for each mb size
+    nIgnored = c(0, 1, 3, 16, 85, 506, 3299)
     ignored = readRDS("~/Documents/PhDProjects/RStudioProjects/local2global/ignored_strs.rds")
 
   }
@@ -80,12 +81,20 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       
     }
     
+    if (length(mb) == 7) {
+      
+      if (debug) cat("Stop searching due to lack of pre-saved mbpts!")
+      break 
+      
+    }
+    
     if (model == "random") {
       
       # random sampling over SEC space if there are more than 10 SECs
-      if (nSECs[length(mb) + 1] > 10) {
+      nsamples = 100
+      if ((nSECs[length(mb) + 1] - nIgnored[length(mb) + 1]) > nsamples) {
         
-        sampledSECIndices = sample((1:nSECs[length(mb) + 1])[-ignored[[length(mb) + 1]]], 10)
+        sampledSECIndices = sample((1:nSECs[length(mb) + 1])[-ignored[[length(mb) + 1]]], nsamples)
         sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/", 
                                      length(mb) + 1, ".rds"))[sampledSECIndices]
         
@@ -93,6 +102,11 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
         
         sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/", 
                                      length(mb) + 1, ".rds"))
+        if (nIgnored[length(mb) + 1] > 0) {
+          
+          sampledSECs = sampledSECs[-ignored[[length(mb) + 1]]]
+          
+        }
         
       }
       

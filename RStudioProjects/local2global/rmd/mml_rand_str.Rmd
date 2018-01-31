@@ -61,7 +61,7 @@ for (m in 1:7) {
 ```{r}
 dir = "~/Documents/Experiments/UAI_exp/child/"
 dag = readRDS(paste0(dir, "dag/child.rds"))
-n = 1000
+n = 500
 datasets = list.files(paste0(dir, "data_csv/", n, "/"))
 nvars = 20
 vars = paste0("V", 1:nvars)
@@ -88,7 +88,7 @@ for (i in 1:length(datasets)) {
     cat(i, "--", j, "\n")
     targetProbsAdpt = probs_adaptive(data, arities, n, j)
     mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)
     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
     
     # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
@@ -264,21 +264,24 @@ is_substr = function(dag, localStr) {
 ```{r}
 #for (itr in 1:3) {
   
-nvars = 5
-maxpa = 2
-dag_sd = randSeed()
-set.seed(87843)
+nvars = 10
+maxpa = 3
+#dag_sd = randSeed()
+dag_sd = 9008
+set.seed(dag_sd)
 dag = randDag(nvars, maxpa)
 
-maxarity = 2
+maxarity = 3
 beta = 1
-cpts_sd = randSeed()
-set.seed(479177)
+#cpts_sd = randSeed()
+cpts_sd = 94026
+set.seed(cpts_sd)
 cpts = randCPTs(dag, maxarity, beta)
 
-n = 1000
-data_sd = randSeed()
-set.seed(544837)
+n = 100
+#data_sd = randSeed()
+data_sd = 100188
+set.seed(data_sd)
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
@@ -290,17 +293,16 @@ lrand = lrand2 = lcpt = lnb = list()
 for (target in vars) {
   
   cat(i, "\n")
-  target = "V2"
+  #target = "V2"
   targetIndex = which(vars == target)
   targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   # f2 overally reduce mml score, not penalizing bad model and in favor to good models
   # need to think about a more sutiable prior
-  lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
-  #lrand[[i]] = f(dag,data,di,arities,vars,target,n)
+  # lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
-  lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
+  # lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
   
 }
@@ -319,29 +321,22 @@ for (target in vars) {
   s[i] = m[i] - p[i] - c[i]
   arand[i] = mbEditDist(mbl[[i]], lrand[[i]], target, vars)
   crand[i, ] = classfication_accuracy_mb(mbl[[i]], lrand[[i]], vars, target)
-  arand2[i] = mbEditDist(mbl[[i]], lrand2[[i]], target, vars)
-  crand2[i, ] = classfication_accuracy_mb(mbl[[i]], lrand2[[i]], vars, target)
+  # arand2[i] = mbEditDist(mbl[[i]], lrand2[[i]], target, vars)
+  # crand2[i, ] = classfication_accuracy_mb(mbl[[i]], lrand2[[i]], vars, target)
   acpt[i] = mbEditDist(mbl[[i]], lcpt[[i]], target, vars)
   ccpt[i, ] = classfication_accuracy_mb(mbl[[i]], lcpt[[i]], vars, target)
-  anb[i] = mbEditDist(mbl[[i]], lnb[[i]], target, vars)
-  cnb[i, ] = classfication_accuracy_mb(mbl[[i]], lnb[[i]], vars, target)
+  # anb[i] = mbEditDist(mbl[[i]], lnb[[i]], target, vars)
+  # cnb[i, ] = classfication_accuracy_mb(mbl[[i]], lnb[[i]], vars, target)
   i = i + 1
   
 }
 
 # sym check
 llrand = symmetry_correction(vars, lrand, "AND")
-llrand2 = symmetry_correction(vars, lrand2, "AND")
+# llrand2 = symmetry_correction(vars, lrand2, "AND")
 llcpt = symmetry_correction(vars, lcpt, "AND")
-llnb = symmetry_correction(vars, lnb, "AND")
+# llnb = symmetry_correction(vars, lnb, "AND")
 
-
-#########
-nvars = 20
-vars = paste0("V", 1:nvars)
-
-
-#########
 aarand = aarand2 = aacpt = aanb = rep(0, nvars)
 ccrand = ccrand2 = cccpt = ccnb = matrix(0, nvars, 2)
 i = 1
@@ -349,12 +344,12 @@ for (target in vars) {
   
   aarand[i] = mbEditDist(mbl[[i]], llrand[[i]], target, vars)
   ccrand[i, ] = classfication_accuracy_mb(mbl[[i]], llrand[[i]], vars, target)
-  aarand2[i] = mbEditDist(mbl[[i]], llrand2[[i]], target, vars)
-  ccrand2[i, ] = classfication_accuracy_mb(mbl[[i]], llrand2[[i]], vars, target)
+  # aarand2[i] = mbEditDist(mbl[[i]], llrand2[[i]], target, vars)
+  # ccrand2[i, ] = classfication_accuracy_mb(mbl[[i]], llrand2[[i]], vars, target)
   aacpt[i] = mbEditDist(mbl[[i]], llcpt[[i]], target, vars)
   cccpt[i, ] = classfication_accuracy_mb(mbl[[i]], llcpt[[i]], vars, target)
-  aanb[i] = mbEditDist(mbl[[i]], llnb[[i]], target, vars)
-  ccnb[i, ] = classfication_accuracy_mb(mbl[[i]], llnb[[i]], vars, target)
+  # aanb[i] = mbEditDist(mbl[[i]], llnb[[i]], target, vars)
+  # ccnb[i, ] = classfication_accuracy_mb(mbl[[i]], llnb[[i]], vars, target)
   i = i + 1
   
 }
@@ -362,20 +357,23 @@ for (target in vars) {
 dag_stats = c(nvars, maxpa, maxarity, n)
 
 ed_cpt = paste(round(mean(acpt), 2), round(1.96 * sd(acpt) / sqrt(n), 2))
-ed_nb = paste(round(mean(anb), 2), round(1.96 * sd(anb) / sqrt(n), 2))
+#ed_nb = paste(round(mean(anb), 2), round(1.96 * sd(anb) / sqrt(n), 2))
+ed_nb = 0
 ed_rand = paste(round(mean(arand), 2), round(1.96 * sd(arand) / sqrt(n), 2))
-ed_rand2 = paste(round(mean(arand2), 2), round(1.96 * sd(arand2) / sqrt(n), 2))
+#ed_rand2 = paste(round(mean(arand2), 2), round(1.96 * sd(arand2) / sqrt(n), 2))
+ed_rand2 = 0
 
 line = matrix(c(dag_stats, ed_cpt, ed_nb, ed_rand, ed_rand2), 1, 8)
-#write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 
 pred_cpt = paste(round(apply(ccpt, 2, mean), 2), collapse = " ")
-pred_nb = paste(round(apply(cnb, 2, mean), 2), collapse = " ")
+#pred_nb = paste(round(apply(cnb, 2, mean), 2), collapse = " ")
 pred_rand = paste(round(apply(crand, 2, mean), 2), collapse = " ")
-pred_rand2 = paste(round(apply(crand2, 2, mean), 2), collapse = " ")
+#pred_rand2 = paste(round(apply(crand2, 2, mean), 2), collapse = " ")
+pred_nb = pred_rand2 = "0"
 
 line = matrix(c(0, dag_sd, cpts_sd, data_sd, pred_cpt, pred_nb, pred_rand, pred_rand2), 1, 8)
-#write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 
 #}
 ```

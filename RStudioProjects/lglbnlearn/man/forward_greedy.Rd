@@ -62,3 +62,4 @@ function will stop if there is no better option to add into the current Markov b
 \keyword{mml_nb_adaptive(),}
 \keyword{mml_rand_str_adaptive().}
 \keyword{on}
+\keyword{resample(),}
