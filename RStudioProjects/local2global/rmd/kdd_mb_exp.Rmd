@@ -1,0 +1,136 @@
+---
+title: "kdd_mb_exp"
+author: "kl"
+date: "31 January 2018"
+output: html_document
+---
+
+```{r global_options, include=F, warning=F, eval=F, echo=F, message=F}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+```
+
+These exp take 5 parameters into account, ordered by priority: 
+
+* nvars 10, 50, 100
+* n 50, 500, 5000
+* npa 2, 4, 6
+* narity 2, 3, 4
+* beta (derichlet concentration parameter) 1, 5, 25
+
+```{r}
+vnvars = c(10, 50, 100)
+vnpa = c(2, 4, 6)
+vnarity = c(2, 3, 4)
+vbeta = c(1, 5, 25)
+vn = c(50, 500, 5000)
+dir = "~/Documents/Experiments/kdd_exp/"
+for (nvars in vnvars) {
+  
+  for (npa in vnpa) {
+          
+    for (narity in vnarity) {
+      
+      for (beta in vbeta) {
+        
+        dirname = paste(nvars, npa, narity, beta, sep = "_")
+        
+        for (itr in 1:5) {
+  
+          sd = randSeed()
+          set.seed(sd)
+          dag = randDag(nvars, npa)
+          cpts = randCPTs(dag, narity, beta)
+          nodes = bnlearn::nodes(dag)
+          mbtrue = list()
+          i = 1
+          for (x in nodes) {
+            mbtrue[[i]] = bnlearn::mb(dag, x)
+            i = i + 1
+          }
+          saveRDS(dag, paste0(dir, dirname, "/dag/dag_", sd, ".rds"))
+          saveRDS(cpts, paste0(dir, dirname, "/cpt/cpt_", sd, ".rds"))
+          saveRDS(mbtrue, paste0(dir, dirname, "/mb_true/mb_", sd, ".rds"))
+          
+          for (n in vn) {
+            
+            datasd = randSeed()
+            set.seed(datasd)
+            data = rbn(cpts, n)  
+            saveRDS(data, paste0(dir, dirname, "/data_rds/data_", n, "_", sd, "_", datasd, ".rds"))
+            write.csv(data, paste0(dir, dirname, "/data_csv/data_", n, "_", sd, "_", datasd, ".csv"), row.names = F)
+            
+          }
+        }# end itr
+      }
+    }
+  }
+}
+
+```
+
+
+## learning
+```{r}
+params = "10_2_2_1"
+datasets = list.files(paste0(dir, params, "/data_rds/"))
+for (i in 5:length(datasets)) {
+  i=5
+  data = readRDS(paste0(dir, params, "/data_rds/", datasets[i]))
+  nvars = ncol(data)
+  vars = names(data)
+  n = nrow(data)
+  arities = sapply(data, nlevels)
+  names(arities) = c()
+  di = count_occurance(data, arities)
+  mbcpt = mbnb = mbrand = list()
+  for (j in 1:nvars) {
+    
+    cat(i, "--", j, "\n")
+    targetProbsAdpt = probs_adaptive(data, arities, n, j)
+    # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
+    #                           targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
+    #mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
+    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", targetProbsAdpt = targetProbsAdpt, debug = F)
+    
+  }
+  filename = paste0(strsplit(datasets[i], "_")[[1]][-1], collapse = "_")
+  #saveRDS(mbcpt, paste0(dir, params, "/mb_cpt/cpt_", filename))
+  saveRDS(mbnb, paste0(dir, params, "/mb_nb/nb_", filename))
+  
+}
+```
+
+
+
+
+## Evaluating
+```{r}
+params = "10_2_2_1"
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

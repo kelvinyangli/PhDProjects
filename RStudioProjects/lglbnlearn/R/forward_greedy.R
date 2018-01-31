@@ -40,8 +40,6 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
   unCheckedIndices = (1:nvars)[-targetIndex]
   if (model == "random") {
 
-    cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
-    cachInd = 1 # starting cachPTs index from 1
     nSECs = c(1, 4, 14, 64, 332, 1924, 12294) # give the number of SECs for each mb size
     nIgnored = c(0, 1, 3, 16, 85, 506, 3299)
     ignored = readRDS("~/Documents/PhDProjects/RStudioProjects/local2global/ignored_strs.rds")
@@ -59,7 +57,9 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
     
   } else {# nb or random
     
-    minMsgLen = mml_nb_adaptive(data, arities, targetIndex, c())
+    cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+    cachInd = 1 # starting cachPTs index from 1
+    minMsgLen = - log_prob_adaptive(data, sampleSize, targetIndex, targetProbsAdpt) 
     
   }
   
@@ -138,7 +138,12 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
         
       } else if (model == "nb") {#nb
         
-        msgLenCurrent = mml_nb_adaptive(data, arities, targetIndex, inputIndices)
+        #msgLenCurrent = mml_nb_adaptive(data, arities, targetIndex, inputIndices)
+        res = mml_nb_adaptive2(data, arities, sampleSize, targetIndex, targetProbsAdpt, cachPTs, 
+                               cachInd, inputIndices)
+        msgLenCurrent = res$llh
+        cachPTs = res$cachPTs
+        cachInd = res$cachInd
         
       } else if (model == "random") {#random
         

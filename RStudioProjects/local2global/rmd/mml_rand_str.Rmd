@@ -54,14 +54,16 @@ for (m in 1:7) {
 }
 ```
 
-## Testing on real models. Due to computation time, only tested on the 1st dataset for 500 samples. In terms of the sum of edit distance over all vars, rand 20--22, cpt 24--16, nb 27--36. On 5000 samples, rand 12--4, cpt 15--10, nb 17--20.
-
+## Testing on real models.
 ## without sym: rand 24.5--2.11; cpt 25.5--1.02; nb 24.4--2.82; 
 ## with sym: rand 25.4--3.79; cpt 18--1.94; 31.2--4.61; find a way to drop the ed for rand after symmetry check!!!
+## rand (with 100 secs samples)
+## without sym: 22.8 +- 1.59
+## with sym: 27.2 +- 2.42
 ```{r}
 dir = "~/Documents/Experiments/UAI_exp/child/"
 dag = readRDS(paste0(dir, "dag/child.rds"))
-n = 500
+n = 1000
 datasets = list.files(paste0(dir, "data_csv/", n, "/"))
 nvars = 20
 vars = paste0("V", 1:nvars)
@@ -88,7 +90,7 @@ for (i in 1:length(datasets)) {
     cat(i, "--", j, "\n")
     targetProbsAdpt = probs_adaptive(data, arities, n, j)
     mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = T)
+                              targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
     
     # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
@@ -112,16 +114,16 @@ for (i in 1:length(datasets)) {
 #   ednb_sym[j] = mbEditDist(mbtrue[[j]], mbnb_sym[[j]], vars[j], vars)
 # }
 
-model = "mml_rand"
-files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/with_symmetry/"))
-for (i in 1:length(files)) {
-  mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/with_symmetry/", files[i]))
-  for (j in 1:length(mbrand)) {
-    edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
-  }
-}
-mean(unlist(lapply(edrand, sum)))
-round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
+# model = "mml_rand"
+# files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/without_symmetry/"))
+# for (i in 1:length(files)) {
+#   mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/without_symmetry/", files[i]))
+#   for (j in 1:length(mbrand)) {
+#     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+#   }
+# }
+# mean(sapply(edrand, sum))
+# round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
 ```
 
 ## An alternative mml_rand function that uses differnt prior for averaging msg len
@@ -266,21 +268,21 @@ is_substr = function(dag, localStr) {
   
 nvars = 10
 maxpa = 3
-#dag_sd = randSeed()
-dag_sd = 9008
+dag_sd = randSeed()
+#dag_sd = 9008
 set.seed(dag_sd)
 dag = randDag(nvars, maxpa)
 
 maxarity = 3
 beta = 1
-#cpts_sd = randSeed()
-cpts_sd = 94026
+cpts_sd = randSeed()
+#cpts_sd = 94026
 set.seed(cpts_sd)
 cpts = randCPTs(dag, maxarity, beta)
 
-n = 100
-#data_sd = randSeed()
-data_sd = 100188
+n = 20
+data_sd = randSeed()
+#data_sd = 100188
 set.seed(data_sd)
 data = rbn(cpts, n)
 vars = colnames(data)
@@ -293,16 +295,17 @@ lrand = lrand2 = lcpt = lnb = list()
 for (target in vars) {
   
   cat(i, "\n")
-  #target = "V2"
+  target = "V1"
   targetIndex = which(vars == target)
   targetProbsAdpt = probs_adaptive(data, arities, n, targetIndex)
   # f2 overally reduce mml score, not penalizing bad model and in favor to good models
   # need to think about a more sutiable prior
   # lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
+  forward_greedy(data, arities, vars, n, target, "nb", targetProbsAdpt = targetProbsAdpt, debug = T)
   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
                               targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
   lcpt[[i]] = forward_greedy_fast(data, di, arities, n, target, debug = F)
-  # lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
+  lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
   i = i + 1
   
 }
@@ -325,17 +328,37 @@ for (target in vars) {
   # crand2[i, ] = classfication_accuracy_mb(mbl[[i]], lrand2[[i]], vars, target)
   acpt[i] = mbEditDist(mbl[[i]], lcpt[[i]], target, vars)
   ccpt[i, ] = classfication_accuracy_mb(mbl[[i]], lcpt[[i]], vars, target)
-  # anb[i] = mbEditDist(mbl[[i]], lnb[[i]], target, vars)
-  # cnb[i, ] = classfication_accuracy_mb(mbl[[i]], lnb[[i]], vars, target)
+  anb[i] = mbEditDist(mbl[[i]], lnb[[i]], target, vars)
+  cnb[i, ] = classfication_accuracy_mb(mbl[[i]], lnb[[i]], vars, target)
   i = i + 1
   
 }
 
-# sym check
+dag_stats = c(nvars, maxpa, maxarity, n)
+
+ed_cpt = paste(round(mean(acpt), 2), round(1.96 * sd(acpt) / sqrt(n), 2))
+ed_nb = paste(round(mean(anb), 2), round(1.96 * sd(anb) / sqrt(n), 2))
+ed_rand = paste(round(mean(arand), 2), round(1.96 * sd(arand) / sqrt(n), 2))
+#ed_rand2 = paste(round(mean(arand2), 2), round(1.96 * sd(arand2) / sqrt(n), 2))
+ed_rand2 = 0
+
+line = matrix(c(dag_stats, ed_cpt, ed_nb, ed_rand, ed_rand2), 1, 8)
+write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+
+pred_cpt = paste(round(apply(ccpt, 2, mean), 2), collapse = " ")
+pred_nb = paste(round(apply(cnb, 2, mean), 2), collapse = " ")
+pred_rand = paste(round(apply(crand, 2, mean), 2), collapse = " ")
+#pred_rand2 = paste(round(apply(crand2, 2, mean), 2), collapse = " ")
+pred_rand2 = "0"
+
+line = matrix(c(0, dag_sd, cpts_sd, data_sd, pred_cpt, pred_nb, pred_rand, pred_rand2), 1, 8)
+write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+
+###################### sym check ###################### 
 llrand = symmetry_correction(vars, lrand, "AND")
 # llrand2 = symmetry_correction(vars, lrand2, "AND")
 llcpt = symmetry_correction(vars, lcpt, "AND")
-# llnb = symmetry_correction(vars, lnb, "AND")
+llnb = symmetry_correction(vars, lnb, "AND")
 
 aarand = aarand2 = aacpt = aanb = rep(0, nvars)
 ccrand = ccrand2 = cccpt = ccnb = matrix(0, nvars, 2)
@@ -348,29 +371,28 @@ for (target in vars) {
   # ccrand2[i, ] = classfication_accuracy_mb(mbl[[i]], llrand2[[i]], vars, target)
   aacpt[i] = mbEditDist(mbl[[i]], llcpt[[i]], target, vars)
   cccpt[i, ] = classfication_accuracy_mb(mbl[[i]], llcpt[[i]], vars, target)
-  # aanb[i] = mbEditDist(mbl[[i]], llnb[[i]], target, vars)
-  # ccnb[i, ] = classfication_accuracy_mb(mbl[[i]], llnb[[i]], vars, target)
+  aanb[i] = mbEditDist(mbl[[i]], llnb[[i]], target, vars)
+  ccnb[i, ] = classfication_accuracy_mb(mbl[[i]], llnb[[i]], vars, target)
   i = i + 1
   
 }
 
 dag_stats = c(nvars, maxpa, maxarity, n)
 
-ed_cpt = paste(round(mean(acpt), 2), round(1.96 * sd(acpt) / sqrt(n), 2))
-#ed_nb = paste(round(mean(anb), 2), round(1.96 * sd(anb) / sqrt(n), 2))
-ed_nb = 0
-ed_rand = paste(round(mean(arand), 2), round(1.96 * sd(arand) / sqrt(n), 2))
+ed_cpt = paste(round(mean(aacpt), 2), round(1.96 * sd(aacpt) / sqrt(n), 2))
+ed_nb = paste(round(mean(aanb), 2), round(1.96 * sd(aanb) / sqrt(n), 2))
+ed_rand = paste(round(mean(aarand), 2), round(1.96 * sd(aarand) / sqrt(n), 2))
 #ed_rand2 = paste(round(mean(arand2), 2), round(1.96 * sd(arand2) / sqrt(n), 2))
 ed_rand2 = 0
 
 line = matrix(c(dag_stats, ed_cpt, ed_nb, ed_rand, ed_rand2), 1, 8)
 write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 
-pred_cpt = paste(round(apply(ccpt, 2, mean), 2), collapse = " ")
-#pred_nb = paste(round(apply(cnb, 2, mean), 2), collapse = " ")
-pred_rand = paste(round(apply(crand, 2, mean), 2), collapse = " ")
+pred_cpt = paste(round(apply(cccpt, 2, mean), 2), collapse = " ")
+pred_nb = paste(round(apply(ccnb, 2, mean), 2), collapse = " ")
+pred_rand = paste(round(apply(ccrand, 2, mean), 2), collapse = " ")
 #pred_rand2 = paste(round(apply(crand2, 2, mean), 2), collapse = " ")
-pred_nb = pred_rand2 = "0"
+pred_rand2 = "0"
 
 line = matrix(c(0, dag_sd, cpts_sd, data_sd, pred_cpt, pred_nb, pred_rand, pred_rand2), 1, 8)
 write.table(line, "~/Documents/Journal KDD/test_results.csv", sep = ",", append = T, col.names = F, row.names = F)
