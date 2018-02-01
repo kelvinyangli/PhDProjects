@@ -79,8 +79,8 @@ for (nvars in vnvars) {
 ```{r}
 params = "10_2_2_1"
 datasets = list.files(paste0(dir, params, "/data_rds/"))
-for (i in 5:length(datasets)) {
-  i=5
+for (i in 1:length(datasets)) {
+  #i = 5
   data = readRDS(paste0(dir, params, "/data_rds/", datasets[i]))
   nvars = ncol(data)
   vars = names(data)
@@ -92,16 +92,17 @@ for (i in 5:length(datasets)) {
   for (j in 1:nvars) {
     
     cat(i, "--", j, "\n")
-    targetProbsAdpt = probs_adaptive(data, arities, n, j)
-    # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-    #                           targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
-    #mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
-    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", targetProbsAdpt = targetProbsAdpt, debug = F)
+    # targetProbsAdpt = probs_adaptive(data, arities, n, j)
+    mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
+                              prior = "uniform", debug = F)
+    # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
+    # mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
     
   }
   filename = paste0(strsplit(datasets[i], "_")[[1]][-1], collapse = "_")
+  saveRDS(mbrand, paste0(dir, params, "/mb_rand/rand_", filename))
   #saveRDS(mbcpt, paste0(dir, params, "/mb_cpt/cpt_", filename))
-  saveRDS(mbnb, paste0(dir, params, "/mb_nb/nb_", filename))
+  #saveRDS(mbnb, paste0(dir, params, "/mb_nb/nb_", filename))
   
 }
 ```

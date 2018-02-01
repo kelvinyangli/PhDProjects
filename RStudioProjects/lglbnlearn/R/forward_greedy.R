@@ -133,7 +133,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
       # sampling 1 structure from each sampled SEC 
       # since strs belong to the same SEC have similar scores
       sampledStrIndices = sapply(sampledSECs, resample, size = 1)
-      strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered//", 
+      strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", 
                                length(mb) + 1, ".rds"))[sampledStrIndices]
       
       if (prior == "uniform") {

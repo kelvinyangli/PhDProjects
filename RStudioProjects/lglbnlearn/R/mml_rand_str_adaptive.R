@@ -42,7 +42,7 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
       
     } else if (length(ch) == length(mbIndices)) {# if all nodes are children
       
-      res = mml_nb_adaptive(data, arities, targetIndex, which(vars %in% ch))
+      res = mml_nb_adaptive_slow(data, arities, targetIndex, which(vars %in% ch))
       
     } else {# if there is a mixture of parents, children and spouses
       
