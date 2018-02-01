@@ -55,15 +55,16 @@ for (m in 1:7) {
 ```
 
 ## Testing on real models.
-## without sym: rand 24.5--2.11; cpt 25.5--1.02; nb 24.4--2.82; 
-## with sym: rand 25.4--3.79; cpt 18--1.94; 31.2--4.61; find a way to drop the ed for rand after symmetry check!!!
-## rand (with 100 secs samples)
-## without sym: 22.8 +- 1.59
-## with sym: 27.2 +- 2.42
+## without sym: rand 24.5--2.11; 20.7 +- 1.85; cpt 25.5--1.02; nb 24.4--2.82; 
+## with sym: rand 25.4--3.79; 19.4 +- 3.09; cpt 18--1.94; 31.2--4.61; find a way to drop the ed for rand after symmetry check!!!
+
+## rand (with 100 SEC samples)
+## without sym: 22.8 +- 1.59; 17.1 +- 1.66;
+## with sym: 27.2 +- 2.42; 18.6 +- 2.41;
 ```{r}
 dir = "~/Documents/Experiments/UAI_exp/child/"
 dag = readRDS(paste0(dir, "dag/child.rds"))
-n = 1000
+n = 500
 datasets = list.files(paste0(dir, "data_csv/", n, "/"))
 nvars = 20
 vars = paste0("V", 1:nvars)
@@ -93,10 +94,11 @@ for (i in 1:length(datasets)) {
                               targetProbsAdpt = targetProbsAdpt, prior = "uniform", debug = F)
     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
     
-    # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
-    # edcpt[[i]][j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
-    # mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
-    # ednb[[i]][j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
+    mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
+    edcpt[[i]][j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
+    
+    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
+    ednb[[i]][j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
   }
   filename = strsplit(datasets[i], ".csv")[[1]]
   mbrand_sym = symmetry_correction(vars, mbrand, "AND")
@@ -114,16 +116,16 @@ for (i in 1:length(datasets)) {
 #   ednb_sym[j] = mbEditDist(mbtrue[[j]], mbnb_sym[[j]], vars[j], vars)
 # }
 
-# model = "mml_rand"
-# files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/without_symmetry/"))
-# for (i in 1:length(files)) {
-#   mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/without_symmetry/", files[i]))
-#   for (j in 1:length(mbrand)) {
-#     edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
-#   }
-# }
-# mean(sapply(edrand, sum))
-# round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
+model = "mml_rand"
+files = list.files(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/without_symmetry/"))
+for (i in 1:length(files)) {
+  mbrand = readRDS(paste0("~/Documents/Experiments/mb_discovery/child/", model, "/", n, "/without_symmetry/", files[i]))
+  for (j in 1:length(mbrand)) {
+    edrand[[i]][j] = mbEditDist(mbtrue[[j]], mbrand[[j]], vars[j], vars)
+  }
+}
+mean(sapply(edrand, sum))
+round(1.96 * sd(unlist(lapply(edrand, sum))) / sqrt(10), 2)
 ```
 
 ## An alternative mml_rand function that uses differnt prior for averaging msg len

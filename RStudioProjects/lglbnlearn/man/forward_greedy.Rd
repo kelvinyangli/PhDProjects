@@ -5,8 +5,8 @@
 \title{A forward greedy search function}
 \usage{
 forward_greedy(data, arities, vars, sampleSize, target, model, base = exp(1),
-  sigma = 3, dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL,
-  prior = "uniform", debug = FALSE)
+  sigma = 3, dataNumeric = NULL, varCnt = NULL, prior = "uniform",
+  debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -32,9 +32,6 @@ Variable values start from 0.}
 \item{varCnt}{This parameter is for mml_cpt. As explained by argument name. 
 It is obtained by getting the detailed information of the given data using the function 
 count_occurance().}
-
-\item{targetProbsAdpt}{This parameter is for mml_random_adaptive(). A matrix that stores the target's 
-probability for each of its value at each data point. The matrix has dimension arity(target) by n.}
 
 \item{prior}{A character parameter with options "uniform", "tom" and "bayes" indicate the uniform 
 prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths 

@@ -17,8 +17,6 @@
 #' @param varCnt This parameter is for mml_cpt. As explained by argument name. 
 #' It is obtained by getting the detailed information of the given data using the function 
 #' count_occurance(). 
-#' @param targetProbsAdpt This parameter is for mml_random_adaptive(). A matrix that stores the target's 
-#' probability for each of its value at each data point. The matrix has dimension arity(target) by n. 
 #' @param prior A character parameter with options "uniform", "tom" and "bayes" indicate the uniform 
 #' prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths 
 #' for random structures. The Bayesian prior starts with the uniform prior then calculates the 
@@ -31,8 +29,7 @@
 #' mml_rand_str_adaptive(). 
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, model, base = exp(1), sigma = 3, 
-                          dataNumeric = NULL, varCnt = NULL, targetProbsAdpt = NULL, prior = "uniform", 
-                          debug = FALSE) {
+                          dataNumeric = NULL, varCnt = NULL, prior = "uniform", debug = FALSE) {
   
   targetIndex = which(vars == target) # get index of the target node
   nvars = length(vars)
@@ -47,19 +44,42 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
   }
   
   # initializing with empty model
-  if (model == "cpt") {#cpt
+  if (model == "cpt") {
     
     minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, base = base)
     
-  } else if (model == "logit") {#logit
+  } else if (model == "logit") {
     
     minMsgLen = mml_logit(data, arities, sampleSize, c(), target, sigma = sigma)
     
-  } else {# nb or random
+  } else if (model == "nb") { 
+    
+    cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+    
+    for (i in 1:nvars) {
+      
+      if (i == targetIndex) {
+        
+        cachPTs[[i]] = probs_adaptive(data, arities, sampleSize, targetIndex)
+        
+      } else {
+        
+        cachPTs[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, i, targetIndex)
+        
+      }
+      
+    }
+    
+    logProbTarget = log_prob_adaptive(data, sampleSize, targetIndex, cachPTs[[targetIndex]])
+    minMsgLen = - logProbTarget
+    
+  } else if (model == "random") {
     
     cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
     cachInd = 1 # starting cachPTs index from 1
-    minMsgLen = - log_prob_adaptive(data, sampleSize, targetIndex, targetProbsAdpt) 
+    targetProbsAdpt = probs_adaptive(data, arities, sampleSize, targetIndex)
+    logProbTarget = log_prob_adaptive(data, sampleSize, targetIndex, targetProbsAdpt)
+    minMsgLen = - logProbTarget
     
   }
   
@@ -138,12 +158,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, base =
         
       } else if (model == "nb") {#nb
         
-        #msgLenCurrent = mml_nb_adaptive(data, arities, targetIndex, inputIndices)
-        res = mml_nb_adaptive2(data, arities, sampleSize, targetIndex, targetProbsAdpt, cachPTs, 
-                               cachInd, inputIndices)
-        msgLenCurrent = res$llh
-        cachPTs = res$cachPTs
-        cachInd = res$cachInd
+        msgLenCurrent = mml_nb_adaptive(data, arities, sampleSize, targetIndex, logProbTarget, 
+                               cachPTs, inputIndices)
         
       } else if (model == "random") {#random
         
