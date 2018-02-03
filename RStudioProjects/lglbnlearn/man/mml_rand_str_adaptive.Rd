@@ -9,7 +9,8 @@ mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex,
   debug = FALSE)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{vars}{A vector of all variables in data, in the same order as the column names of data.}
 
@@ -17,29 +18,29 @@ mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex,
 
 \item{sampleSize}{The sample size. That is, the number of rows of data.}
 
-\item{varCnt}{This parameter is for mml_cpt. As explained by argument name. 
-It is obtained by getting the detailed information of the given data using the function 
+\item{varCnt}{This parameter is for mml_cpt. As explained by argument name.
+It is obtained by getting the detailed information of the given data using the function
 count_occurance().}
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
 
-\item{targetProbsAdpt}{A matrix that stores the target's probability for each of its value at each 
+\item{targetProbsAdpt}{A matrix that stores the target's probability for each of its value at each
 data point. The matrix has dimension arity(target) by n.}
 
-\item{strList}{A list of random (or all) Markov blanket models (structures) to go through. Each structure is 
+\item{strList}{A list of random (or all) Markov blanket models (structures) to go through. Each structure is
 stored in a matrix format.}
 
 \item{mbIndices}{The indices of potential Markov blanket variables.}
 
 \item{weights}{A vector of weights for random Markov blanket models.}
 
-\item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
+\item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each
 mml score.}
 }
 \value{
-The function outputs the weighted average message length over all given structures. Noticing it is 
-the probabilies over all models are averaged then use this averaged probability to calculate the averaged 
-message length, not to average the message lengths directly. This is done by the function msg_len_ave() 
+The function outputs the weighted average message length over all given structures. Noticing it is
+the probabilies over all models are averaged then use this averaged probability to calculate the averaged
+message length, not to average the message lengths directly. This is done by the function msg_len_ave()
 function.
 }
 \description{

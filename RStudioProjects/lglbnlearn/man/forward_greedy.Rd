@@ -4,12 +4,12 @@
 \alias{forward_greedy}
 \title{A forward greedy search function}
 \usage{
-forward_greedy(data, arities, vars, sampleSize, target, model, base = exp(1),
-  sigma = 3, dataNumeric = NULL, varCnt = NULL, prior = "uniform",
-  debug = FALSE)
+forward_greedy(data, arities, vars, sampleSize, target, model, sigma = 3,
+  dataNumeric = NULL, varCnt = NULL, prior = "uniform", debug = FALSE)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{arities}{A vector of variable arities in data, in the same order as the column names of data.}
 
@@ -21,42 +21,43 @@ forward_greedy(data, arities, vars, sampleSize, target, model, base = exp(1),
 
 \item{model}{The options are cpt, logit (binary only), naive bayes and random models.}
 
-\item{base}{The base of logarithm. The default is the natural log.}
-
-\item{sigma}{The standard derivation of the assumed Gaussian distribution for parameter prior. The 
+\item{sigma}{The standard derivation of the assumed Gaussian distribution for parameter prior. The
 default value is 3 as suggested by the original paper.}
 
-\item{dataNumeric}{This parameter is for mml_logit. The numeric format of the given data set. 
+\item{dataNumeric}{This parameter is for mml_logit. The numeric format of the given data set.
 Variable values start from 0.}
 
-\item{varCnt}{This parameter is for mml_cpt. As explained by argument name. 
-It is obtained by getting the detailed information of the given data using the function 
+\item{varCnt}{This parameter is for mml_cpt. As explained by argument name.
+It is obtained by getting the detailed information of the given data using the function
 count_occurance().}
 
-\item{prior}{A character parameter with options "uniform", "tom" and "bayes" indicate the uniform 
-prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths 
-for random structures. The Bayesian prior starts with the uniform prior then calculates the 
+\item{prior}{A character parameter with options "uniform", "tom" and "bayes" indicate the uniform
+prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths
+for random structures. The Bayesian prior starts with the uniform prior then calculates the
 posteriors and use them as priors for the next step.}
 
-\item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each 
+\item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each
 mml score.}
 }
 \value{
-The function returns the learned Markov blanket candidates according to the assigned objective 
+The function returns the learned Markov blanket candidates according to the assigned objective
 function.
 }
 \description{
 This is a forward greedy seearch function that can be used incorprate with an objective function mml
-cpt, logit, or naive bayes (adaptive code) to discovery Markov blanket candidates. It is a greedy search, so the 
+cpt, logit, or naive bayes (adaptive code) to discovery Markov blanket candidates. It is a greedy search, so the
 function will stop if there is no better option to add into the current Markov blanket.
 }
 \keyword{This}
+\keyword{cond_probs_adaptive(),}
 \keyword{dependencies}
 \keyword{function}
 \keyword{has}
+\keyword{log_prob_adaptive().}
 \keyword{mml_cpt(),}
 \keyword{mml_logit(),}
 \keyword{mml_nb_adaptive(),}
-\keyword{mml_rand_str_adaptive().}
+\keyword{mml_rand_str_adaptive(),}
 \keyword{on}
+\keyword{probs_adaptive(),}
 \keyword{resample(),}

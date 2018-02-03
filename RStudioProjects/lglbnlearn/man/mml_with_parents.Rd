@@ -5,10 +5,10 @@
 \title{Auxiliary function to mml_cpt()}
 \usage{
 mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
-  targetIndex, base)
+  targetIndex)
 }
 \arguments{
-\item{indexListPerNodePerValue}{}
+\item{indexListPerNodePerValue}{indexListPerNodePerValue}
 
 \item{arities}{arities}
 
@@ -17,10 +17,8 @@ mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
 \item{parentsIndices}{parentsIndices}
 
 \item{targetIndex}{targetIndex}
-
-\item{base}{base}
 }
 \description{
-This function calculates the mml score of a target node given its parents. There has to be at least one 
-parent for the target.
+This function calculates the mml score of a target node given its parents. There has to be at least one
+parent for the target. Natural log is used.
 }

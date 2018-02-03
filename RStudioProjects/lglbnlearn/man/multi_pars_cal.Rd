@@ -5,21 +5,19 @@
 \title{Auxiliary function to mml_with_parents() and mml_with_parents_fast()}
 \usage{
 multi_pars_cal(indexListPerNodePerValue, commonParentsIndices, arityChild,
-  targetIndex, base)
+  targetIndex)
 }
 \arguments{
-\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
+\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
 by the function count_occurance().}
 
-\item{commonParentsIndices}{}
+\item{commonParentsIndices}{commonParentsIndices}
 
-\item{arityChild}{}
+\item{arityChild}{arityChild}
 
 \item{targetIndex}{Index of the target node.}
-
-\item{base}{The base of the logarithm.}
 }
 \description{
-This is an auxiliary function to both mml_with_parents() and mml_with_parents_fast() when the target 
+This is an auxiliary function to both mml_with_parents() and mml_with_parents_fast() when the target
 node has multiple parents.
 }

@@ -1,66 +1,62 @@
 #' Auxiliary function to mml_cpt()
 #'
-#' This function calculates the mml score of a target node given its parents. There has to be at least one 
-#' parent for the target. 
-#' @param indexListPerNodePerValue 
+#' This function calculates the mml score of a target node given its parents. There has to be at least one
+#' parent for the target. Natural log is used.
+#' @param indexListPerNodePerValue indexListPerNodePerValue
 #' @param arities arities
 #' @param sampleSize sampleSize
 #' @param parentsIndices parentsIndices
 #' @param targetIndex targetIndex
-#' @param base base
 #' @export
-mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, parentsIndices, targetIndex, 
-                            base) {
-  
+mml_with_parents = function(indexListPerNodePerValue, arities, sampleSize, parentsIndices, targetIndex) {
+
   arityChild = arities[targetIndex]
-  
+
   numParents = length(parentsIndices)
-  
+
   numParentsInstantiations = prod(arities[parentsIndices])
-  
-  #constantDiff = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6), base = base)
+
+  #constantDiff = 0.5 * (numParentsInstantiations * (arityChild - 1)) * log((pi * exp(1) / 6))
   constantDiff = 0
   nonFixedTerm = 0
-  
+
   # log((|x| - 1)!)
-  logConstant = log(factorial(arityChild - 1), base = base)
-  
+  logConstant = log(factorial(arityChild - 1))
+
   for (i in 1:numParentsInstantiations) {
-    
+
     if (numParents == 1) { # if single parent then just use index i
-      
+
       commonParentsIndices = indexListPerNodePerValue[[parentsIndices]][[i]]
-      
+
       N_pa_i = length(commonParentsIndices)
-      
+
       # sum_i^arityChild log(N(pa_i, x_i))!
-      cumSum = single_par_cal(indexListPerNodePerValue, commonParentsIndices, arityChild, targetIndex, 
-                              base)
-      
+      cumSum = single_par_cal(indexListPerNodePerValue, commonParentsIndices, arityChild, targetIndex)
+
     } else { # if more than 1 parent, use function to get potential combination
-      
+
       # fix this part
-      potentialCombination = get_parents_instantiation_indices(arities, numParents, parentsIndices, 
+      potentialCombination = get_parents_instantiation_indices(arities, numParents, parentsIndices,
                                                                numParentsInstantiations, i)
-      
+
       commonParentsIndices = intersect_indices(numParents, parentsIndices, indexListPerNodePerValue, potentialCombination)
       #ll[[i]]=commonParentsIndices
       N_pa_i = length(commonParentsIndices)
-      
-      cumSum = multi_pars_cal(indexListPerNodePerValue, commonParentsIndices, arityChild, targetIndex, 
-                              base)
-      
-    } # end if else 
-    
+
+      cumSum = multi_pars_cal(indexListPerNodePerValue, commonParentsIndices, arityChild, targetIndex)
+
+    } # end if else
+
     # log(numerator), where numerator = (N(Pa_i) + |x| - 1)!
     # log_gamma(n+1) is an approximation of log(factorial(n))
     logNumerator = log_gamma(N_pa_i + arityChild)
     #cat(logNumerator - logConstant - cumSum, "\n")
     nonFixedTerm = nonFixedTerm + logNumerator - logConstant - cumSum
-    
+
     #cat(logNumerator - logConstant - cumSum, "\n")
   } # end for i
-  
+
   return(constantDiff + nonFixedTerm)
-  
+
 }

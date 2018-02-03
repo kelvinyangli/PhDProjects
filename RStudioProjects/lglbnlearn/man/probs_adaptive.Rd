@@ -7,20 +7,21 @@
 probs_adaptive(data, arities, sampleSize, curIndex)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{arities}{A vector of variable arities in data, in the same order as the column names of data.}
 
 \item{sampleSize}{The sample size. That is, the number of rows of data.}
 
-\item{curIndex}{The current variable's index. The current variable can either be the target or 
+\item{curIndex}{The current variable's index. The current variable can either be the target or
 a different variable.}
 }
 \value{
-The function outputs a matrix of probabilities with dimension arity(curIndex) = arity(target) 
+The function outputs a matrix of probabilities with dimension arity(curIndex) = arity(target)
 by sample size.
 }
 \description{
-This function calculates probability at each data point for a variable that has no parent. Noticing 
+This function calculates probability at each data point for a variable that has no parent. Noticing
 we only consider no parents variable when it is the target.
 }

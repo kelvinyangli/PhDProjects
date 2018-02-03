@@ -4,11 +4,10 @@
 \alias{mml_without_parents}
 \title{Auxiliary function to both mml_cpt and mml_cpt_fast}
 \usage{
-mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex,
-  base)
+mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex)
 }
 \arguments{
-\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
+\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
 by the function count_occurance().}
 
 \item{arities}{A vector of variable ariteis.}
@@ -16,10 +15,8 @@ by the function count_occurance().}
 \item{sampleSize}{Sample size of a given data set.}
 
 \item{targetIndex}{Index of the target node.}
-
-\item{base}{The base of the logarithm.}
 }
 \description{
-This is an auxiliary function to both mml_cpt() and mml_cpt_fast(). It calculates the mml score of 
+This is an auxiliary function to both mml_cpt() and mml_cpt_fast(). It calculates the mml score of
 a node without any parents.
 }

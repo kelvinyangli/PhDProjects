@@ -7,19 +7,20 @@
 log_prob_adaptive(data, sampleSize, targetIndex, condProbsAdpt)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{sampleSize}{The sample size. That is, the number of rows of data.}
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
 
-\item{condProbsAdpt}{A conditional probabilities matrix that stores a variable's conditional probability 
+\item{condProbsAdpt}{A conditional probabilities matrix that stores a variable's conditional probability
 at each data point. This variable is either the target, or has more than one parent.}
 }
 \value{
 The function outputs a single log probability value.
 }
 \description{
-This function calculates log of the conditional probability for a variable given its parents. It is used 
+This function calculates log of the conditional probability for a variable given its parents. It is used
 to obtain p(x|pa of x) in the numerator of the conditional prob p(T|Xs).
 }

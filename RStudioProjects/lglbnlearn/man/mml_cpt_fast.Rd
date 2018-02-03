@@ -5,10 +5,10 @@
 \title{A faster version of mml_cpt}
 \usage{
 mml_cpt_fast(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize,
-  parentsIndices, targetIndex, base)
+  parentsIndices, targetIndex)
 }
 \arguments{
-\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
+\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
 by the function count_occurance().}
 
 \item{cachedIndicesList}{A vector of indices stored to speed up calculations.}
@@ -20,8 +20,6 @@ by the function count_occurance().}
 \item{parentsIndices}{Indices of parents nodes.}
 
 \item{targetIndex}{Index of the target node.}
-
-\item{base}{The base of the logarithm.}
 }
 \description{
 There is no difference between mml_cpt_fast() and mml_cpt(), other than the speed difference.

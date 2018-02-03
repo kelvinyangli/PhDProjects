@@ -8,7 +8,8 @@ mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex,
   targetProbsAdpt, cachPTs, cachInd, str)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{vars}{A vector of all variables in data, in the same order as the column names of data.}
 
@@ -18,7 +19,7 @@ mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex,
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
 
-\item{targetProbsAdpt}{A matrix that stores the target's probability for each of its value at each 
+\item{targetProbsAdpt}{A matrix that stores the target's probability for each of its value at each
 data point. The matrix has dimension arity(target) by sampleSize.}
 
 \item{str}{A fixed Markov blanket model stores in the bnlearn dag format.}
@@ -27,8 +28,8 @@ data point. The matrix has dimension arity(target) by sampleSize.}
 The function outputs the message length of a fixed structure.
 }
 \description{
-This function calculates the mml score of the target under a fixed Markov blanket model. The structure 
-can be a general DAG. This returns the 2nd part of MML that is the likelihood of data given the 
+This function calculates the mml score of the target under a fixed Markov blanket model. The structure
+can be a general DAG. This returns the 2nd part of MML that is the likelihood of data given the
 structure, since the MML cost of the structure is not stated.
 }
 \keyword{This}

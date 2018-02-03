@@ -7,7 +7,8 @@
 mml_nb_adaptive_slow(data, arities, paIndex, chIndices)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{arities}{A vector of variable arities.}
 
@@ -17,7 +18,7 @@ mml_nb_adaptive_slow(data, arities, paIndex, chIndices)
 }
 \description{
 This function calculates the mml score of a NB model using the adaptive code approach. It is much simpler than using
-MML87 that involves complex fisher calculation. The output is the mml score of a NB without adding the extra bit 
+MML87 that involves complex fisher calculation. The output is the mml score of a NB without adding the extra bit
 for each parameter as what the multi-state mml adaptive code does, because we don't know the complete message length
 from MML87 for NB. But maybe this is ok, because we are not interested in the mml estimation of parameters.
 }

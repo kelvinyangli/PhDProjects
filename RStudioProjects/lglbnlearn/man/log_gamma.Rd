@@ -10,6 +10,6 @@ log_gamma(z)
 \item{z}{A positive integer or real number.}
 }
 \description{
-This function is more accuarte than Stirling's approximation. For more details, please check on 
-https://en.wikipedia.org/wiki/Lanczos_approximation.
+This function is more accuarte than Stirling's approximation. For more details, please check on
+https://en.wikipedia.org/wiki/Lanczos_approximation. The log is natural base.
 }

@@ -8,7 +8,8 @@ cond_probs_adaptive(data, arities, sampleSize, targetIndex, curIndex,
   curPaIndices)
 }
 \arguments{
-\item{data}{A categorical data set.}
+\item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
+converted into numeric/integer first.}
 
 \item{arities}{A vector of variable arities in data, in the same order as the column names of data.}
 
@@ -16,16 +17,16 @@ cond_probs_adaptive(data, arities, sampleSize, targetIndex, curIndex,
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
 
-\item{curIndex}{The current variable's index. The current variable can either be the target or 
+\item{curIndex}{The current variable's index. The current variable can either be the target or
 a different variable.}
 
 \item{curPaIndices}{The indices of the current variable's parents.}
 }
 \value{
-The function outputs a matrix of conditional probabilities with dimension arity(target) by 
+The function outputs a matrix of conditional probabilities with dimension arity(target) by
 sample size.
 }
 \description{
-This function calculates conditional probability at each data point for a variable if it is the 
+This function calculates conditional probability at each data point for a variable if it is the
 target or it has at least one parent.
 }

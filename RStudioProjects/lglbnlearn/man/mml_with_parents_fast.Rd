@@ -5,10 +5,10 @@
 \title{Auxiliary function to mml_cpt_fast}
 \usage{
 mml_with_parents_fast(indexListPerNodePerValue, cachedIndicesList, arities,
-  sampleSize, parentsIndices, targetIndex, base)
+  sampleSize, parentsIndices, targetIndex)
 }
 \arguments{
-\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
+\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
 by the function count_occurance().}
 
 \item{cachedIndicesList}{A vector of indices stored to speed up calculations.}
@@ -20,8 +20,6 @@ by the function count_occurance().}
 \item{parentsIndices}{Indices of parents nodes.}
 
 \item{targetIndex}{Index of the target node.}
-
-\item{base}{The base of the logarithm.}
 }
 \description{
 This is an auxiliary function to mml_cpt_fast. It calculates the mml score of a node given its parents.

@@ -4,26 +4,26 @@
 \alias{forward_greedy_fast}
 \title{A faster version of a forward greedy search}
 \usage{
-forward_greedy_fast(data, indexListPerNodePerValue, arities, sampleSize, node,
-  base = exp(1), debug = FALSE)
+forward_greedy_fast(data, varCnt, arities, vars, sampleSize, target,
+  debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
 
-\item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained 
+\item{varCnt}{A list of stored indices for each value of each node. It is obtained
 by the function count_occurance().}
 
 \item{arities}{A vector of arities.}
 
+\item{vars}{vars}
+
 \item{sampleSize}{Sample size of the given data.}
 
-\item{node}{The target node.}
-
-\item{base}{The base of the logarithm. Default is the natural log.}
+\item{target}{The target node.}
 
 \item{debug}{A boolearn argument to display more details.}
 }
 \description{
-This is a faster version of a forward greedy search. It can only be used with mml_cpt_fast() 
+This is a faster version of a forward greedy search. It can only be used with mml_cpt_fast()
 as the objective function.
 }
