@@ -35,13 +35,18 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
   nvars = length(vars)
   mb = c()
   unCheckedIndices = (1:nvars)[-targetIndex]
+
+
   if (model == "random") {
 
+    cachedPXGivenY = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+    cachInd = 1 # starting cachedPXGivenY index from 1
     nSECs = c(1, 4, 14, 64, 332, 1924, 12294) # give the number of SECs for each mb size
     nIgnored = c(0, 1, 3, 16, 85, 506, 3299)
     ignored = readRDS("~/Documents/PhDProjects/RStudioProjects/local2global/ignored_strs.rds")
 
   }
+
 
   # initializing with empty model
   if (model == "cpt") {
@@ -52,33 +57,29 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
 
     minMsgLen = mml_logit(data, arities, sampleSize, c(), target, sigma = sigma)
 
-  } else if (model == "nb") {
+  } else {# if nb or random, do the following:
 
-    cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+    # 1. initializing a probs matrix for furture use
+    # 2. caching p(x|T) for each x in the list cachedPXGivenT to avoid redundent computations
+    # 3. calculating log(p(T)) for the empty model
+    probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+    cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
 
     for (i in 1:nvars) {
 
       if (i == targetIndex) {
 
-        cachPTs[[i]] = probs_adaptive(data, arities, sampleSize, targetIndex)
+        cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
 
       } else {
 
-        cachPTs[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, i, targetIndex)
+        cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
 
       }
 
     }
 
-    logProbTarget = log_prob_adaptive(data, sampleSize, targetIndex, cachPTs[[targetIndex]])
-    minMsgLen = -logProbTarget
-
-  } else if (model == "random") {
-
-    cachPTs = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
-    cachInd = 1 # starting cachPTs index from 1
-    targetProbsAdpt = probs_adaptive(data, arities, sampleSize, targetIndex)
-    logProbTarget = log_prob_adaptive(data, sampleSize, targetIndex, targetProbsAdpt)
+    logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
     minMsgLen = -logProbTarget
 
   }
@@ -147,26 +148,25 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
     # calculate mml of target given each unchecked node as input
     for (i in 1:length(unCheckedIndices)) {
 
-      inputIndices = c(mb, unCheckedIndices[i])
+      mbIndices = c(mb, unCheckedIndices[i])
       if (model == "cpt") {# cpt
 
-        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, inputIndices, targetIndex)
+        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, mbIndices, targetIndex)
 
       } else if (model == "logit") {#logit
 
-        msgLenCurrent = mml_logit(data, arities, sampleSize, vars[inputIndices], target, sigma = sigma)
+        msgLenCurrent = mml_logit(data, arities, sampleSize, vars[mbIndices], target, sigma)
 
       } else if (model == "nb") {#nb
 
-        msgLenCurrent = mml_nb_adaptive(data, arities, sampleSize, targetIndex, logProbTarget,
-                               cachPTs, inputIndices)
+        msgLenCurrent = mml_nb_adaptive(data, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, mbIndices)
 
       } else if (model == "random") {#random
 
-        res = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, targetProbsAdpt,
-                                    cachPTs, cachInd, strList, inputIndices, weights, debug = debug)
+        res = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, logProbTarget,
+                                    cachedPXGivenT, probsMtx, strList, mbIndices, weights, cachedPXGivenY, cachInd, debug)
         msgLenCurrent = res$avgL
-        cachPTs = res$cachPTs
+        cachedPXGivenY = res$cachedPXGivenY
         cachInd = res$cachInd
 
       }# end else if

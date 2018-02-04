@@ -4,13 +4,11 @@
 \alias{log_prob_adaptive}
 \title{An auxiliary function to mml_fixed_str()}
 \usage{
-log_prob_adaptive(data, sampleSize, targetIndex, condProbsAdpt)
+log_prob_adaptive(data, targetIndex, condProbsAdpt)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
 converted into numeric/integer first.}
-
-\item{sampleSize}{The sample size. That is, the number of rows of data.}
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
 

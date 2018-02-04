@@ -4,7 +4,7 @@
 \alias{cond_probs_adaptive}
 \title{An auxiliary function to mml_fixed_str()}
 \usage{
-cond_probs_adaptive(data, arities, sampleSize, targetIndex, curIndex,
+cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex,
   curPaIndices)
 }
 \arguments{
@@ -16,6 +16,8 @@ converted into numeric/integer first.}
 \item{sampleSize}{The sample size. That is, the number of rows of data.}
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
+
+\item{probsMtx}{probsMtx}
 
 \item{curIndex}{The current variable's index. The current variable can either be the target or
 a different variable.}

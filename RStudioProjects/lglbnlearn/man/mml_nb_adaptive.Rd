@@ -4,8 +4,8 @@
 \alias{mml_nb_adaptive}
 \title{MML Naive Bayes using adaptive code approach (faster version)}
 \usage{
-mml_nb_adaptive(data, arities, sampleSize, targetIndex, logProbTarget, cachPTs,
-  chIndices)
+mml_nb_adaptive(data, arities, sampleSize, targetIndex, logProbTarget,
+  cachedPXGivenT, chIndices)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
@@ -19,7 +19,7 @@ converted into numeric/integer first.}
 
 \item{logProbTarget}{Log of the probability of the target variable.}
 
-\item{cachPTs}{Pre-calculated conditional probability of each node given its parents. In the case of Naive Bayes
+\item{cachedPXGivenT}{Pre-calculated conditional probability of each node given its parents. In the case of Naive Bayes
 models, the only parent is the target variable.}
 
 \item{chIndices}{A vector of indices for the Xs (or child nodes).}

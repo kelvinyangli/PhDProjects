@@ -10,19 +10,20 @@
 #' @param sampleSize The sample size. That is, the number of rows of data.
 #' @param targetIndex The target variable (or parent node) index.
 #' @param logProbTarget Log of the probability of the target variable.
-#' @param cachPTs Pre-calculated conditional probability of each node given its parents. In the case of Naive Bayes
+#' @param cachedPXGivenT Pre-calculated conditional probability of each node given its parents. In the case of Naive Bayes
 #' models, the only parent is the target variable.
 #' @param chIndices A vector of indices for the Xs (or child nodes).
 #' @export
-mml_nb_adaptive = function(data, arities, sampleSize, targetIndex, logProbTarget, cachPTs, chIndices) {
+mml_nb_adaptive = function(data, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, chIndices) {
 
   lp = logProbTarget
   # a matrix to store the normalizting constant in p(T|Xs)
-  margProbs = cachPTs[[targetIndex]]
+  margProbs = cachedPXGivenT[[targetIndex]]
   for (x in chIndices) {# go through each node in a given str
 
-    condProbsAdpt = cachPTs[[x]]
-    lp = lp + log_prob_adaptive(data, sampleSize, targetIndex, condProbsAdpt)
+    condProbsAdpt = cachedPXGivenT[[x]]
+    lp = lp + sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+    # lp = lp + log_prob_adaptive(data, sampleSize, targetIndex, condProbsAdpt)
     margProbs = margProbs * condProbsAdpt
 
   }

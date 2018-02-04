@@ -5,7 +5,8 @@
 \title{MML for a fixed Markov blanket model using adaptive code approach}
 \usage{
 mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex,
-  targetProbsAdpt, cachPTs, cachInd, str)
+  logProbTarget, cachedPXGivenT, probsMtx, str, mbIndices, cachedPXGivenY,
+  cachInd)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
@@ -19,10 +20,19 @@ converted into numeric/integer first.}
 
 \item{targetIndex}{The target node's index in vars, whose Markov blanket we are interested in.}
 
-\item{targetProbsAdpt}{A matrix that stores the target's probability for each of its value at each
-data point. The matrix has dimension arity(target) by sampleSize.}
+\item{logProbTarget}{Log of the probability of the target.}
+
+\item{cachedPXGivenT}{cachedPXGivenT}
+
+\item{probsMtx}{probsMtx}
 
 \item{str}{A fixed Markov blanket model stores in the bnlearn dag format.}
+
+\item{mbIndices}{The indices of potential Markov blanket variables.}
+
+\item{cachedPXGivenY}{cachedPXGivenY}
+
+\item{cachInd}{cachInd}
 }
 \value{
 The function outputs the message length of a fixed structure.
@@ -33,9 +43,8 @@ can be a general DAG. This returns the 2nd part of MML that is the likelihood of
 structure, since the MML cost of the structure is not stated.
 }
 \keyword{This}
-\keyword{cond_probs_adaptive(),}
+\keyword{cond_probs_adaptive().}
 \keyword{dependencies}
 \keyword{function}
 \keyword{has}
-\keyword{log_prob_adaptive().}
 \keyword{on}

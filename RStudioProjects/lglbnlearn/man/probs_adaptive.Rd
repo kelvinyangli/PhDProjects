@@ -4,7 +4,7 @@
 \alias{probs_adaptive}
 \title{An auxiliary function to mml_fixed_str().}
 \usage{
-probs_adaptive(data, arities, sampleSize, curIndex)
+probs_adaptive(data, arities, sampleSize, probsMtx, curIndex)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
@@ -13,6 +13,8 @@ converted into numeric/integer first.}
 \item{arities}{A vector of variable arities in data, in the same order as the column names of data.}
 
 \item{sampleSize}{The sample size. That is, the number of rows of data.}
+
+\item{probsMtx}{probsMtx}
 
 \item{curIndex}{The current variable's index. The current variable can either be the target or
 a different variable.}

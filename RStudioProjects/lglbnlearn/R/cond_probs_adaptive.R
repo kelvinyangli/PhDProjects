@@ -7,13 +7,14 @@
 #' @param arities A vector of variable arities in data, in the same order as the column names of data.
 #' @param sampleSize The sample size. That is, the number of rows of data.
 #' @param targetIndex The target node's index in vars, whose Markov blanket we are interested in.
+#' @param probsMtx probsMtx
 #' @param curIndex The current variable's index. The current variable can either be the target or
 #' a different variable.
 #' @param curPaIndices The indices of the current variable's parents.
 #' @return The function outputs a matrix of conditional probabilities with dimension arity(target) by
 #' sample size.
 #' @export
-cond_probs_adaptive = function(data, arities, sampleSize, targetIndex, curIndex, curPaIndices) {
+cond_probs_adaptive = function(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices) {
 
   ind = which(c(curPaIndices, curIndex) == targetIndex)
   cnt = rep(1, arities[curIndex]) # initializing cnt with 1
@@ -33,8 +34,6 @@ cond_probs_adaptive = function(data, arities, sampleSize, targetIndex, curIndex,
   # each row of probs corresponds to a value of the target var
   # this probs matrix will be used later to obtain the normalizing constant when
   # calculating the condtional probability p(T|Xs)
-  probs = matrix(0.5, arities[targetIndex], sampleSize)
-
   for (i in 1:(sampleSize - 1)) {# counting adaptively at each data point
 
     indices = data[i, c(curPaIndices, curIndex)]
@@ -43,12 +42,12 @@ cond_probs_adaptive = function(data, arities, sampleSize, targetIndex, curIndex,
     for (k in 1:arities[targetIndex]) {# loop through each value of the target
 
       indices[ind] = k
-      probs[k, i + 1] = cnt[[matrix(indices, 1)]] / sum(cnt[[matrix(indices[-length(indices)], 1)]])
+      probsMtx[k, i + 1] = cnt[[matrix(indices, 1)]] / sum(cnt[[matrix(indices[-length(indices)], 1)]])
 
     }
 
   } # end adaptive counting
 
-  return(probs)
+  return(probsMtx)
 
 }
