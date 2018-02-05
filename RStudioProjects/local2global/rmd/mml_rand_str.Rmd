@@ -15,6 +15,36 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 ```
 
+```{r}
+library(parallel)
+library(foreach)
+library(doParallel)
+
+dag = randDag(7, 3)
+cpts = randCPTs(dag, 2, 1)
+data = rbn(cpts, 1000)
+arities = sapply(data, nlevels)
+names(arities) = c()
+vars = colnames(data)
+n = nrow(data)
+di = count_occurance(data, arities)
+data = data.matrix(data)
+for (target in vars) {
+  res = forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+  cat(res, "\n")
+} 
+
+#no_cores = detectCores() - 1
+no_cores = 3
+registerDoParallel(no_cores)
+ll = foreach(target = vars, 
+        .combine = list, 
+        .multicombine = TRUE) %dopar%
+  forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+stopImplicitCluster()
+
+```
+
 ## Testing on real models.
 ## without sym: rand 24.5--2.11; 20.7 +- 1.85; cpt 25.5--1.02; nb 24.4--2.82; 
 ## with sym: rand 25.4--3.79; 19.4 +- 3.09; cpt 18--1.94; 31.2--4.61; find a way to drop the ed for rand after symmetry check!!!
@@ -40,7 +70,10 @@ for (i in 1:nvars) {
 ed = rep(0, nvars)
 edcpt = edrand = ednb = edrand_sym = rep(list(ed), length(datasets))
 
-for (i in 7:length(datasets)) {
+### starting parallel computing ###
+no_cores = 3
+registerDoParallel(no_cores)
+for (i in 8:length(datasets)) {
   cat(i, "\n")
   mbcpt = mbnb = mbrand = list()
   data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[i])) 
@@ -49,33 +82,50 @@ for (i in 7:length(datasets)) {
   names(arities) = c()
   di = count_occurance(data, arities)
   data = data.matrix(data)
-  for (j in 1:nvars) {
+  # for (j in 1:nvars) {
+  #   
+  #   cat(j, "-")
     
-    cat(j, "-")
-    mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-                              prior = "uniform", debug = F)
-    # ed = mb_false_finding(mbtrue[[j]], mbrand[[j]])
-    # cat(ed, "\n")
-    # 
-    mbcpt[[j]] = forward_greedy_fast(data, di, arities, vars, n, vars[j], debug = F)
-    # edcpt[[i]][j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
-    # 
-    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
+  mbrand = foreach(target = vars, 
+      .combine = list, 
+      .multicombine = TRUE) %dopar% 
+    forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+  # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
+  #                           prior = "uniform", debug = F)
+  # ed = mb_false_finding(mbtrue[[j]], mbrand[[j]])
+  # cat(ed, "\n")
+  
+  mbcpt = foreach(target = vars, 
+      .combine = list, 
+      .multicombine = TRUE) %dopar% 
+    forward_greedy_fast(data, di, arities, vars, n, target)
+  # mbcpt[[j]] = forward_greedy_fast(data, di, arities, vars, n, vars[j], debug = F)
+  # edcpt[[i]][j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
+  
+  mbnb = foreach(target = vars, 
+      .combine = list, 
+      .multicombine = TRUE) %dopar% 
+    forward_greedy(data, arities, vars, n, target, "nb")
+    # mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
     # ednb[[i]][j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
-  }
+  # }
+  
   filename = strsplit(datasets[i], ".csv")[[1]]
   mbrand_sym = symmetry_correction(vars, mbrand, "AND")
   saveRDS(mbrand, paste0("~/Documents/Experiments/kdd_exp/", model, "/mml_rand/", n, "/without_symmetry/", filename, ".rds"))
   saveRDS(mbrand_sym, paste0("~/Documents/Experiments/kdd_exp/", model, "/mml_rand/", n, "/with_symmetry/", filename, ".rds"))
+  
 }
+
+stopImplicitCluster()
 ```
 
 ## Evaluating
 ```{r}
-model = "alarm"
+model = "insurance"
 dir = paste0("~/Documents/Experiments/UAI_exp/", model, "/")
 dag = readRDS(paste0(dir, "dag/", model, ".rds"))
-n = 1000
+n = 5000
 vars = bnlearn::nodes(dag)
 nvars = length(vars)
 # true mbs 
