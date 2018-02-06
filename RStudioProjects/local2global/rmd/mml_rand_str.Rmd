@@ -13,15 +13,22 @@ if (.Platform$OS.type == "windows") {
   dir = "/home/"
 }
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+
+# cpt = read.dsc("~/Downloads/barley.dsc.gz")
+# a = c()
+# for (i in 1:length(cpt)) {
+#   a = c(a, nrow(cpt[[i]]$prob))
+# }
+# saveRDS(a, "~/Documents/Experiments/UAI_exp/barley/arities.rds")
 ```
 
 ```{r}
-library(parallel)
-library(foreach)
-library(doParallel)
+# library(parallel)
+# library(foreach)
+# library(doParallel)
 
-dag = randDag(7, 3)
-cpts = randCPTs(dag, 2, 1)
+dag = randDag(10, 3)
+cpts = randCPTs(dag, 4, 1)
 data = rbn(cpts, 1000)
 arities = sapply(data, nlevels)
 names(arities) = c()
@@ -29,9 +36,10 @@ vars = colnames(data)
 n = nrow(data)
 di = count_occurance(data, arities)
 data = data.matrix(data)
+
 for (target in vars) {
   res = forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
-  cat(res, "\n")
+  #cat(res, "\n")
 } 
 
 #no_cores = detectCores() - 1
@@ -53,93 +61,85 @@ stopImplicitCluster()
 ## without sym: 22.8 +- 1.59; 17.1 +- 1.66;
 ## with sym: 27.2 +- 2.42; 18.6 +- 2.41;
 ```{r}
-model = "barley"
-dir = paste0("~/Documents/Experiments/UAI_exp/", model, "/")
-dag = readRDS(paste0(dir, "dag/", model, ".rds"))
-n = 500
+model = "child"
+modelDir = paste0("~/Documents/Experiments/UAI_exp/", model, "/")
+resultsDir = "~/Documents/Experiments/kdd_exp/"
+dag = readRDS(paste0(modelDir, "dag/", model, ".rds"))
+n = sampleSize = 500
 vars = bnlearn::nodes(dag)
 nvars = length(vars)
-datasets = list.files(paste0(dir, "data_csv/", n, "/"))
+arities = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/arities.rds"))
+datasets = list.files(paste0(modelDir, "data_csv/", n, "/"))
 
-mbtrue = list()
-for (i in 1:nvars) {
-  mbtrue[[i]] = bnlearn::mb(dag, vars[i])
-}
-
-# edcpt = edrand = ednb = rep(0, nvars)
-ed = rep(0, nvars)
-edcpt = edrand = ednb = edrand_sym = rep(list(ed), length(datasets))
 
 ### starting parallel computing ###
-no_cores = 3
-registerDoParallel(no_cores)
-for (i in 8:length(datasets)) {
+# no_cores = 3
+# registerDoParallel(no_cores)
+for (i in 1:length(datasets)) {
   cat(i, "\n")
-  mbcpt = mbnb = mbrand = list()
-  data = read.csv(paste0(dir, "data_csv/", n, "/", datasets[i])) 
-  data = numeric2categorical(data)
-  arities = sapply(data, nlevels)
-  names(arities) = c()
-  di = count_occurance(data, arities)
-  data = data.matrix(data)
-  # for (j in 1:nvars) {
-  #   
-  #   cat(j, "-")
-    
-  mbrand = foreach(target = vars, 
-      .combine = list, 
-      .multicombine = TRUE) %dopar% 
-    forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
-  # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-  #                           prior = "uniform", debug = F)
-  # ed = mb_false_finding(mbtrue[[j]], mbrand[[j]])
-  # cat(ed, "\n")
-  
-  mbcpt = foreach(target = vars, 
-      .combine = list, 
-      .multicombine = TRUE) %dopar% 
-    forward_greedy_fast(data, di, arities, vars, n, target)
-  # mbcpt[[j]] = forward_greedy_fast(data, di, arities, vars, n, vars[j], debug = F)
-  # edcpt[[i]][j] = mbEditDist(mbtrue[[j]], mbcpt[[j]], vars[j], vars)
-  
-  mbnb = foreach(target = vars, 
-      .combine = list, 
-      .multicombine = TRUE) %dopar% 
-    forward_greedy(data, arities, vars, n, target, "nb")
-    # mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
-    # ednb[[i]][j] = mbEditDist(mbtrue[[j]], mbnb[[j]], vars[j], vars)
-  # }
-  
   filename = strsplit(datasets[i], ".csv")[[1]]
-  mbrand_sym = symmetry_correction(vars, mbrand, "AND")
-  saveRDS(mbrand, paste0("~/Documents/Experiments/kdd_exp/", model, "/mml_rand/", n, "/without_symmetry/", filename, ".rds"))
-  saveRDS(mbrand_sym, paste0("~/Documents/Experiments/kdd_exp/", model, "/mml_rand/", n, "/with_symmetry/", filename, ".rds"))
+  mbcpt = mbnb = mbrand = mbiamb = mbinteriamb = list()
+  data = read.csv(paste0(modelDir, "data_csv/", n, "/", datasets[i])) 
+  data = numeric2categorical(data)
+  
+  mbiamb = sapply(vars, learn.mb, x = data, method = "iamb")
+  saveRDS(mbiamb, paste0(resultsDir, model, "/iamb/", n, "/without_symmetry/", filename, ".rds"))
+  
+  mbinteriamb = sapply(vars, learn.mb, x = data, method = "inter.iamb")
+  saveRDS(mbinteriamb, paste0(resultsDir, model, "/inter_iamb/", n, "/without_symmetry/", filename, ".rds"))
+  
+  # di = count_occurance(data, arities)
+  # data = data.matrix(data)
+  
+  # mbrand = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+  # 
+  # mbrand_sym = symmetry_correction(vars, mbrand, "AND")
+  # saveRDS(mbrand, paste0(resultsDir, model, "/mml_rand/", n, "/without_symmetry/", filename, ".rds"))
+  # saveRDS(mbrand_sym, paste0(resultsDir, model, "/mml_rand/", n, "/with_symmetry/", filename, ".rds"))
+  # 
+  # mbcpt = foreach(target = vars, 
+  #     .combine = list, 
+  #     .multicombine = TRUE) %dopar% 
+  #   forward_greedy_fast(data, di, arities, vars, n, target)
+  # 
+  # mbcpt_sym = symmetry_correction(vars, mbcpt, "AND")
+  # saveRDS(mbcpt, paste0(resultsDir, model, "/mml_cpt/", n, "/without_symmetry/", filename, ".rds"))
+  # saveRDS(mbcpt_sym, paste0(resultsDir, model, "/mml_cpt/", n, "/with_symmetry/", filename, ".rds"))
+  # 
+  # mbnb = foreach(target = vars, 
+  #     .combine = list, 
+  #     .multicombine = TRUE) %dopar% 
+  #   forward_greedy(data, arities, vars, n, target, "nb")
+  # 
+  # mbnb_sym = symmetry_correction(vars, mbnb, "AND")
+  # saveRDS(mbnb, paste0(resultsDir, model, "/mml_nb/", n, "/without_symmetry/", filename, ".rds"))
+  # saveRDS(mbnb_sym, paste0(resultsDir, model, "/mml_nb/", n, "/with_symmetry/", filename, ".rds"))
   
 }
 
-stopImplicitCluster()
+# stopImplicitCluster()
 ```
 
 ## Evaluating
 ```{r}
-model = "insurance"
+model = "child"
 dir = paste0("~/Documents/Experiments/UAI_exp/", model, "/")
 dag = readRDS(paste0(dir, "dag/", model, ".rds"))
 n = 5000
 vars = bnlearn::nodes(dag)
 nvars = length(vars)
 # true mbs 
-mbtrue = list()
-for (i in 1:nvars) {
-  mbtrue[[i]] = bnlearn::mb(dag, vars[i])
-}
+mbtrue = sapply(vars, bnlearn::mb, x = dag)
 
 sed = ret = c()
 
-for (method in c("mml_cpt", "mml_nb", "mml_rand")) {
+for (method in c("mml_cpt", "mml_nb", "mml_rand", "iamb", "inter_iamb")) {
 
   #method = "mml_rand"
-  symtry = "with"
+  symtry = "without"
   files = list.files(paste0("~/Documents/Experiments/kdd_exp/", model, "/", method, "/", n, "/", symtry, "_symmetry/"))
   #cat(length(files), "\n")
   edrand = rep(list(rep(0, nvars)), length(files))

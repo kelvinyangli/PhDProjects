@@ -13,18 +13,19 @@ if (.Platform$OS.type == "windows") {
   dir = "/home/"
 }
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
-dir = "~/Documents/Experiments/kdd_exp/"
+
 ```
 
 These exp take 5 parameters into account, ordered by priority: 
 
-* nvars 10, 50, 100
+* nvars 10, 30, 50, 100
 * n 50, 500, 5000
 * npa 2, 4, 6
 * narity 2, 3, 4
 * beta (derichlet concentration parameter) 1, 5, 25
 
 ```{r}
+dir = "~/Documents/Experiments/kdd_exp/"
 vnvars = c(10, 50, 100)
 vnpa = c(2, 4, 6)
 vnarity = c(2, 3, 4)
@@ -37,7 +38,9 @@ for (nvars in vnvars) {
     for (narity in vnarity) {
       
       for (beta in vbeta) {
-        
+        nvars = 50
+        npa = narity = 2 
+        beta = 1
         dirname = paste(nvars, npa, narity, beta, sep = "_")
         
         for (itr in 1:5) {
@@ -54,7 +57,7 @@ for (nvars in vnvars) {
             i = i + 1
           }
           saveRDS(dag, paste0(dir, dirname, "/dag/dag_", sd, ".rds"))
-          saveRDS(cpts, paste0(dir, dirname, "/cpt/cpt_", sd, ".rds"))
+          saveRDS(cpts, paste0(dir, dirname, "/cpts/cpt_", sd, ".rds"))
           saveRDS(mbtrue, paste0(dir, dirname, "/mb_true/mb_", sd, ".rds"))
           
           for (n in vn) {
@@ -67,7 +70,7 @@ for (nvars in vnvars) {
             
           }
         }# end itr
-      }
+      }# end beta
     }
   }
 }
@@ -77,10 +80,16 @@ for (nvars in vnvars) {
 
 ## learning
 ```{r}
-params = "10_2_2_1"
+# library(parallel)
+# library(foreach)
+# library(doParallel)
+dir = "~/Documents/Experiments/kdd_exp/"
+params = "50_2_2_1"
 datasets = list.files(paste0(dir, params, "/data_rds/"))
-for (i in 1:2) {
+for (i in 1:length(datasets)) {
+  cat(i, "\n")
   data = readRDS(paste0(dir, params, "/data_rds/", datasets[i]))
+  filename = paste0(strsplit(datasets[i], "_")[[1]][-1], collapse = "_")
   nvars = ncol(data)
   vars = names(data)
   n = nrow(data)
@@ -88,22 +97,39 @@ for (i in 1:2) {
   names(arities) = c()
   di = count_occurance(data, arities)
   mbcpt = mbnb = mbrand = list()
-  for (j in 1:nvars) {
-    
-    cat(i, "--", j, "\n")
-    # targetProbsAdpt = probs_adaptive(data, arities, n, j)
-    # mbrand[[j]] = forward_greedy(data, arities, vars, n, vars[j], "random", varCnt = di,
-    #                           prior = "uniform", debug = F)
-    # mbcpt[[j]] = forward_greedy_fast(data, di, arities, n, vars[j], debug = F)
-    mbnb[[j]] = forward_greedy(data, arities, vars, n, vars[j], "nb", debug = F)
-    
-  }
-  filename = paste0(strsplit(datasets[i], "_")[[1]][-1], collapse = "_")
-  #saveRDS(mbrand, paste0(dir, params, "/mb_rand/rand_", filename))
-  #saveRDS(mbcpt, paste0(dir, params, "/mb_cpt/cpt_", filename))
-  saveRDS(mbnb, paste0(dir, params, "/mb_nb/nb_", filename))
+  
+  mbiamb = lapply(vars, learn.mb, x = data, method = "iamb")
+  mbinter = lapply(vars, learn.mb, x = data, method = "inter.iamb")
+  saveRDS(mbiamb, paste0(dir, params, "/iamb/iamb_", filename))
+  saveRDS(mbinter, paste0(dir, params, "/inter_iamb/inter_", filename))
+  
+  data = data.matrix(data)
+  ## starting parallel computing ###
+  no_cores = 3
+  registerDoParallel(no_cores)
+
+  mbrand = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+
+  mbcpt = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy_fast(data, di, arities, vars, n, target)
+
+  mbnb = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data, arities, vars, n, target, "nb")
+
+  saveRDS(mbrand, paste0(dir, params, "/rand/rand_", filename))
+  saveRDS(mbcpt, paste0(dir, params, "/cpt/cpt_", filename))
+  saveRDS(mbnb, paste0(dir, params, "/nb/nb_", filename))
   
 }
+
+stopImplicitCluster()
 ```
 
 
@@ -111,7 +137,8 @@ for (i in 1:2) {
 
 ## Evaluating
 ```{r}
-model = "10_2_2_1"
+dir = "~/Documents/Experiments/kdd_exp/"
+model = "30_2_2_1"
 res = c()
 n = 5000
 if (n == 5000) {
@@ -122,7 +149,7 @@ if (n == 5000) {
   ind = 3
 }
 true = list.files(paste0(dir, model, "/mb_true"))
-for (folder in c("mb_cpt", "mb_nb", "mb_rand")) {
+for (folder in c("cpt", "nb", "rand", "iamb", "inter_iamb")) {
   
   learned = list.files(paste0(dir, model, "/", folder))
   
@@ -143,7 +170,7 @@ for (folder in c("mb_cpt", "mb_nb", "mb_rand")) {
   
 }
 
-line = matrix(c(model, n, res), 1, 5)
+line = matrix(c(model, n, res), 1)
 write.table(line, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 ```
 

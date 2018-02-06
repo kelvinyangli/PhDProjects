@@ -208,6 +208,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
 
   } # end repeat
 
+  # lst = list(mb = vars[mb], mml = minMsgLen)
+  # return(lst)
   return(vars[mb])
 
 }

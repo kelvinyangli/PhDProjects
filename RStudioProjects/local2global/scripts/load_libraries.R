@@ -1,8 +1,8 @@
 #setwd("C:/PhDProjects/RStudioProjects/mbDiscoveryR/")
 
 #libraries = c("bnlearn", "readr", "foreign", "pcalg", "gRain", "gtools", "entropy", "reshape2", "ggplot2", "Rgraphviz", "arm")
-libraries = c("bnlearn", "entropy", "reshape2", "ggplot2", "Rgraphviz", "gRain",
-              "magic", "expm", "gtools", "readr", "networkD3", "devtools", "lglbnlearn")
+libraries = c("bnlearn", "entropy", "reshape2", "ggplot2", "Rgraphviz", "gRain", "magic", "expm",
+              "gtools", "readr", "networkD3", "devtools", "lglbnlearn", "parallel", "foreach", "doParallel")
 lapply(libraries, require, character.only = TRUE)
 
 #library(bnlearn)
