@@ -138,7 +138,7 @@ stopImplicitCluster()
 ## Evaluating
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-model = "30_2_2_1"
+model = "50_2_2_1"
 res = c()
 n = 5000
 if (n == 5000) {

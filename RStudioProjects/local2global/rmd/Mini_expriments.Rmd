@@ -1,0 +1,110 @@
+---
+title: "Mini_expriments"
+author: "kl"
+date: "6 February 2018"
+output: html_document
+---
+
+```{r global_options, include=F, warning=F, eval=F, echo=F, message=F}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+
+# cpt = read.dsc("~/Downloads/barley.dsc.gz")
+# a = c()
+# for (i in 1:length(cpt)) {
+#   a = c(a, nrow(cpt[[i]]$prob))
+# }
+# saveRDS(a, "~/Documents/Experiments/UAI_exp/barley/arities.rds")
+```
+
+
+```{r}
+sd = randSeed()
+set.seed(sd)
+dag = randDag(10, 3)
+graphviz.plot(dag)
+
+vars = bnlearn::nodes(dag)
+target = "V9"
+targetIndex = 2
+mbIndices = c(1, 3, 5)
+
+str1 = matrix(0, 4, 4)
+dimnames(str1) = rep(list(vars[c(mbIndices, targetIndex)]), 2)
+str1[1,c(2,3,4)]=str1[4,c(2,3)]=1
+str2 = str1
+str2[1,c(2,3)]=0
+ind = c()
+for (k in 1:100) {
+  
+cpts = randCPTs(dag, 4, 1)
+sampleSize = 1000
+data = rbn(cpts, sampleSize)
+vars = colnames(data)
+nvars = ncol(data)
+arities = sapply(data, nlevels)
+di=count_occurance(data,arities)
+data = data.matrix(data)
+probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+cachInd = 1
+cachedPXGivenY = cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+
+#forward_greedy(data,arities,vars,sampleSize,"T","random",varCnt = di,prior="uniform",debug=T)
+
+for (i in 1:nvars) {
+
+  if (i == targetIndex) {
+
+    cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+
+  } else {
+
+    cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+
+  }
+
+}
+
+logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+
+
+res1 = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str1, mbIndices, cachedPXGivenY, cachInd)
+l1 = res1$llh
+
+res2 = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str2, mbIndices, cachedPXGivenY, cachInd)
+l2 = res2$llh
+
+cat(l1, "-", l2, "\n")
+ind = c(ind, which.min(c(l1, l2)))
+
+}
+```
+
+
+```{r}
+# vars
+# targetIndex = 1
+# mbIndices = c(2, 3, 4)
+
+
+
+chk = 1
+for (i in 1:100) {
+  chk = chk * is.DAG(rand_mb_model(vars,1,2:9))  
+}
+chk
+
+```
+
+
+
+
+
+
+
+

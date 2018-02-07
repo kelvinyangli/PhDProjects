@@ -61,75 +61,76 @@ stopImplicitCluster()
 ## without sym: 22.8 +- 1.59; 17.1 +- 1.66;
 ## with sym: 27.2 +- 2.42; 18.6 +- 2.41;
 ```{r}
-model = "alarm"
+model = "barley"
 modelDir = paste0("~/Documents/Experiments/UAI_exp/", model, "/")
 resultsDir = "~/Documents/Experiments/kdd_exp/"
 dag = readRDS(paste0(modelDir, "dag/", model, ".rds"))
-n = sampleSize = 1000
+n = sampleSize = 5000
 vars = bnlearn::nodes(dag)
 nvars = length(vars)
-arities = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/arities.rds"))
+#arities = readRDS(paste0("~/Documents/Experiments/UAI_exp/", model, "/arities.rds"))
 datasets = list.files(paste0(modelDir, "data_csv/", n, "/"))
 
 
 ### starting parallel computing ###
-# no_cores = 3
-# registerDoParallel(no_cores)
+no_cores = 3
+registerDoParallel(no_cores)
 for (i in 1:length(datasets)) {
   cat(i, "\n")
   filename = strsplit(datasets[i], ".csv")[[1]]
   mbcpt = mbnb = mbrand = mbiamb = mbinteriamb = list()
   data = read.csv(paste0(modelDir, "data_csv/", n, "/", datasets[i])) 
   data = numeric2categorical(data)
+  arities = sapply(data, nlevels)
   #for (j in 1:ncol(data)) levels(data[, j]) = 0:(arities[j] - 1)
   
-  mbiamb = sapply(vars, learn.mb, x = data, method = "iamb")
-  saveRDS(mbiamb, paste0(resultsDir, model, "/iamb/", n, "/without_symmetry/", filename, ".rds"))
+  # mbiamb = sapply(vars, learn.mb, x = data, method = "iamb")
+  # saveRDS(mbiamb, paste0(resultsDir, model, "/iamb/", n, "/without_symmetry/", filename, ".rds"))
+  # 
+  # mbinteriamb = sapply(vars, learn.mb, x = data, method = "inter.iamb")
+  # saveRDS(mbinteriamb, paste0(resultsDir, model, "/inter_iamb/", n, "/without_symmetry/", filename, ".rds"))
   
-  mbinteriamb = sapply(vars, learn.mb, x = data, method = "inter.iamb")
-  saveRDS(mbinteriamb, paste0(resultsDir, model, "/inter_iamb/", n, "/without_symmetry/", filename, ".rds"))
+  di = count_occurance(data, arities)
+  data = data.matrix(data)
   
-  # di = count_occurance(data, arities)
-  # data = data.matrix(data)
-  
-  # mbrand = foreach(target = vars,
-  #     .combine = list,
-  #     .multicombine = TRUE) %dopar%
-  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
-  # 
-  # mbrand_sym = symmetry_correction(vars, mbrand, "AND")
-  # saveRDS(mbrand, paste0(resultsDir, model, "/mml_rand/", n, "/without_symmetry/", filename, ".rds"))
-  # saveRDS(mbrand_sym, paste0(resultsDir, model, "/mml_rand/", n, "/with_symmetry/", filename, ".rds"))
-  # 
-  # mbcpt = foreach(target = vars, 
-  #     .combine = list, 
-  #     .multicombine = TRUE) %dopar% 
-  #   forward_greedy_fast(data, di, arities, vars, n, target)
-  # 
-  # mbcpt_sym = symmetry_correction(vars, mbcpt, "AND")
-  # saveRDS(mbcpt, paste0(resultsDir, model, "/mml_cpt/", n, "/without_symmetry/", filename, ".rds"))
-  # saveRDS(mbcpt_sym, paste0(resultsDir, model, "/mml_cpt/", n, "/with_symmetry/", filename, ".rds"))
-  # 
-  # mbnb = foreach(target = vars, 
-  #     .combine = list, 
-  #     .multicombine = TRUE) %dopar% 
-  #   forward_greedy(data, arities, vars, n, target, "nb")
-  # 
-  # mbnb_sym = symmetry_correction(vars, mbnb, "AND")
-  # saveRDS(mbnb, paste0(resultsDir, model, "/mml_nb/", n, "/without_symmetry/", filename, ".rds"))
-  # saveRDS(mbnb_sym, paste0(resultsDir, model, "/mml_nb/", n, "/with_symmetry/", filename, ".rds"))
+  mbrand = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+
+  mbrand_sym = symmetry_correction(vars, mbrand, "AND")
+  saveRDS(mbrand, paste0(resultsDir, model, "/mml_rand/", n, "/without_symmetry/", filename, ".rds"))
+  saveRDS(mbrand_sym, paste0(resultsDir, model, "/mml_rand/", n, "/with_symmetry/", filename, ".rds"))
+
+  mbcpt = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy_fast(data, di, arities, vars, n, target)
+
+  mbcpt_sym = symmetry_correction(vars, mbcpt, "AND")
+  saveRDS(mbcpt, paste0(resultsDir, model, "/mml_cpt/", n, "/without_symmetry/", filename, ".rds"))
+  saveRDS(mbcpt_sym, paste0(resultsDir, model, "/mml_cpt/", n, "/with_symmetry/", filename, ".rds"))
+
+  mbnb = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data, arities, vars, n, target, "nb")
+
+  mbnb_sym = symmetry_correction(vars, mbnb, "AND")
+  saveRDS(mbnb, paste0(resultsDir, model, "/mml_nb/", n, "/without_symmetry/", filename, ".rds"))
+  saveRDS(mbnb_sym, paste0(resultsDir, model, "/mml_nb/", n, "/with_symmetry/", filename, ".rds"))
   
 }
 
-# stopImplicitCluster()
+stopImplicitCluster()
 ```
 
 ## Evaluating
 ```{r}
-model = "insurance"
+model = "barley"
 dir = paste0("~/Documents/Experiments/UAI_exp/", model, "/")
 dag = readRDS(paste0(dir, "dag/", model, ".rds"))
-n = 500
+n = 5000
 vars = bnlearn::nodes(dag)
 nvars = length(vars)
 # true mbs 
