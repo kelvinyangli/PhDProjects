@@ -1,0 +1,15 @@
+---
+title: "Shakespear's constraint"
+author: "kl"
+date: "8 February 2018"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q1
+

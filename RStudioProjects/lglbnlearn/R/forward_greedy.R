@@ -21,6 +21,7 @@
 #' prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths
 #' for random structures. The Bayesian prior starts with the uniform prior then calculates the
 #' posteriors and use them as priors for the next step.
+#' @param dag The true DAG.
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each
 #' mml score.
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective
@@ -29,7 +30,7 @@
 #' mml_rand_str_adaptive(), probs_adaptive(), cond_probs_adaptive(), log_prob_adaptive().
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma = 3,
-                          dataNumeric = NULL, varCnt = NULL, prior = "uniform", debug = FALSE) {
+                          dataNumeric = NULL, varCnt = NULL, prior = "uniform", dag = NULL, debug = FALSE) {
 
   targetIndex = which(vars == target) # get index of the target node
   nvars = length(vars)
@@ -84,9 +85,23 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
 
   }
 
+  # if ((model == "random") && (!is.null(dag))) {
+  #
+  #   mbt = bnlearn::mb(dag, target)
+  #   truembIndices = which(vars %in% mbt)
+  #   trueLocalStr = local_extraction(dag, c(target, mbt))
+  #   trueLocalStr = dag2matrix(trueLocalStr)
+  #   mmlPerfect = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, logProbTarget,
+  #                                       cachedPXGivenT, probsMtx, trueLocalStr, truembIndices, cachedPXGivenY, cachInd)
+  #   l_perfect = mmlPerfect$llh
+  # }
+
   if (debug) {
-    cat("Search: Forward greedy with", model, " model \n")
+    cat(paste0("MB(", target, ")", collapse = ""), "via GS+MML", model, "\n")
+    # cat("True MB model:", mbt, "\n")
+    # cat("With MML score:", l_perfect, "\n")
     cat("0 parent:", minMsgLen, "\n")
+
   }
 
   # repeat the process of computing mml for remaining unCheckedIndices
@@ -166,12 +181,13 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
         res = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, logProbTarget,
                                     cachedPXGivenT, probsMtx, strList, mbIndices, weights, cachedPXGivenY, cachInd, debug)
         msgLenCurrent = res$avgL
+
         cachedPXGivenY = res$cachedPXGivenY
         cachInd = res$cachInd
 
       }# end else if
 
-      if (debug) cat("parents =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
+      if (debug) cat("temp mb =", vars[c(mb, unCheckedIndices[i])], ":", msgLenCurrent, "\n")
 
       # if the current msg len is smaller then replace minMsgLen by the current
       # and record the current index

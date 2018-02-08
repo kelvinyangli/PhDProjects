@@ -86,24 +86,32 @@ for (nvars in vnvars) {
 dir = "~/Documents/Experiments/kdd_exp/"
 params = "50_2_2_1"
 datasets = list.files(paste0(dir, params, "/data_rds/"))
+dags = list.files(paste0(dir, params, "/dag/"))
 for (i in 1:length(datasets)) {
   cat(i, "\n")
   data = readRDS(paste0(dir, params, "/data_rds/", datasets[i]))
+  #dag = readRDS(paste0(dir, params, "/dag/", dags[i]))
   filename = paste0(strsplit(datasets[i], "_")[[1]][-1], collapse = "_")
   nvars = ncol(data)
   vars = names(data)
   n = nrow(data)
   arities = sapply(data, nlevels)
   names(arities) = c()
-  di = count_occurance(data, arities)
+  varCnt = count_occurance(data, arities)
   mbcpt = mbnb = mbrand = list()
   
-  mbiamb = lapply(vars, learn.mb, x = data, method = "iamb")
-  mbinter = lapply(vars, learn.mb, x = data, method = "inter.iamb")
-  saveRDS(mbiamb, paste0(dir, params, "/iamb/iamb_", filename))
-  saveRDS(mbinter, paste0(dir, params, "/inter_iamb/inter_", filename))
-  
+  # mbiamb = lapply(vars, learn.mb, x = data, method = "iamb")
+  # mbinter = lapply(vars, learn.mb, x = data, method = "inter.iamb")
+  # saveRDS(mbiamb, paste0(dir, params, "/iamb/iamb_", filename))
+  # saveRDS(mbinter, paste0(dir, params, "/inter_iamb/inter_", filename))
+  # 
   data = data.matrix(data)
+  
+  # for (target in vars) {
+  #   cat(target, "\n")
+  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
+  # }
+  
   ## starting parallel computing ###
   no_cores = 3
   registerDoParallel(no_cores)
@@ -111,21 +119,21 @@ for (i in 1:length(datasets)) {
   mbrand = foreach(target = vars,
       .combine = list,
       .multicombine = TRUE) %dopar%
-    forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+    forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
 
-  mbcpt = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy_fast(data, di, arities, vars, n, target)
+  # mbcpt = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy_fast(data, di, arities, vars, n, target)
+  # 
+  # mbnb = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy(data, arities, vars, n, target, "nb")
 
-  mbnb = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy(data, arities, vars, n, target, "nb")
-
-  saveRDS(mbrand, paste0(dir, params, "/rand/rand_", filename))
-  saveRDS(mbcpt, paste0(dir, params, "/cpt/cpt_", filename))
-  saveRDS(mbnb, paste0(dir, params, "/nb/nb_", filename))
+  saveRDS(mbrand, paste0(dir, params, "/rand_nbr/rand_", filename))
+  # saveRDS(mbcpt, paste0(dir, params, "/cpt/cpt_", filename))
+  # saveRDS(mbnb, paste0(dir, params, "/nb/nb_", filename))
   
 }
 
@@ -138,7 +146,7 @@ stopImplicitCluster()
 ## Evaluating
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-model = "50_2_2_1"
+model = "10_2_2_1"
 res = c()
 n = 5000
 if (n == 5000) {
@@ -149,31 +157,64 @@ if (n == 5000) {
   ind = 3
 }
 true = list.files(paste0(dir, model, "/mb_true"))
-for (folder in c("cpt", "nb", "rand", "iamb", "inter_iamb")) {
+m = matrix(0, 5, 9)
+m[, 1] = model
+k = 1
+for (x in true) {
+  
+  mbt = readRDS(paste0(dir, model, "/mb_true/", x))
+  m[k, 2] = round(sum(sapply(mbt, length)) / length(mbt), 2)
+  k = k + 1
+  
+}
+m[, 3] = n 
+l = 4
+for (folder in c("cpt", "nb", "rand", "rand_nbr", "iamb", "inter_iamb")) {
   
   learned = list.files(paste0(dir, model, "/", folder))
   
-  sed = 0 # sum of ed
   vsed = c() # a vector of sed
   for (i in 1:length(true)) {
     
     j = (5 * (ind - 1)) + i
     mbt = readRDS(paste0(dir, model, "/mb_true/", true[i]))
     mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
-    for (k in 1:length(mbt)) sed = sed + mb_false_finding(mbt[[k]], mbl[[k]])
-    vsed = c(vsed, sed)
+    sed = c() # sum of ed
+    for (k in 1:length(mbt)) {
+      sed = c(sed, mb_false_finding(mbt[[k]], mbl[[k]]))
+      re = paste0(round(conf_int(sed), 2), collapse = "+-")
+    }
+    vsed = c(vsed, re)
     
   }
   
-  ed_ci = paste0(round(conf_int(vsed), 2), collapse = "+-")
-  res = c(res, ed_ci)
+  # ed_ci = paste0(round(conf_int(vsed), 2), collapse = "+-")
+  # res = c(res, ed_ci)
+  m[, l] = vsed
+  l = l + 1
   
 }
 
-line = matrix(c(model, n, res), 1)
-write.table(line, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+# line = matrix(c(model, n, res), 1)
+# write.table(line, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 ```
 
+
+## DAG stats
+```{r}
+dir = "~/Documents/Experiments/kdd_exp/"
+model = "10_2_2_1"
+mbs = list.files(paste0(dir, model, "/mb_true"))
+for (x in mbs) {
+  
+  mbtrue = readRDS(paste0(dir, model, "/mb_true/", x))
+  cat(sum(sapply(mbtrue, length)) / length(mbtrue), "\n")
+  
+}
+
+
+```
 
 
 

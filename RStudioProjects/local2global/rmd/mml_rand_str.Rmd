@@ -184,48 +184,72 @@ write.table(line, "~/Documents/Journal KDD/test_results_v2.csv",
 ```{r}
 #for (itr in 1:3) {
   
-nvars = 5
-maxpa = 2
+nvars = 10
+maxpa = 3
 dag_sd = randSeed()
-dag_sd = 87843
+#dag_sd = 9008
 set.seed(dag_sd)
 dag = randDag(nvars, maxpa)
 
-maxarity = 2
+maxarity = 3
 beta = 1
 cpts_sd = randSeed()
-cpts_sd = 479177
+#cpts_sd = 94026
 set.seed(cpts_sd)
 cpts = randCPTs(dag, maxarity, beta)
 
-n = 100
+n = sampleSize = 1000
 data_sd = randSeed()
-data_sd = 566492
+#data_sd = 100188
 set.seed(data_sd)
 data = rbn(cpts, n)
 vars = colnames(data)
 arities = sapply(data, nlevels)
 names(arities) = c()
-di = count_occurance(data, arities)
+varCnt = count_occurance(data, arities)
 data = data.matrix(data)
 nvars = length(vars)
 i = 1
-lrand = lrand2 = lcpt = lnb = ltrue = list()
-for (target in vars) {
-  
-  cat(i, "\n")
-  #target = "V1"
-  # f2 overally reduce mml score, not penalizing bad model and in favor to good models
-  # need to think about a more sutiable prior
-  # lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
-  ltrue[[i]] = bnlearn::mb(dag, target)
-  lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
-                              prior = "uniform", debug = F)
-  lcpt[[i]] = forward_greedy_fast(data, di, arities, vars, n, target, debug = F)
-  lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
-  i = i + 1
-  
-}
+lrand = lrand2 = lcpt = lnb = list()
+ltrue = sapply(vars, bnlearn::mb, x = dag)
+
+forward_greedy(data, arities, vars, n, "V4", "random", varCnt = varCnt, prior = "uniform", dag = dag, debug=T)
+
+no_cores = 3
+registerDoParallel(no_cores)
+lrand = foreach(target = vars, 
+        .combine = list, 
+        .multicombine = TRUE) %dopar%
+  forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
+
+lcpt = foreach(target = vars, 
+        .combine = list, 
+        .multicombine = TRUE) %dopar%
+  forward_greedy_fast(data, varCnt, arities, vars, n, target)
+
+lnb = foreach(target = vars, 
+        .combine = list, 
+        .multicombine = TRUE) %dopar%
+  forward_greedy(data, arities, vars, n, target, "nb")
+
+
+stopImplicitCluster()
+
+# for (target in vars) {
+#   
+#   cat(i, "\n")
+#   #target = "V1"
+#   # f2 overally reduce mml score, not penalizing bad model and in favor to good models
+#   # need to think about a more sutiable prior
+#   # lrand2[[i]] = f2(dag, data,di,arities,vars,target,n,F)
+#   ltrue[[i]] = bnlearn::mb(dag, target)
+#   lrand[[i]] = forward_greedy(data, arities, vars, n, target, "random", varCnt = di,
+#                               prior = "uniform", debug = T)
+#   lcpt[[i]] = forward_greedy_fast(data, di, arities, vars, n, target, debug = F)
+#   lnb[[i]] = forward_greedy(data, arities, vars, n, target, "nb", debug = F)
+#   i = i + 1
+#   
+# }
 
 i = 1
 arand = arand2 = acpt = anb = rep(0, nvars)
@@ -240,13 +264,13 @@ for (target in vars) {
   c[i] = length(bnlearn::children(dag, target))
   s[i] = m[i] - p[i] - c[i]
   arand[i] = mb_false_finding(mbl[[i]], lrand[[i]])
-  crand[i, ] = classification_accuracy_mb(mbl[[i]], lrand[[i]], vars, target)
+  crand[i, ] = mb_retrieval(mbl[[i]], lrand[[i]], nvars)
   # arand2[i] = mbEditDist(mbl[[i]], lrand2[[i]], target, vars)
   # crand2[i, ] = classfication_accuracy_mb(mbl[[i]], lrand2[[i]], vars, target)
   acpt[i] = mb_false_finding(mbl[[i]], lcpt[[i]])
-  ccpt[i, ] = classification_accuracy_mb(mbl[[i]], lcpt[[i]], vars, target)
+  ccpt[i, ] = mb_retrieval(mbl[[i]], lcpt[[i]], nvars)
   anb[i] = mb_false_finding(mbl[[i]], lnb[[i]])
-  cnb[i, ] = classification_accuracy_mb(mbl[[i]], lnb[[i]], vars, target)
+  cnb[i, ] = mb_retrieval(mbl[[i]], lnb[[i]], nvars)
   i = i + 1
   
 }
@@ -413,22 +437,7 @@ f2 = function(dag, data, di, arities, vars, target, n, debug = FALSE) {
 
 
 # a function to extract the local str from a dag 
-local_extraction = function(dag, varSubset) {
-  
-  localStr = empty.graph(varSubset)
-  for (i in 1:nrow(dag$arcs)) {
-    
-    if (prod(dag$arcs[i, ] %in% varSubset) == 1) {
-      
-      localStr = set.arc(localStr, dag$arcs[i, 1], dag$arcs[i, 2])
-      
-    }
-    
-  }
-  
-  return(localStr)
-  
-}
+
 
 # a function to report whether the current local str is a true sub str of the generating dag
 is_substr = function(dag, localStr) {
@@ -453,7 +462,6 @@ is_substr = function(dag, localStr) {
 
 
 ```
-
 
 ## observations:
 ## when a true mb node is included for testing, the cpt model has lower score than the strs that are extended from the str that has the lowest score in the previous step; when a non-mb node is included for testing, the cpt model has higher score than the strs that are extended from the ...

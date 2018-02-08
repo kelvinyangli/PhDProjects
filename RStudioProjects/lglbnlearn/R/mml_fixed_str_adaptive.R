@@ -25,25 +25,23 @@ mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, 
   lp = logProbTarget # log probability
   # a matrix to store the normalizting constant in p(T|Xs)
   margProbs = cachedPXGivenT[[targetIndex]]
-  #tempVars = colnames(str)
+
   for (curIndex in mbIndices) {# go through each node in a given str
 
     # if it has at least one parent,
     # then get the adaptive count of it given its parent set
     curPa = which(str[, vars[curIndex]] == 1)
-    curPaIndices = c(mbIndices, targetIndex)[curPa]
-
+    curPaIndices = which(vars %in% names(curPa))
+    #cat(vars[curIndex], "=", vars[curPaIndices], "\n")
     if (length(curPaIndices) > 0) {
 
       ind = which(names(cachedPXGivenY) == paste(c(curIndex, curPaIndices), collapse = ""))
       if (length(ind) > 0) {
 
-        #cat(paste(c(curIndex, curPaIndices), collapse = ""), " using existing PT \n")
         condProbsAdpt = cachedPXGivenY[[ind]]
-
+        #cat(ind, "\n")
       } else {# cach condProbsAdpt if it hasn't been cached
 
-        #cat("cal new PT, name", paste(c(curIndex, curPaIndices), collapse = ""), "\n")
         condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices)
         cachedPXGivenY[[cachInd]] = condProbsAdpt
         # assign an unique name as primary key to look up existing cached PTs

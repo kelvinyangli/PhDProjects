@@ -5,7 +5,8 @@
 \title{A forward greedy search function}
 \usage{
 forward_greedy(data, arities, vars, sampleSize, target, model, sigma = 3,
-  dataNumeric = NULL, varCnt = NULL, prior = "uniform", debug = FALSE)
+  dataNumeric = NULL, varCnt = NULL, prior = "uniform", dag = NULL,
+  debug = FALSE)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
@@ -35,6 +36,8 @@ count_occurance().}
 prior (default), TOM (totally ordered model) and Bayesian prior when averaging the message lengths
 for random structures. The Bayesian prior starts with the uniform prior then calculates the
 posteriors and use them as priors for the next step.}
+
+\item{dag}{The true DAG.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each
 mml score.}

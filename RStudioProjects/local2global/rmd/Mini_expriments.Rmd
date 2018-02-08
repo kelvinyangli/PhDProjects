@@ -72,12 +72,41 @@ for (i in 1:nvars) {
 
 logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
 
+str1 = str
+lp = logProbTarget # log probability
+margProbs = cachedPXGivenT[[targetIndex]]
+for (curIndex in mbIndices) {
+  curPa = which(str1[, vars[curIndex]] == 1)
+  curPaIndices = which(vars %in% names(curPa))
+  #curPaIndices = c(mbIndices, targetIndex)[curPa]
+  if (length(curPaIndices) > 0) {
+    condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices)
+    temp = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+    lp = lp + temp
+    cat(curIndex, "-", curPaIndices, "-", temp, "\n")
+    margProbs = margProbs * condProbsAdpt
+  }
+}
+-(lp - sum(log(apply(margProbs, 2, sum)))) # log(p(T|Xs))
+  
 
-res1 = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str1, mbIndices, cachedPXGivenY, cachInd)
-l1 = res1$llh
-
-res2 = mml_fixed_str_adaptive(data, vars, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str2, mbIndices, cachedPXGivenY, cachInd)
-l2 = res2$llh
+str2 = str1
+str2[1,4] = 0
+lp = logProbTarget # log probability
+margProbs = cachedPXGivenT[[targetIndex]]
+for (curIndex in mbIndices) {
+  curPa = which(str2[, vars[curIndex]] == 1)
+  curPaIndices = which(vars %in% names(curPa))
+  #curPaIndices = c(mbIndices, targetIndex)[curPa]
+  if (length(curPaIndices) > 0) {
+    condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices)
+    temp = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+    lp = lp + temp
+    cat(curIndex, "-", curPaIndices, "-", temp, "\n")
+    margProbs = margProbs * condProbsAdpt
+  }
+}
+-(lp - sum(log(apply(margProbs, 2, sum)))) # log(p(T|Xs))
 
 cat(l1, "-", l2, "\n")
 ind = c(ind, which.min(c(l1, l2)))
@@ -87,18 +116,85 @@ ind = c(ind, which.min(c(l1, l2)))
 
 
 ```{r}
-# vars
-# targetIndex = 1
-# mbIndices = c(2, 3, 4)
+# sd = randSeed()
+# set.seed(sd)
 
 
-
-chk = 1
-for (i in 1:100) {
-  chk = chk * is.DAG(rand_mb_model(vars,1,2:9))  
+cc = 0
+for (kk in 1:100) {
+  
+repeat {
+dag = randDag(10, 3)
+vars = bnlearn::nodes(dag)
+mbtl = sapply(vars, bnlearn::mb, x = dag)
+target = names(which(sapply(mbtl, length) == 9))[1]
+if (!is.na(target)) break
 }
-chk
+  
+#graphviz.plot(dag)
+cpts = randCPTs(dag, 4, 1)
+#target = "V8"
+sampleSize = n = 100
+data = rbn(cpts, n)
+vars = colnames(data)
+nvars = ncol(data)
+arities = sapply(data, nlevels)
+names(arities) = c()
+varCnt = count_occurance(data,arities)
+data = data.matrix(data)
+targetIndex = which(vars == target)
+probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+mbt = bnlearn::mb(dag, target)
+mbIndices = which(vars %in% mbt)
 
+#forward_greedy(data,arities,vars,sampleSize,target,"random",varCnt = varCnt,prior="uniform",dag = dag, debug=T)
+
+cachInd = 1
+cachedPXGivenY = cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+for (i in 1:nvars) {
+  if (i == targetIndex) {
+    cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+  } else {
+    cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+  }
+}
+
+logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+lp = logProbTarget # log probability
+margProbs = cachedPXGivenT[[targetIndex]]
+
+str = local_extraction(dag, c(target, mbt))
+str = dag2matrix(str)
+for (curIndex in mbIndices) {
+  curPa = which(str[, vars[curIndex]] == 1)
+  curPaIndices = which(vars %in% names(curPa))
+  if (length(curPaIndices) > 0) {
+    condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices)
+    temp = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+    lp = lp + temp
+    margProbs = margProbs * condProbsAdpt
+  }
+}
+l1 = -(lp - sum(log(apply(margProbs, 2, sum))))
+
+## random mb model
+mbr = rand_mb_model(target, mbt)
+for (curIndex in mbIndices) {
+  curPa = which(mbr[, vars[curIndex]] == 1)
+  curPaIndices = which(vars %in% names(curPa))
+  if (length(curPaIndices) > 0) {
+    condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices)
+    temp = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+    lp = lp + temp
+    margProbs = margProbs * condProbsAdpt
+  }
+}
+l2 = -(lp - sum(log(apply(margProbs, 2, sum))))
+
+cat(l1, ":", l2, "\n")
+if ((l1 < l2) || (l1 == l2)) cc = cc + 1
+}
+cc
 ```
 
 

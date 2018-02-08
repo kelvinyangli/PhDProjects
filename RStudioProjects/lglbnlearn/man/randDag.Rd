@@ -15,5 +15,6 @@ randDag(nvars, maxNPas)
 The output of this function is a DAG in the bnlearn format.
 }
 \description{
-This function randomly generate a DAG based on the specified structure details.
+This function randomly generate a DAG based on the specified structure details. Not all pairs of variables are
+connected in the resulting DAG, especially for small number of maxNPas.
 }

@@ -1,0 +1,37 @@
+---
+title: "Shakespear's constraint"
+author: "kl"
+date: "8 February 2018"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Suppose you were uniformly distributing 28 'templates' at random among 2140 poetic lines. Assuming the choice of a template for any given line is independent of what has gone before. What is the probability that the observed frequencies would reveal at least one example of every one of the 28 templates?
+
+## Combinatorics
+It is certain that each tempalte is unique. If each poetic line is also unique, the total enumeration of uniformly distributing $k = 28$ templates among $n=2140$ lines is $k^n$. Given the restriction that each template appears in at least one line, the total enumeration is $S(n,k)\times n!$, where
+\begin{align*}
+S(n,k)= \frac{1}{k!}\sum_{j=0}^k (-1)^{k-j}{k \choose j} j^n
+\end{align*}
+is the Stirling number of the second kind. Hence, the probability that each of the 28 templates appears at least once in the observed frequencies is 
+\begin{align}
+p = \frac{S(n,k)\times n!}{k^n}. 
+\end{align}
+Both top and bottom of the above fraction are really large integers, so we calculate log of the probability first. This becomes 
+\begin{align}
+\log p &= \log S(n,k) + \log n! - n\log k \\  
+&= 7063.028+67.88974-7130.918 \\
+&= -0.00026
+\end{align}
+The final probability $p = \exp(-0.00026) = 0.99974$.
+
+
+
+
+
+
