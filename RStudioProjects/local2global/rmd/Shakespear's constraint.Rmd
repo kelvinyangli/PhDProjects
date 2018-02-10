@@ -30,6 +30,19 @@ Both top and bottom of the above fraction are really large integers, so we calcu
 \end{align}
 The final probability $p = \exp(-0.00026) = 0.99974$.
 
+This can also be justified experimentally by the following. The following code randomly samples an integer from the range $[1,28]$. And it samples in totoal 2140 times. The it marks how many times there is at least one occurence from each number. The experiment is repeated 10000 times and the result shows there is never a chance that you see 0 occurence of any one of the 28 integers.  
+```{r}
+cnt = 0
+for (i in 1:10000) {
+  k = 28
+  n = 2140
+  x = sample(k, n, replace = TRUE)
+  l = length(unique(x))
+  if (l == k) cnt = cnt + 1
+}
+cnt
+```
+
 
 
 

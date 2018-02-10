@@ -84,7 +84,7 @@ for (nvars in vnvars) {
 # library(foreach)
 # library(doParallel)
 dir = "~/Documents/Experiments/kdd_exp/"
-params = "50_2_2_1"
+params = "10_2_2_1"
 datasets = list.files(paste0(dir, params, "/data_rds/"))
 dags = list.files(paste0(dir, params, "/dag/"))
 for (i in 1:length(datasets)) {
@@ -146,7 +146,7 @@ stopImplicitCluster()
 ## Evaluating
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-model = "10_2_2_1"
+model = "50_2_2_1"
 res = c()
 n = 5000
 if (n == 5000) {
@@ -157,7 +157,7 @@ if (n == 5000) {
   ind = 3
 }
 true = list.files(paste0(dir, model, "/mb_true"))
-m = matrix(0, 5, 9)
+m = matrix(0, 5, 10)
 m[, 1] = model
 k = 1
 for (x in true) {
@@ -169,11 +169,11 @@ for (x in true) {
 }
 m[, 3] = n 
 l = 4
-for (folder in c("cpt", "nb", "rand", "rand_nbr", "iamb", "inter_iamb")) {
+for (folder in c("cpt", "nb", "rand", "rand_dag", "rand_nbr", "iamb", "inter_iamb")) {
   
   learned = list.files(paste0(dir, model, "/", folder))
   
-  vsed = c() # a vector of sed
+  vv = vsed = c() # a vector of sed
   for (i in 1:length(true)) {
     
     j = (5 * (ind - 1)) + i
@@ -184,6 +184,7 @@ for (folder in c("cpt", "nb", "rand", "rand_nbr", "iamb", "inter_iamb")) {
       sed = c(sed, mb_false_finding(mbt[[k]], mbl[[k]]))
       re = paste0(round(conf_int(sed), 2), collapse = "+-")
     }
+    vv = c(vv, sed)
     vsed = c(vsed, re)
     
   }
@@ -192,10 +193,10 @@ for (folder in c("cpt", "nb", "rand", "rand_nbr", "iamb", "inter_iamb")) {
   # res = c(res, ed_ci)
   m[, l] = vsed
   l = l + 1
-  
+  cat(mean(vv), "--", 1.96*sd(vv)/sqrt(length(vv)), "\n")
 }
 
-write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+#write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 # line = matrix(c(model, n, res), 1)
 # write.table(line, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 ```
