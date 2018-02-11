@@ -36,10 +36,10 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
   l = rep(0, length(strList))
   for (j in 1:length(strList)) {# calculate mml(T|mb) for each structure in the given structure list
 
-    # str = strList[[j]]
-    # dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) # rename dimension names
+    str = strList[[j]]
+    dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) # rename dimension names
     #str = rand_mb_model(vars[targetIndex], vars[mbIndices])
-    str = rand_nbr_model(vars[targetIndex], vars[mbIndices])
+    #str = rand_nbr_model(vars[targetIndex], vars[mbIndices])
 
     # if (debug) {
     #

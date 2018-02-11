@@ -198,6 +198,47 @@ cc
 ```
 
 
+## mml scores for strs in the same equivalent class
+```{r}
+s1 = empty.graph(c("V1", "V2", "T"))
+s1 = set.arc(s1, "V2", "T")
+s1 = set.arc(s1, "T", "V1")
+
+s2 = empty.graph(c("V1", "V2", "T"))
+s2 = set.arc(s2, "V1", "T")
+s2 = set.arc(s1, "T", "V2")
+
+s3 = empty.graph(c("V1", "V2", "T"))
+s3 = set.arc(s3, "T", "V1")
+s3 = set.arc(s3, "T", "V2")
+
+vars = c("V1", "V2", "T")
+arities = rep(2, 3) 
+# suppose true model is one of the them
+cpts = randCPTs(s1, 2, 1)
+n = sampleSize = 100
+data = rbn(cpts, n)
+targetIndex = 3
+
+probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+cachInd = 1
+cachedPXGivenY = cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+for (i in 1:nvars) {
+  if (i == targetIndex) {
+    cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+  } else {
+    cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+  }
+}
+
+logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+
+mml_fixed_str_adaptive(data, vars, arities, n, 3, logProbTarget, cachedPXGivenT, probsMtx, s1, c(1, 2), cachedPXGivenY, 
+                       cachInd)
+
+```
+
+
 
 
 
