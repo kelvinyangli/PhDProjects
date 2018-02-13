@@ -84,10 +84,10 @@ for (nvars in vnvars) {
 # library(foreach)
 # library(doParallel)
 dir = "~/Documents/Experiments/kdd_exp/"
-params = "10_2_2_1"
+params = "30_5_4_1"
 datasets = list.files(paste0(dir, params, "/data_rds/"))
-dags = list.files(paste0(dir, params, "/dag/"))
-for (i in 1:length(datasets)) {
+#dags = list.files(paste0(dir, params, "/dag/"))
+for (i in 36:50) {
   cat(i, "\n")
   data = readRDS(paste0(dir, params, "/data_rds/", datasets[i]))
   #dag = readRDS(paste0(dir, params, "/dag/", dags[i]))
@@ -100,9 +100,9 @@ for (i in 1:length(datasets)) {
   varCnt = count_occurance(data, arities)
   mbcpt = mbnb = mbrand = list()
   
-  # mbiamb = lapply(vars, learn.mb, x = data, method = "iamb")
+  mbiamb = lapply(vars, learn.mb, x = data, method = "iamb")
+  saveRDS(mbiamb, paste0(dir, params, "/iamb/iamb_", filename))
   # mbinter = lapply(vars, learn.mb, x = data, method = "inter.iamb")
-  # saveRDS(mbiamb, paste0(dir, params, "/iamb/iamb_", filename))
   # saveRDS(mbinter, paste0(dir, params, "/inter_iamb/inter_", filename))
   # 
   data = data.matrix(data)
@@ -121,19 +121,19 @@ for (i in 1:length(datasets)) {
       .multicombine = TRUE) %dopar%
     forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
 
-  # mbcpt = foreach(target = vars,
-  #     .combine = list,
-  #     .multicombine = TRUE) %dopar%
-  #   forward_greedy_fast(data, di, arities, vars, n, target)
-  # 
-  # mbnb = foreach(target = vars,
-  #     .combine = list,
-  #     .multicombine = TRUE) %dopar%
-  #   forward_greedy(data, arities, vars, n, target, "nb")
+  mbcpt = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy_fast(data, varCnt, arities, vars, n, target)
 
-  saveRDS(mbrand, paste0(dir, params, "/rand_nbr/rand_", filename))
-  # saveRDS(mbcpt, paste0(dir, params, "/cpt/cpt_", filename))
-  # saveRDS(mbnb, paste0(dir, params, "/nb/nb_", filename))
+  mbnb = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data, arities, vars, n, target, "nb")
+
+  saveRDS(mbrand, paste0(dir, params, "/rand/rand_", filename))
+  saveRDS(mbcpt, paste0(dir, params, "/cpt/cpt_", filename))
+  saveRDS(mbnb, paste0(dir, params, "/nb/nb_", filename))
   
 }
 
@@ -146,55 +146,53 @@ stopImplicitCluster()
 ## Evaluating
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-model = "50_2_2_1"
-res = c()
-n = 5000
-if (n == 5000) {
-  ind = 1
-} else if (n == 500) {
-  ind = 2
-} else if (n == 50) {
-  ind = 3
-}
+model = "30_5_4_1"
+#res = c()
+
 true = list.files(paste0(dir, model, "/mb_true"))
-m = matrix(0, 5, 10)
+m = matrix(0, 15, 10)
 m[, 1] = model
-k = 1
+amb = c() # average mb size
 for (x in true) {
   
   mbt = readRDS(paste0(dir, model, "/mb_true/", x))
-  m[k, 2] = round(sum(sapply(mbt, length)) / length(mbt), 2)
-  k = k + 1
+  amb = c(amb, round(sum(sapply(mbt, length)) / length(mbt), 2))
   
 }
-m[, 3] = n 
+m[, 2] = rep(amb, 3)
+m[, 3] = c(rep(500, 5), rep(2000, 5), rep(5000, 5)) 
 l = 4
-for (folder in c("cpt", "nb", "rand", "rand_dag", "rand_nbr", "iamb", "inter_iamb")) {
+
   
-  learned = list.files(paste0(dir, model, "/", folder))
+for (folder in c("cpt", "nb", "rand", "iamb")) {
   
-  vv = vsed = c() # a vector of sed
-  for (i in 1:length(true)) {
-    
-    j = (5 * (ind - 1)) + i
-    mbt = readRDS(paste0(dir, model, "/mb_true/", true[i]))
-    mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
-    sed = c() # sum of ed
-    for (k in 1:length(mbt)) {
-      sed = c(sed, mb_false_finding(mbt[[k]], mbl[[k]]))
-      re = paste0(round(conf_int(sed), 2), collapse = "+-")
+  for (n in c(500, 2000, 5000)) {
+
+    if (n == 2000) {
+      ind = 1
+    } else if (n == 5000) {
+      ind = 2
+    } else if (n == 500) {
+      ind = 3
     }
-    vv = c(vv, sed)
-    vsed = c(vsed, re)
-    
-  }
+       
+    learned = list.files(paste0(dir, model, "/", folder), pattern = paste0("_", n, "_"))
+    edList = rep(list(rep(0, 30)), length(learned)) # vector of ed for all true models
+    for (i in 1:length(true)) {
+      
+      mbt = readRDS(paste0(dir, model, "/mb_true/", true[i]))
+      for (j in ((5 * (i - 1)) + 1):(5 * i)) {
+        
+        mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
+        for (k in 1:length(mbt)) edList[[j]][k] = mb_false_finding(mbt[[k]], mbl[[k]])
+        
+      }# end for j 
+      
+    }# end for i 
+   
+  }# end for n
   
-  # ed_ci = paste0(round(conf_int(vsed), 2), collapse = "+-")
-  # res = c(res, ed_ci)
-  m[, l] = vsed
-  l = l + 1
-  cat(mean(vv), "--", 1.96*sd(vv)/sqrt(length(vv)), "\n")
-}
+}# end for each method
 
 #write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 # line = matrix(c(model, n, res), 1)

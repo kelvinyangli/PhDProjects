@@ -117,7 +117,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
 
     }
 
-    if (length(mb) == 7) {
+    if ((length(mb) == 7) && (model == "random")) {
 
       if (debug) cat("Stop searching due to lack of pre-saved mbpts!")
       break
