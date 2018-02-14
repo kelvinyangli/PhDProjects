@@ -10,8 +10,8 @@
 #' @export
 mml_without_parents = function(indexListPerNodePerValue, arities, sampleSize, targetIndex) {
   arity = arities[targetIndex]
-  #constantDiff = 0.5 * (arity - 1) * log((pi * exp(1) / 6))
-  constantDiff = 0
+  constantDiff = 0.5 * (arity - 1) * log((pi * exp(1) / 6))
+  #constantDiff = 0
   # log_gamma(n+1) is an approximation of log(factorial(n))
   fixedTerm = constantDiff + log_gamma(sampleSize + arity) - log(factorial(arity - 1))
   cumSum = 0

@@ -762,7 +762,82 @@ mb_adj_check = function(str, target) {
 ```
 
 
+```{r}
+sym_enforcement_mml = function(vars, varCnt, arities, sampleSize, mbl, mbDiscrepancy) {
+  
+  mblSym = mbl
+  for (i in 1:nrow(mbDiscrepancy)) {
+  
+    targetIndex1 = abs(mbDiscrepancy[[i, 1]])
+    mbIndices1 = which(vars %in% mbl[[targetIndex1]])
+    I1 = mml_cpt(varCnt, arities, sampleSize, mbIndices1, targetIndex1)
+    mbIndices1 = mbIndices1[!mbIndices1 == abs(mbDiscrepancy[[i, 2]])] # remove an extra var
+    I1 = mml_cpt(varCnt, arities, sampleSize, mbIndices1, targetIndex1) - I1  
+    
+    targetIndex2 = mbDiscrepancy[[i, 2]]
+    mbIndices2 = which(vars %in% mbl[[targetIndex2]])
+    I2 = mml_cpt(varCnt, arities, sampleSize, mbIndices2, targetIndex2)
+    mbIndices2 = c(mbIndices2, abs(mbDiscrepancy[[i, 1]])) # add a missing var
+    I2 = mml_cpt(varCnt, arities, sampleSize, mbIndices2, targetIndex2) - I2
+    
+    cat(I1, ":", I2, "\n")
+    
+    if (((I1 > 0) && (I2 > 0)) || ((I1 < 0) && (I2 < 0))) {
+      
+      if (abs(I1) > abs(I2)) {
+        
+        mblSym[[targetIndex2]] = vars[mbIndices2]
+        
+      } else {
+        
+        mblSym[[targetIndex1]] = vars[mbIndices1]
+        
+      }
+      
+    } else {# when I1 and I2 have different signs
+      
+      if (I1 > I2) {
+        
+        mblSym[[targetIndex2]] = vars[mbIndices2]
+        
+      } else {
+        
+        mblSym[[targetIndex1]] = vars[mbIndices1]
+        
+      }
+      
+    }
+    
+  }
+  
+  return(mblSym)
+  
+}
 
+
+mb_discrepancy = function(vars, mbl) {
+  
+  dis = data.frame()
+  for (i in 1:length(vars)) {
+    
+    if (length(mbl[[i]]) > 0) {
+      
+      for (j in 1:length(mbl[[i]])) {
+        
+        ind = which(vars == mbl[[i]][j])
+        if (!vars[i] %in% mbl[[ind]]) dis = rbind(dis, c(-i, ind))
+        
+      }
+    
+    }
+    
+  }
+  
+  colnames(dis) = c()
+  return(dis)
+  
+}
+```
 
 
 
