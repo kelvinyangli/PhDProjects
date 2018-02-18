@@ -780,7 +780,7 @@ sym_enforcement_mml = function(vars, varCnt, arities, sampleSize, mbl, mbDiscrep
     mbIndices2 = c(mbIndices2, abs(mbDiscrepancy[[i, 1]])) # add a missing var
     I2 = mml_cpt(varCnt, arities, sampleSize, mbIndices2, targetIndex2) - I2
     
-    cat(I1, ":", I2, "\n")
+    #cat(I1, ":", I2, "\n")
     
     if (((I1 > 0) && (I2 > 0)) || ((I1 < 0) && (I2 < 0))) {
       

@@ -1,0 +1,225 @@
+---
+title: "mml_rand_str_vol2"
+author: "kl"
+date: "14 February 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+```
+
+```{r}
+dag = randDag(30, 3)
+cpts = randCPTs(dag, 4, 1)
+data = rbn(cpts, 10000)
+arities = sapply(data, nlevels)
+vars = colnames(data)
+n = sampleSize = nrow(data)
+varCnt = count_occurance(data, arities)
+data_num = data.matrix(data)
+mbt = lapply(vars, bnlearn::mb, x = dag)
+# for (target in vars) {
+#   
+#   #target = "V3"
+#   mbt = bnlearn::mb(dag, target)
+#   mbIndices = which(vars %in% mbt)
+#   iTrue = mml_cpt(varCnt, arities, n, mbIndices, which(vars == target))
+#   cat("MB(", target, ") =", mbt, ":", iTrue, "\n")
+#   forward_greedy_fast(data, varCnt, arities, vars, n, target, T)
+#   cat("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \n")
+# }
+```
+
+```{r}
+no_cores = 4
+registerDoParallel(no_cores)
+
+mbl_iamb = foreach(target = vars, 
+        .combine = list, 
+        .multicombine = TRUE) %dopar%
+  bnlearn::learn.mb(data, target, "iamb")
+
+# mbl_rand = foreach(target = vars,
+#       .combine = list,
+#       .multicombine = TRUE) %dopar%
+#     forward_greedy(data_num, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
+
+mbl_cpt = foreach(target = vars, 
+        .combine = list, 
+        .multicombine = TRUE) %dopar%
+  forward_greedy_fast(data_num, varCnt, arities, vars, n, target)
+
+# mbl_nb = foreach(target = vars, 
+#         .combine = list, 
+#         .multicombine = TRUE) %dopar%
+#   forward_greedy(data_num, arities, vars, n, target, "nb")
+
+stopImplicitCluster()
+
+npa = sapply(lapply(vars, bnlearn::parents, x = dag), length)
+nch = sapply(lapply(vars, bnlearn::children, x = dag), length)
+nmb = sapply(mbt, length)
+nsp = nmb - npa - nch
+mbt_ord = order(nmb, decreasing = T)
+
+for (i in mbt_ord) {
+  
+  cat(vars[i], "|mb|=", nmb[i], "; |sp|=", nsp[i], "\n")
+  cat(mb_false_finding(mbt[[i]], mbl_cpt[[i]]), round(mb_retrieval(mbt[[i]], mbl_cpt[[i]], length(vars)), 1), "\n")
+  # cat(mb_false_finding(mbt[[i]], mbl_nb[[i]]), round(mb_retrieval(mbt[[i]], mbl_nb[[i]], length(vars)), 1), "\n")
+  # cat(mb_false_finding(mbt[[i]], mbl_rand[[i]]), round(mb_retrieval(mbt[[i]], mbl_rand[[i]], length(vars)), 1), "\n")
+  cat(mb_false_finding(mbt[[i]], mbl_iamb[[i]]), round(mb_retrieval(mbt[[i]], mbl_iamb[[i]], length(vars)), 1), "\n")
+  cat("___________________ \n")
+}
+
+```
+
+# evaluation according to mb size increasing
+```{r}
+dir = "~/Documents/Experiments/kdd_exp/"
+model = "50_5_4_1"
+true = list.files(paste0(dir, model, "/mb_true"))
+dags = list.files(paste0(dir, model, "/dag"))
+#dag = readRDS(paste0(dir, model, "/dag/", dags[1]))
+
+for (iii in 1:length(true)) {
+  
+  mbt = readRDS(paste0(dir, model, "/mb_true/", true[iii]))
+  mbt_len = sapply(mbt, length)
+  mbt_order = order(mbt_len)
+  mbt_len_ordered = mbt_len[mbt_order]
+  
+  for (n in c(500, 2000, 5000)) {
+    m = matrix(0, length(unique(mbt_len_ordered)), 5)
+    m[,1] = unique(mbt_len_ordered)
+    w = m
+    for (ii in 1:4) {
+      
+      folders = c("cpt", "nb", "rand", "iamb")
+      folder = folders[ii]
+      learned = list.files(paste0(dir, model, "/", folder), pattern = paste0("_", n, "_"))
+      edmtx = matrix(0, 5, length(mbt)) # edit distance
+      jj = 1
+      for (j in ((5 * (iii - 1)) + 1):(5 * iii)) {
+        mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
+        for (k in 1:length(mbt)) edmtx[jj, k] = mb_false_finding(mbt[[k]], mbl[[k]])
+        jj = jj + 1
+      }
+      for (i in 1:nrow(m)) {
+        indices = which(mbt_len == m[i, 1])
+        temp = as.vector(edmtx[, indices])
+        avg_ed = round(mean(temp), 1)
+        error = round(sd(temp) * 1.96 / sqrt(length(temp)), 1)
+        m[i, ii + 1] = avg_ed
+        w[i, ii + 1] = error
+      }
+      
+    }
+    
+    colnames(m) = colnames(w) = c("nmb", "cpt", "nb", "random", "iamb")
+    error = as.vector(w[, -1])
+    m = data.frame(m)
+    m_melt = melt(m, id = "nmb")
+    colnames(m_melt)[2] = "alg"
+    #meltTempMean$Samples = factor(meltTempMean$Samples, levels = rev(levels(meltTempMean$Samples)))
+    figure = ggplot(m_melt, aes(x = nmb, y = value, group = alg, colour = alg)) + 
+      ylab(label = "edit dist") + xlab("mb size") + geom_line(aes(linetype = alg)) + geom_point(aes(shape = alg)) + 
+      ylim(0, 30) + xlim(0, 25) + guides(linetype = guide_legend()) +
+      theme(legend.key.width = unit(1.5, "cm")) +
+      geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
+      
+    #figure
+    filename = paste0(strsplit(true[iii], ".rds")[[1]], "_50_", n, collapse = "")
+    ggsave(filename, device = "png", path = "~/Documents/Journal KDD/figures/")
+  } # end for n
+}
+```
+
+## symmetric enforcement using mml
+```{r}
+sym_enforcement_mml = function(vars, varCnt, arities, sampleSize, mbl, mbDiscrepancy) {
+  
+  mblSym = mbl
+  for (i in 1:nrow(mbDiscrepancy)) {
+  
+    targetIndex1 = abs(mbDiscrepancy[[i, 1]])
+    mbIndices1 = which(vars %in% mbl[[targetIndex1]])
+    I1 = mml_cpt(varCnt, arities, sampleSize, mbIndices1, targetIndex1)
+    mbIndices1 = mbIndices1[!mbIndices1 == abs(mbDiscrepancy[[i, 2]])] # remove an extra var
+    I1 = mml_cpt(varCnt, arities, sampleSize, mbIndices1, targetIndex1) - I1  
+    
+    targetIndex2 = mbDiscrepancy[[i, 2]]
+    mbIndices2 = which(vars %in% mbl[[targetIndex2]])
+    I2 = mml_cpt(varCnt, arities, sampleSize, mbIndices2, targetIndex2)
+    mbIndices2 = c(mbIndices2, abs(mbDiscrepancy[[i, 1]])) # add a missing var
+    I2 = mml_cpt(varCnt, arities, sampleSize, mbIndices2, targetIndex2) - I2
+    
+    cat(I1, ":", I2, "\n")
+    
+    if (((I1 > 0) && (I2 > 0)) || ((I1 < 0) && (I2 < 0))) {
+      
+      if (abs(I1) > abs(I2)) {
+        
+        mblSym[[targetIndex2]] = vars[mbIndices2]
+        
+      } else {
+        
+        mblSym[[targetIndex1]] = vars[mbIndices1]
+        
+      }
+      
+    } else {# when I1 and I2 have different signs
+      
+      if (I1 > I2) {
+        
+        mblSym[[targetIndex2]] = vars[mbIndices2]
+        
+      } else {
+        
+        mblSym[[targetIndex1]] = vars[mbIndices1]
+        
+      }
+      
+    }
+    
+  }
+  
+  return(mblSym)
+  
+}
+
+
+mb_discrepancy = function(vars, mbl) {
+  
+  dis = data.frame()
+  for (i in 1:length(vars)) {
+    
+    if (length(mbl[[i]]) > 0) {
+      
+      for (j in 1:length(mbl[[i]])) {
+        
+        ind = which(vars == mbl[[i]][j])
+        if (!vars[i] %in% mbl[[ind]]) dis = rbind(dis, c(-i, ind))
+        
+      }
+    
+    }
+    
+  }
+  
+  colnames(dis) = c()
+  return(dis)
+  
+}
+```
+
+
+
+

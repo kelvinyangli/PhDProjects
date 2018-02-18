@@ -42,9 +42,22 @@ for (i in 1:10000) {
 }
 cnt
 ```
-
-
-
-
-
+## Uniformly distribution 15 templates into 64 lines. 
+```{r}
+library(gmp)
+p = exp(log(Stirling2(64, 15)) + log(factorial(15)) - 64 * log(15))
+p
+```
+## Justifying the above probability experimentally. 
+```{r}
+cnt = 0
+for (i in 1:10000) {
+  k = 15
+  n = 64
+  x = sample(k, n, replace = T)
+  l = length(unique(x))
+  if (l == k) cnt = cnt + 1
+}
+cnt
+```
 

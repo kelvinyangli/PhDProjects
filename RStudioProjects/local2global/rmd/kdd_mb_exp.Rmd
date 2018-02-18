@@ -140,7 +140,7 @@ for (i in 36:50) {
 stopImplicitCluster()
 ```
 
-## Sym enforcement
+## Sym enforcement using mml
 ```{r}
 m = matrix(0, 10, 3)
 for (k in 1:10) {
@@ -176,6 +176,11 @@ m[k, ] = c(mean(ed), mean(ed_sym), mean(ed_sym2))
 
 ```
 
+## sym enforcement using deterministic AND rule
+```{r}
+
+
+```
 
 ## Evaluating
 ```{r}
@@ -183,7 +188,8 @@ dir = "~/Documents/Experiments/kdd_exp/"
 model = "50_5_4_1"
 true = list.files(paste0(dir, model, "/mb_true"))
 dags = list.files(paste0(dir, model, "/dag"))
-dag = readRDS(paste0(dir, model, "/dag/", dags[1]))
+#dag = readRDS(paste0(dir, model, "/dag/", dags[1]))
+
 m = matrix(0, 3, 11)
 m[, 1] = model
 amb = c() # average mb size
@@ -197,7 +203,7 @@ m[, 2] = mean(amb)
 m[, 3] = c(500, 2000, 5000) 
 l = 4
 
-for (folder in c("cpt", "nb", "rand", "iamb")) {
+for (folder in c("cpt_const_dif", "nb", "rand", "iamb")) {
   
   for (n in c(500, 2000, 5000)) {
 
@@ -210,6 +216,7 @@ for (folder in c("cpt", "nb", "rand", "iamb")) {
     }
        
     learned = list.files(paste0(dir, model, "/", folder), pattern = paste0("_", n, "_"))
+    datasets = list.files(paste0(dir, model, "/data_rds"), pattern = paste0("_", n, "_"))
     edList = rep(list(rep(0, length(mbt))), length(learned)) # edit distance
     retList = rep(list(c()), length(learned)) # precision and recall
     for (i in 1:length(true)) {
@@ -217,7 +224,16 @@ for (folder in c("cpt", "nb", "rand", "iamb")) {
       mbt = readRDS(paste0(dir, model, "/mb_true/", true[i]))
       for (j in ((5 * (i - 1)) + 1):(5 * i)) {
         
+        data = readRDS(paste0(dir, model, "/data_rds/", datasets[j]))
         mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
+        
+        # vars = names(data)
+        # arities = sapply(data, nlevels)
+        # names(arities) = c()
+        # varCnt = count_occurance(data, arities)
+        # mbDiscrepancy = mb_discrepancy(vars, mbl)
+        # mbl = sym_enforcement_mml(vars, varCnt, arities, n, mbl, mbDiscrepancy)
+        # mbl = symmetry_correction(vars, mbl, "AND")
         # mblLen = sapply(mbl, length)
         # mblLen = mblLen[order(mblLen, decreasing = T)]
         # cat(mblLen, "\n")
