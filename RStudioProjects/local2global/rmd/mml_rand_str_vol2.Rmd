@@ -81,66 +81,7 @@ for (i in mbt_ord) {
 
 ```
 
-# evaluation according to mb size increasing
-```{r}
-dir = "~/Documents/Experiments/kdd_exp/"
-model = "50_5_4_1"
-true = list.files(paste0(dir, model, "/mb_true"))
-dags = list.files(paste0(dir, model, "/dag"))
-#dag = readRDS(paste0(dir, model, "/dag/", dags[1]))
 
-for (iii in 1:length(true)) {
-  
-  mbt = readRDS(paste0(dir, model, "/mb_true/", true[iii]))
-  mbt_len = sapply(mbt, length)
-  mbt_order = order(mbt_len)
-  mbt_len_ordered = mbt_len[mbt_order]
-  
-  for (n in c(500, 2000, 5000)) {
-    m = matrix(0, length(unique(mbt_len_ordered)), 5)
-    m[,1] = unique(mbt_len_ordered)
-    w = m
-    for (ii in 1:4) {
-      
-      folders = c("cpt", "nb", "rand", "iamb")
-      folder = folders[ii]
-      learned = list.files(paste0(dir, model, "/", folder), pattern = paste0("_", n, "_"))
-      edmtx = matrix(0, 5, length(mbt)) # edit distance
-      jj = 1
-      for (j in ((5 * (iii - 1)) + 1):(5 * iii)) {
-        mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
-        for (k in 1:length(mbt)) edmtx[jj, k] = mb_false_finding(mbt[[k]], mbl[[k]])
-        jj = jj + 1
-      }
-      for (i in 1:nrow(m)) {
-        indices = which(mbt_len == m[i, 1])
-        temp = as.vector(edmtx[, indices])
-        avg_ed = round(mean(temp), 1)
-        error = round(sd(temp) * 1.96 / sqrt(length(temp)), 1)
-        m[i, ii + 1] = avg_ed
-        w[i, ii + 1] = error
-      }
-      
-    }
-    
-    colnames(m) = colnames(w) = c("nmb", "cpt", "nb", "random", "iamb")
-    error = as.vector(w[, -1])
-    m = data.frame(m)
-    m_melt = melt(m, id = "nmb")
-    colnames(m_melt)[2] = "alg"
-    #meltTempMean$Samples = factor(meltTempMean$Samples, levels = rev(levels(meltTempMean$Samples)))
-    figure = ggplot(m_melt, aes(x = nmb, y = value, group = alg, colour = alg)) + 
-      ylab(label = "edit dist") + xlab("mb size") + geom_line(aes(linetype = alg)) + geom_point(aes(shape = alg)) + 
-      ylim(0, 30) + xlim(0, 25) + guides(linetype = guide_legend()) +
-      theme(legend.key.width = unit(1.5, "cm")) +
-      geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
-      
-    #figure
-    filename = paste0(strsplit(true[iii], ".rds")[[1]], "_50_", n, collapse = "")
-    ggsave(filename, device = "png", path = "~/Documents/Journal KDD/figures/")
-  } # end for n
-}
-```
 
 ## symmetric enforcement using mml
 ```{r}
