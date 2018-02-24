@@ -5,7 +5,7 @@
 \title{A function to calculate the mml of cpt model}
 \usage{
 mml_cpt(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
-  targetIndex)
+  targetIndex, alpha, statingPara)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
@@ -18,6 +18,12 @@ by the function count_occurance().}
 \item{parentsIndices}{Indices of parents nodes.}
 
 \item{targetIndex}{Index of the target node.}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
+
+\item{statingPara}{If TRUE MML estimate of the parameters are also stated with extra 0.5log(pi*e/6) per parameter,
+otherwise 0.}
 }
 \description{
 There is no difference between mml_cpt_fast() and mml_cpt(), other than the speed difference.

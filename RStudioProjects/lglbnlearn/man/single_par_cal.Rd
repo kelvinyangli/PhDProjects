@@ -5,7 +5,7 @@
 \title{Auxiliary function to mml_with_parents() and mml_with_parents_fast()}
 \usage{
 single_par_cal(indexListPerNodePerValue, commonParentsIndices, arityChild,
-  targetIndex)
+  targetIndex, alpha)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
@@ -16,6 +16,9 @@ by the function count_occurance().}
 \item{arityChild}{arityChild}
 
 \item{targetIndex}{Index of the target node.}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
 }
 \description{
 This is an auxiliary function to both mml_with_parents() and mml_with_parents_fast() when the target

@@ -5,7 +5,7 @@
 \title{A faster version of a forward greedy search}
 \usage{
 forward_greedy_fast(data, varCnt, arities, vars, sampleSize, target,
-  debug = FALSE)
+  alpha = 1, statingPara = FALSE, debug = FALSE)
 }
 \arguments{
 \item{data}{A categorical data set.}
@@ -20,6 +20,12 @@ by the function count_occurance().}
 \item{sampleSize}{Sample size of the given data.}
 
 \item{target}{The target node.}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
+
+\item{statingPara}{Default is FALSE. If TRUE, then MML estimate of the parameters are also stated with extra 0.5log(pi*e/6)
+per parameter.}
 
 \item{debug}{A boolearn argument to display more details.}
 }

@@ -4,7 +4,8 @@
 \alias{mml_without_parents}
 \title{Auxiliary function to both mml_cpt and mml_cpt_fast}
 \usage{
-mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex)
+mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex,
+  alpha, statingPara = FALSE)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained
@@ -15,6 +16,12 @@ by the function count_occurance().}
 \item{sampleSize}{Sample size of a given data set.}
 
 \item{targetIndex}{Index of the target node.}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
+
+\item{statingPara}{If TRUE MML estimate of the parameters are also stated with extra 0.5log(pi*e/6) per parameter,
+otherwise 0.}
 }
 \description{
 This is an auxiliary function to both mml_cpt() and mml_cpt_fast(). It calculates the mml score of

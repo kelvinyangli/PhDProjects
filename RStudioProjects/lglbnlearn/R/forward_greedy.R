@@ -22,6 +22,10 @@
 #' for random structures. The Bayesian prior starts with the uniform prior then calculates the
 #' posteriors and use them as priors for the next step.
 #' @param dag The true DAG.
+#' @param alpha A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+#' length is equal to the arity of the target variable.
+#' @param statingPara Default is FALSE. If TRUE, then MML estimate of the parameters are also stated with extra 0.5log(pi*e/6)
+#' per parameter.
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each
 #' mml score.
 #' @return The function returns the learned Markov blanket candidates according to the assigned objective
@@ -30,7 +34,8 @@
 #' mml_rand_str_adaptive(), probs_adaptive(), cond_probs_adaptive(), log_prob_adaptive().
 #' @export
 forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma = 3,
-                          dataNumeric = NULL, varCnt = NULL, prior = "uniform", dag = NULL, debug = FALSE) {
+                          dataNumeric = NULL, varCnt = NULL, prior = "uniform", dag = NULL, alpha = 1,
+                          statingPara = FALSE, debug = FALSE) {
 
   targetIndex = which(vars == target) # get index of the target node
   nvars = length(vars)
@@ -52,7 +57,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
   # initializing with empty model
   if (model == "cpt") {
 
-    minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex)
+    if (prod(alpha == 1)) alpha = rep(1, arities[targetIndex])
+    minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, alpha, statingPara)
 
   } else if (model == "logit") {
 
@@ -166,7 +172,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
       mbIndices = c(mb, unCheckedIndices[i])
       if (model == "cpt") {# cpt
 
-        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, mbIndices, targetIndex)
+        msgLenCurrent = mml_cpt(varCnt, arities, sampleSize, mbIndices, targetIndex, alpha, statingPara)
 
       } else if (model == "logit") {#logit
 

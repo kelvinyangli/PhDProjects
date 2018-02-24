@@ -5,7 +5,7 @@
 \title{Auxiliary function to mml_cpt()}
 \usage{
 mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
-  targetIndex)
+  targetIndex, alpha, statingPara = FALSE)
 }
 \arguments{
 \item{indexListPerNodePerValue}{indexListPerNodePerValue}
@@ -17,6 +17,12 @@ mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
 \item{parentsIndices}{parentsIndices}
 
 \item{targetIndex}{targetIndex}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
+
+\item{statingPara}{If TRUE MML estimate of the parameters are also stated with extra 0.5log(pi*e/6) per parameter,
+otherwise 0.}
 }
 \description{
 This function calculates the mml score of a target node given its parents. There has to be at least one

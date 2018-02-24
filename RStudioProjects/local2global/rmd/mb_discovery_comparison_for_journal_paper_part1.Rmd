@@ -85,37 +85,68 @@ dir = "~/Documents/Experiments/kdd_exp/"
 n = 5000
 datasets = list.files(paste0(dir, model, "/data_csv/", n))
 
-
 ### starting parallel computing ###
 no_cores = 4
 registerDoParallel(no_cores)
-for (i in 1:length(datasets)) {
-  filename = strsplit(datasets[i], ".csv")[[1]]
-  mbcpt = mbnb = mbrandv= list()
-  data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[i])) 
+for (ii in 1:length(datasets)) {
+  filename = strsplit(datasets[ii], ".csv")[[1]]
+  mbcpt = mbnb = mbrandv = list()
+  data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[ii])) 
   vars = colnames(data)
+  nvars = length(vars)
   data_cat = numeric2categorical(data)
   arities = sapply(data_cat, nlevels)
   di = count_occurance(data_cat, arities)
-  data = data.matrix(data_cat)
-  
-  mbrand = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
-  saveRDS(mbrand, paste0(dir, model, "/mml_rand/", filename, ".rds"))
+  #data = data.matrix(data_cat)
+
+  alpha_est = list()
+  ls = list()
+  for (i in 1:nvars) {
+    ls[[i]] = freqs(table(data[, i]))
+  }
+  k = 1
+  for (i in unique(arities)) {
+    if (i > 1) {
+      par = data.frame()
+      ind = which(arities == i)
+      if (length(ind) > 0) {
+        if (length(ind) == 1) {
+          # make a fake para to have at least 2 rows
+          temp = ls[[ind]] + 0.001
+          temp = temp / sum(temp)
+          par = rbind(ls[[ind]],  temp)
+        } else {
+          for (j in ind) {
+          par = rbind(par, ls[[j]])
+          }
+          
+        }# end else 
+        alpha_est[[k]] = dirichlet.mle(par)$alpha
+      }
+      k = k + 1
+    }
+  }
 
   mbcpt = foreach(target = vars,
       .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy_fast(data, di, arities, vars, n, target)
-  saveRDS(mbcpt, paste0(dir, model, "/mml_cpt/", filename, ".rds"))
+      .multicombine = TRUE) %dopar% {
+    targetIndex = which(vars == target)
+    alpha = alpha_est[[which(sapply(alpha_est, length) == arities[targetIndex])]]
+    forward_greedy_fast(data, di, arities, vars, n, target, alpha)
+      }
+  saveRDS(mbcpt, paste0(dir, model, "/mml_cpt_est_prior/", filename, ".rds"))
 
-  mbnb = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy(data, arities, vars, n, target, "nb")
-  saveRDS(mbnb, paste0(dir, model, "/mml_nb/", filename, ".rds"))
+  # mbnb = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy(data, arities, vars, n, target, "nb")
+  # saveRDS(mbnb, paste0(dir, model, "/mml_nb/", filename, ".rds"))
+  # 
+  # mbrand = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+  # saveRDS(mbrand, paste0(dir, model, "/mml_rand/", filename, ".rds"))
 
 }
 
@@ -129,60 +160,75 @@ stopImplicitCluster()
 # library(foreach)
 # library(doParallel)
 dir = "~/Documents/Experiments/kdd_exp/"
-model = "child"
-n = 500
-datasets = list.files(paste0(dir, model, "/data_csv/", n))
+model = "30_5_4_1"
+n = 5000
+datasets = list.files(paste0(dir, model, "/data_rds/", n))
 #datasets = list.files(paste0(dir, model, "/data_rds/", n))
 #dags = list.files(paste0(dir, params, "/dag/"))
+
+## starting parallel computing ###
+no_cores = 4
+registerDoParallel(no_cores)
 for (ii in 1:length(datasets)) {
   #cat(i, "\n")
-  data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[ii]))
-  #data = readRDS(paste0(dir, model, "/data_csv/", n, "/", datasets[ii]))
-  #dag = readRDS(paste0(dir, params, "/dag/", dags[i]))
-  #filename = paste0(strsplit(datasets[i], "_")[[1]][-1], collapse = "_")
-  filename = strsplit(datasets[ii], ".csv")[[1]]
+  #data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[ii]))
+  data = readRDS(paste0(dir, model, "/data_rds/", n, "/", datasets[ii]))
+  filename = strsplit(datasets[ii], ".rds")[[1]]
   nvars = ncol(data)
   vars = names(data)
-  n = nrow(data)
+  #data_cat = numeric2categorical(data)
   arities = sapply(data, nlevels)
-  names(arities) = c()
   varCnt = count_occurance(data, arities)
-  mbcpt = mbnb = mbrand = list()
   
-  mbiamb = lapply(vars, learn.mb, x = data, method = "iamb")
-  saveRDS(mbiamb, paste0(dir, model, "/iamb/iamb_", filename))
-  # mbinter = lapply(vars, learn.mb, x = data, method = "inter.iamb")
-  # saveRDS(mbinter, paste0(dir, params, "/inter_iamb/inter_", filename))
-  # 
-  data = data.matrix(data)
+  alpha_est = list()
+  ls = list()
+  for (i in 1:nvars) {
+    ls[[i]] = freqs(table(data[, i]))
+  }
+  k = 1
+  for (i in unique(arities)) {
+    if (i > 1) {
+      par = data.frame()
+      ind = which(arities == i)
+      if (length(ind) > 0) {
+        for (j in ind) {
+          par = rbind(par, ls[[j]])
+        }
+        alpha_est[[k]] = dirichlet.mle(par)$alpha
+      }
+      k = k + 1
+    }
+  }
+  
+  #data = data.matrix(data)
   
   # for (target in vars) {
-  #   cat(target, "\n")
-  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
+  #   targetIndex = which(vars == target)
+  #   alpha = alpha_est[[which(sapply(alpha_est, length) == arities[targetIndex])]]
+  #   forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha, debug = F)
   # }
   
-  ## starting parallel computing ###
-  no_cores = 3
-  registerDoParallel(no_cores)
-
-  mbrand = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
-
   mbcpt = foreach(target = vars,
       .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy_fast(data, varCnt, arities, vars, n, target)
+      .multicombine = TRUE) %dopar% {
+    targetIndex = which(vars == target)
+    alpha = alpha_est[[which(sapply(alpha_est, length) == arities[targetIndex])]]
+    forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha)
+      }
+  
+  # mbnb = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy(data, arities, vars, n, target, "nb")
 
-  mbnb = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar%
-    forward_greedy(data, arities, vars, n, target, "nb")
-
-  saveRDS(mbrand, paste0(dir, params, "/rand/rand_", filename))
-  saveRDS(mbcpt, paste0(dir, params, "/cpt/cpt_", filename))
-  saveRDS(mbnb, paste0(dir, params, "/nb/nb_", filename))
+  # mbrand = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar%
+  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = varCnt, prior = "uniform")
+  
+  saveRDS(mbcpt, paste0(dir, model, "/mml_cpt_est_prior/cpt_", filename))
+  # saveRDS(mbnb, paste0(dir, model, "/nb/nb_", filename))
+  # saveRDS(mbrand, paste0(dir, model, "/rand/rand_", filename))
   
 }
 
@@ -286,8 +332,10 @@ parsePCMB = function(output, nvars, vars) {
 ```{r}
 setwd("~/Documents/Experiments/kdd_exp/SLL/")
 dir = "~/Documents/Experiments/kdd_exp/"
+model = "30_5_4_1"
+#n = 500
 #for (model in c("alarm", "barley", "insurance")) {
-  for (n in c(500, 1000)) {
+  for (n in c(5000)) {
     
     datasets = list.files(paste0(dir, "/", model, "/data_csv/", n))
     #file.remove("output.txt")
@@ -296,7 +344,7 @@ dir = "~/Documents/Experiments/kdd_exp/"
       data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[ii]))
       vars = colnames(data)
       nvars = ncol(data)
-      # data = factor2numeric(data)
+      data = factor2numeric(data) # for artificial models
       write.table(data, paste0(model, ".dat"), row.names = F, col.names = F)
       # copying data into pcmb directory, overwrite the previous data
       # file.copy(paste0(dir, model, "/data_csv/", n, "/", datasets[ii]), paste0(model, ".dat"), overwrite = TRUE) 
@@ -330,7 +378,7 @@ setwd("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/")
 ## Evaluating for real models
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-model = "hailfinder"
+model = "child"
 dag = readRDS(paste0(dir, model, "/dag/", model, ".rds"))
 vars = bnlearn::nodes(dag)
 nvars = length(vars)
@@ -342,7 +390,7 @@ m[, 2] = round(amb, 1)
 m[, 3] = c(500, 1000, 5000)
 l = 4
 
-for (folder in c("mml_cpt", "mml_nb", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
+for (folder in c("mml_cpt", "mml_cpt_est_prior", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
   
   for (n in c(500, 1000, 5000)) {
     
@@ -379,10 +427,9 @@ for (folder in c("mml_cpt", "mml_nb", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
   }# end for n
   l = l + 1
 }# end for each method
+#write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 
-write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 ```
-
 
 
 ## Evaluating for artificial models
@@ -406,7 +453,7 @@ m[, 2] = mean(amb)
 m[, 3] = c(500, 2000, 5000) 
 l = 4
 
-for (folder in c("mml_cpt", "mml_nb", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
+for (folder in c("mml_cpt", "mml_cpt_est_prior", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
   
   for (n in c(500, 2000, 5000)) {
 
@@ -430,17 +477,7 @@ for (folder in c("mml_cpt", "mml_nb", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
         
         #data = readRDS(paste0(dir, model, "/data_rds/", datasets[j]))
         mbl = readRDS(paste0(dir, model, "/", folder, "/", learned[j]))
-        if (folder %in% c("mml_cpt", "mml_nb", "mml_rand")) mbl = symmetry_correction(vars, mbl, "AND")
-        #vars = names(data)
-        # arities = sapply(data, nlevels)
-        # names(arities) = c()
-        # varCnt = count_occurance(data, arities)
-        # mbDiscrepancy = mb_discrepancy(vars, mbl)
-        # mbl = sym_enforcement_mml(vars, varCnt, arities, n, mbl, mbDiscrepancy)
-        
-        # mblLen = sapply(mbl, length)
-        # mblLen = mblLen[order(mblLen, decreasing = T)]
-        # cat(mblLen, "\n")
+        if (folder %in% c("mml_cpt", "mml_cpt_est_prior", "mml_nb", "mml_rand")) mbl = symmetry_correction(vars, mbl, "AND")
         for (k in 1:length(mbt)) {
           edList[[j]][k] = mb_false_finding(mbt[[k]], mbl[[k]])
           #cat(edList[[j]][k], ":")
@@ -462,9 +499,7 @@ for (folder in c("mml_cpt", "mml_nb", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
   l = l + 1
 }# end for each method
 
-write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
-# line = matrix(c(model, n, res), 1)
-# write.table(line, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
+#write.table(m, "~/Documents/Experiments/kdd_exp/kdd_results.csv", sep = ",", append = T, col.names = F, row.names = F)
 ```
 
 
@@ -537,7 +572,7 @@ for (iii in 1:length(true)) {
 ## mb size ordered version 2
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-nvars = 50
+nvars = 30
 model = paste0(nvars, "_5_4_1")
 true = list.files(paste0(dir, model, "/mb_true"))
 dags = list.files(paste0(dir, model, "/dag"))
@@ -587,18 +622,19 @@ for (ii in 1:6) {
 
 m = round(m, 1)
 w = round(w, 1)
-colnames(m) = colnames(w) = c("nmb", "cpt", "nb", "random", "iamb", "pcmb", "sll")
+colnames(m) = colnames(w) = c("nmb", "MML_CPT", "MML_NB", "MML_RANDOM", "IAMB", "PCMB", "SLL")
 m = data.frame(m)
 m_melt = melt(m, id = "nmb")
-colnames(m_melt)[2] = "alg"
+colnames(m_melt)[2] = "Algorithm"
 error = as.vector(w[, -1])
-figure = ggplot(m_melt, aes(x = nmb, y = value, group = alg, colour = alg)) + 
-  ylab(label = "edit dist") + xlab("mb size") + geom_line(aes(linetype = alg)) + geom_point(aes(shape = alg)) + 
+figure = ggplot(m_melt, aes(x = nmb, y = value, group = Algorithm, colour = Algorithm)) + 
+  ylab(label = "Edit distance") + xlab("Markov blanket size") + geom_line(aes(linetype = Algorithm)) + geom_point(aes(shape = Algorithm)) + 
   ylim(0, 25) + xlim(0, max(mbt_len_mtx)) + guides(linetype = guide_legend()) +
   theme(legend.key.width = unit(1.5, "cm")) +
   geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
 #figure
 filename = paste0("ed_vs_mbsize_", nvars, "_5_4_1_", n, collapse = "")
+filename = paste0(filename, ".pdf", collapse = "")
 ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/")
 
 }
@@ -642,36 +678,102 @@ m[k, ] = c(mean(ed), mean(ed_sym), mean(ed_sym2))
 
 
 ```{r}
-x = c(4.5,6.3,4.6,6.2,5.7,6.3,3.3,5.1,3.5,5.2,3.5,4.4,
-      2.6,4.5,3,4.7,2.6,2.9)
-x = c(6.4,8.4,6.5,8.2,7.5,8,5.1,6.9,5.2,7.2,5.5,6.2,
-      4.2,6.1,4.5,6.5,4.4,4.4)
+model = "child"
+if (model == "30_5_4_1") {
+  # 30_5_4_1
+  x = c(4.5,6.3,4.6,6.2,5.7,6.3,3.3,5.1,3.5,5.2,3.5,4.4,2.6,4.5,3,4.7,2.6,2.9)
+  error = c(0.3,0.3,0.3,0.3,0.3,0.3,0.2,0.3,0.2,0.3,0.2,0.3,0.2,0.2,0.2,0.3,0.2,0.2)
+} else if (model == "50_5_4_1") {
+  # 50_5_4_1
+  x = c(6.4,8.4,6.5,8.2,7.5,8,5.1,6.9,5.2,7.2,5.5,6.2,4.2,6.1,4.5,6.5,4.4,4.4)
+  error = c(0.3,0.3,0.3,0.3,0.3,0.3,0.2,0.3,0.2,0.3,0.2,0.3,0.2,0.2,0.2,0.3,0.2,0.2)
+} else if (model == "child") {
+  # child
+  x = c(0.9, 1.6, 1.4, 1.7, 1.4, 1, 0.7, 1.3, 0.9, 1.6, 1, 0.8, 0.5, 0.8, 0.2, 1.4, 0.2, 0.2)
+  error = c(0.2, 0.2, 0.2,0.2,0.2,0.2, 0.1,0.2,0.2,0.2,0.2,0.1, 0.1,0.1,0.1,0.2,0.1,0.1)
+} else if (model == "insurance") {
+  # insurance
+  x = c(3.3,4.7,3.7,3.6,3.4,3.1,2.9,4.4,3.1,3.7,3,2.7,2.1,3.8,2.4,2.8,1.8,2)
+  error = c(0.2,0.3,0.3,0.3,0.2,0.2,0.2,0.3,0.3,0.3,0.2,0.2,0.2,0.3,0.2,0.2,0.2,0.2)
+} else if (model == "alarm") {
+  # alarm
+  x = c(1.4,5.2,2.3,2.2,1.7,0.8,1,4.5,1.9,2,1.1,0.6,0.5,3.6,1.5,1.5,0.2,0.2)
+  error = c(.1,.3,.2,.2,.2,.1,.1,.2,.2,.2,.1,.1,.1,.2,.1,.2,.1,0)
+} else if (model == "barley") {
+  # barley
+  x = c(4,4.4,4.4,5.2,5.2,4.2,3.7,3.9,4.2,5.2,5.2,3.8,3.4,3.9,3.5,5.2,5.2,3.1)
+  error = c(.3,.3,.3,.2,.2,.2,.3,.3,.3,.2,.2,.2,.3,.3,.3,.2,.2,.2)
+} else if (model == "hailfinder") {
+  # hailfinder
+  x = c(4.4,6,5.2,3.5,3.5,4.3,4.4,5.9,5,3.5,3.5,4.1,4.3,6,5.1,3.5,3.5,4)
+  error = c(.3,.3,.3,.2,.2,.3,.3,.3,.3,.2,.2,.3,.3,.3,.3,.2,.2,.3)
+}
+
 m = matrix(x, 3, 6, byrow = T)
-m = cbind(c(500, 2000, 5000), m)
-colnames(m) = c("nmb", "cpt", "nb", "random", "iamb", "pcmb", "sll")
+if (model %in% c("30_5_4_1", "50_5_4_1")) {
+  m = cbind(c(500, 2000, 5000), m)  
+} else {
+  m = cbind(c(500, 1000, 5000), m)
+}
+
+colnames(m) = c("nmb", "MML_CPT", "MML_NB", "MML_RANDOM", "IAMB", "PCMB", "SLL")
 m = data.frame(m)
 m_melt = melt(m, id = "nmb")
-colnames(m_melt)[2] = "alg"
-error = c(0.3,0.3,0.3,0.3,0.3,0.3,0.2,0.3,0.2,0.3,0.2,0.3,0.2,0.2,0.2,0.3,0.2,0.2)
-figure = ggplot(m_melt, aes(x = nmb, y = value, group = alg, colour = alg)) + 
-  ylab(label = "edit dist") + xlab("sample size") + geom_line(aes(linetype = alg)) + geom_point(aes(shape = alg)) + 
+colnames(m_melt)[2] = "Algorithm"
+
+figure = ggplot(m_melt, aes(x = nmb, y = value, group = Algorithm, colour = Algorithm)) + 
+  ylab(label = "Edit distance") + xlab("Sample size") + geom_line(aes(linetype = Algorithm)) + geom_point(aes(shape = Algorithm)) + 
   ylim(0, 10) + xlim(500, 5000) + guides(linetype = guide_legend()) +
   theme(legend.key.width = unit(1.5, "cm")) +
   geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
 figure
-filename = "ed_vs_samplesize_50_5_4_1"
+filename = paste0("ed_vs_samplesize_", model, ".pdf", collapse = "")
 ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/")
 
 
-x = c(6.4,8.4,6.5,8.2,7.5,8,5.1,6.9,5.2,7.2,5.5,6.2,
-      4.2,6.1,4.5,6.5,4.4,4.4)
-m = matrix(x, 3, 6)
-e = c()
+
 
 ```
 
 
+## MML w/ wrong prior
+```{r}
+dag = randDag(5, 2)
+cpts = randCPTs(dag, 2, 1)
+n = 500
+data = rbn(cpts, n)
+vars = colnames(data)
+nvars = length(vars)
+#data_cat = numeric2categorical(data)
+arities = sapply(data, nlevels)
+varCnt = di = count_occurance(data, arities)
+#data = data.matrix(data)
+target = "V1"
+targetIndex = which(vars == target)
+bnlearn::mb(dag, target)
+forward_greedy(data, arities, vars, n, target, "cpt", varCnt = di, debug = T)
 
+alpha_est = list()
+ls = list()
+for (i in 1:nvars) {
+  ls[[i]] = freqs(table(data_cat[, i]))
+}
+k = 1
+for (i in unique(arities)) {
+  par = data.frame()
+  ind = which(arities == i)
+  if (length(ind) > 0) {
+    for (j in ind) {
+      par = rbind(par, ls[[j]])
+    }
+    alpha_est[[k]] = dirichlet.mle(par)$xsi
+  }
+  k = k + 1
+}
+
+alpha = which(sapply(alpha_est, length) == arities[targetIndex])
+forward_greedy_fast(data, di, arities, vars, n, target, alpha=1, debug = F)
+```
 
 
 

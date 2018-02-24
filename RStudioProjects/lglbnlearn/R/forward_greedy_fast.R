@@ -9,9 +9,13 @@
 #' @param vars vars
 #' @param sampleSize Sample size of the given data.
 #' @param target The target node.
+#' @param alpha A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+#' length is equal to the arity of the target variable.
+#' @param statingPara Default is FALSE. If TRUE, then MML estimate of the parameters are also stated with extra 0.5log(pi*e/6)
+#' per parameter.
 #' @param debug A boolearn argument to display more details.
 #' @export
-forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, debug = FALSE) {
+forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, alpha = 1, statingPara = FALSE, debug = FALSE) {
 
   targetIndex = which(vars == target) # get index of the target node
   nvars = ncol(data)
@@ -19,7 +23,8 @@ forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, 
   unCheckedIndices = (1:nvars)[-targetIndex]
   tempCachedIndicesList = list()
 
-  minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex)
+  if (prod(alpha == 1)) alpha = rep(1, arities[targetIndex])
+  minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, alpha, statingPara)
 
   if (debug) {
     cat("Search: Forward greedy with mmlCPT \n")
@@ -40,7 +45,7 @@ forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, 
     # compute msg len for the target given each unchecked node as its parents
     for (i in 1:length(unCheckedIndices)) {
       parentsIndices = c(mb, unCheckedIndices[i])
-      res = mml_cpt_fast(varCnt, cachedIndicesList, arities, sampleSize, parentsIndices, targetIndex)
+      res = mml_cpt_fast(varCnt, cachedIndicesList, arities, sampleSize, parentsIndices, targetIndex, alpha, statingPara)
       msgLenCurrent = res$msgLen
       #cachedIndicesList = res$cachedIndicesList
 

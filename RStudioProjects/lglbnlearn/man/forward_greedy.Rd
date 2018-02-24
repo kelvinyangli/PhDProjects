@@ -6,7 +6,7 @@
 \usage{
 forward_greedy(data, arities, vars, sampleSize, target, model, sigma = 3,
   dataNumeric = NULL, varCnt = NULL, prior = "uniform", dag = NULL,
-  debug = FALSE)
+  alpha = 1, statingPara = FALSE, debug = FALSE)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
@@ -38,6 +38,12 @@ for random structures. The Bayesian prior starts with the uniform prior then cal
 posteriors and use them as priors for the next step.}
 
 \item{dag}{The true DAG.}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
+
+\item{statingPara}{Default is FALSE. If TRUE, then MML estimate of the parameters are also stated with extra 0.5log(pi*e/6)
+per parameter.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each
 mml score.}
