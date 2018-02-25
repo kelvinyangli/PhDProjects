@@ -20,6 +20,10 @@
 #' @param weights A vector of weights for random Markov blanket models.
 #' @param cachedPXGivenY cachedPXGivenY
 #' @param cachInd cachInd
+#' @param alpha A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+#' length is equal to the arity of the target variable.
+#' @param statingPara If TRUE MML estimate of the parameters are also stated with extra 0.5log(pi*e/6) per parameter,
+#' otherwise 0.
 #' @param debug A boolean argument to show the detailed Markov blanket inclusion steps based on each
 #' mml score.
 #' @return The function outputs the weighted average message length over all given structures. Noticing it is
@@ -31,7 +35,7 @@
 #' @export
 mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, targetIndex, logProbTarget,
                                  cachedPXGivenT, probsMtx, strList, mbIndices, weights, cachedPXGivenY, cachInd,
-                                 debug = FALSE) {
+                                 alpha, statingPara, debug = FALSE) {
 
   l = rep(0, length(strList))
   for (j in 1:length(strList)) {# calculate mml(T|mb) for each structure in the given structure list
@@ -56,7 +60,7 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
 
     if (sum(str[, vars[targetIndex]]) == length(mbIndices)) {# if all nodes are parents
 
-      res = mml_cpt(varCnt, arities, sampleSize, mbIndices, targetIndex)
+      res = mml_cpt(varCnt, arities, sampleSize, mbIndices, targetIndex, alpha, statingPara)
 
     } else if (sum(str[vars[targetIndex], ]) == length(mbIndices)) {# if all nodes are children
 

@@ -6,7 +6,7 @@
 \usage{
 mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex,
   logProbTarget, cachedPXGivenT, probsMtx, strList, mbIndices, weights,
-  cachedPXGivenY, cachInd, debug = FALSE)
+  cachedPXGivenY, cachInd, alpha, statingPara, debug = FALSE)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be
@@ -40,6 +40,12 @@ stored in a matrix format.}
 \item{cachedPXGivenY}{cachedPXGivenY}
 
 \item{cachInd}{cachInd}
+
+\item{alpha}{A vector of concentration parameters for a Dirichlet distribution. Range is from zeor to positive infinity,
+length is equal to the arity of the target variable.}
+
+\item{statingPara}{If TRUE MML estimate of the parameters are also stated with extra 0.5log(pi*e/6) per parameter,
+otherwise 0.}
 
 \item{debug}{A boolean argument to show the detailed Markov blanket inclusion steps based on each
 mml score.}

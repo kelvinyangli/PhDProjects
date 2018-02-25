@@ -41,7 +41,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
   nvars = length(vars)
   mb = c()
   unCheckedIndices = (1:nvars)[-targetIndex]
-
+  if (prod(alpha == 1)) alpha = rep(1, arities[targetIndex])
 
   if (model == "random") {
 
@@ -57,7 +57,6 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
   # initializing with empty model
   if (model == "cpt") {
 
-    if (prod(alpha == 1)) alpha = rep(1, arities[targetIndex])
     minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, alpha, statingPara)
 
   } else if (model == "logit") {
@@ -103,6 +102,7 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
   # }
 
   if (debug) {
+
     cat(paste0("MB(", target, ")", collapse = ""), "via GS+MML", model, "\n")
     # cat("True MB model:", mbt, "\n")
     # cat("With MML score:", l_perfect, "\n")
@@ -123,40 +123,43 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
 
     }
 
-    if ((length(mb) == 7) && (model == "random")) {
-
-      if (debug) cat("Stop searching due to lack of pre-saved mbpts!")
-      break
-
-    }
-
+    # this part is for searching in the space of mb polytrees
     if (model == "random") {
-
-      # random sampling over SEC space if there are more than 10 SECs
       nsamples = 100
-      if ((nSECs[length(mb) + 1] - nIgnored[length(mb) + 1]) > nsamples) {
+      if ((length(mb) + 1) < 8) {
 
-        sampledSECIndices = sample((1:nSECs[length(mb) + 1])[-ignored[[length(mb) + 1]]], nsamples)
-        sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/",
-                                     length(mb) + 1, ".rds"))[sampledSECIndices]
+        strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mb) + 1, ".rds"))
+        if (length(strList) > nsamples) {# only sample 100 mbps
 
-      } else {# else use all SECs
-
-        sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/",
-                                     length(mb) + 1, ".rds"))
-        if (nIgnored[length(mb) + 1] > 0) {
-
-          sampledSECs = sampledSECs[-ignored[[length(mb) + 1]]]
+          ind = sample(length(strList), nsamples)
+          strList = strList[ind]
 
         }
 
-      }
+      } else {# randomly genrante 100 mb polytrees
 
-      # sampling 1 structure from each sampled SEC
-      # since strs belong to the same SEC have similar scores
-      sampledStrIndices = sapply(sampledSECs, resample, size = 1)
-      strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/",
-                               length(mb) + 1, ".rds"))[sampledStrIndices]
+        strList = rep(list(c()), nsamples)
+        for (i in 1:nsamples) strList[[i]] = rand_mbp(target, paste0("V", 1:(length(mb) + 1)), "matrix")
+        ind = which(duplicated(strList))
+        if (length(ind) > 0) {
+
+          for (j in ind) {
+
+            repeat {
+
+              temp = rand_mbp(target, paste0("V", 1:(length(mb) + 1)), "matrix")
+              if (sum(sapply(strList, identical, y = temp)) < 1) {
+                strList[[j]] = temp
+                break
+              }
+
+            }# end repeat
+
+          }# end for j
+
+        }# end checking for duplicates
+
+      }# end generating 100 mbps
 
       if (prior == "uniform") {
 
@@ -164,7 +167,44 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
 
       }
 
-    } # end if "random"
+    }
+
+    # this part is for searching in the space of secs of polytrees
+    # if (model == "random") {
+    #
+    #   # random sampling over SEC space if there are more than 10 SECs
+    #   nsamples = 100
+    #   if ((nSECs[length(mb) + 1] - nIgnored[length(mb) + 1]) > nsamples) {
+    #
+    #     sampledSECIndices = sample((1:nSECs[length(mb) + 1])[-ignored[[length(mb) + 1]]], nsamples)
+    #     sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/",
+    #                                  length(mb) + 1, ".rds"))[sampledSECIndices]
+    #
+    #   } else {# else use all SECs
+    #
+    #     sampledSECs = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPT_SECsInd/",
+    #                                  length(mb) + 1, ".rds"))
+    #     if (nIgnored[length(mb) + 1] > 0) {
+    #
+    #       sampledSECs = sampledSECs[-ignored[[length(mb) + 1]]]
+    #
+    #     }
+    #
+    #   }
+    #
+    #   # sampling 1 structure from each sampled SEC
+    #   # since strs belong to the same SEC have similar scores
+    #   sampledStrIndices = sapply(sampledSECs, resample, size = 1)
+    #   strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/",
+    #                            length(mb) + 1, ".rds"))[sampledStrIndices]
+    #
+    #   if (prior == "uniform") {
+    #
+    #     weights = rep(1 / length(strList), length(strList))
+    #
+    #   }
+    #
+    # } # end if "random"
 
     # calculate mml of target given each unchecked node as input
     for (i in 1:length(unCheckedIndices)) {
@@ -185,7 +225,8 @@ forward_greedy = function(data, arities, vars, sampleSize, target, model, sigma 
       } else if (model == "random") {#random
 
         res = mml_rand_str_adaptive(data, vars, arities, sampleSize, varCnt, targetIndex, logProbTarget,
-                                    cachedPXGivenT, probsMtx, strList, mbIndices, weights, cachedPXGivenY, cachInd, debug)
+                                    cachedPXGivenT, probsMtx, strList, mbIndices, weights, cachedPXGivenY, cachInd,
+                                    alpha, statingPara, debug)
         msgLenCurrent = res$avgL
 
         cachedPXGivenY = res$cachedPXGivenY

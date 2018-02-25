@@ -82,7 +82,7 @@ for (nvars in vnvars) {
 ```{r}
 model = "child"
 dir = "~/Documents/Experiments/kdd_exp/"
-n = 5000
+n = sampleSize = 5000
 datasets = list.files(paste0(dir, model, "/data_csv/", n))
 
 ### starting parallel computing ###
@@ -96,45 +96,15 @@ for (ii in 1:length(datasets)) {
   nvars = length(vars)
   data_cat = numeric2categorical(data)
   arities = sapply(data_cat, nlevels)
-  di = count_occurance(data_cat, arities)
-  #data = data.matrix(data_cat)
+  di = varCnt = count_occurance(data_cat, arities)
+  data_num = data.matrix(data_cat)
 
-  alpha_est = list()
-  ls = list()
-  for (i in 1:nvars) {
-    ls[[i]] = freqs(table(data[, i]))
-  }
-  k = 1
-  for (i in unique(arities)) {
-    if (i > 1) {
-      par = data.frame()
-      ind = which(arities == i)
-      if (length(ind) > 0) {
-        if (length(ind) == 1) {
-          # make a fake para to have at least 2 rows
-          temp = ls[[ind]] + 0.001
-          temp = temp / sum(temp)
-          par = rbind(ls[[ind]],  temp)
-        } else {
-          for (j in ind) {
-          par = rbind(par, ls[[j]])
-          }
-          
-        }# end else 
-        alpha_est[[k]] = dirichlet.mle(par)$alpha
-      }
-      k = k + 1
-    }
-  }
-
-  mbcpt = foreach(target = vars,
-      .combine = list,
-      .multicombine = TRUE) %dopar% {
-    targetIndex = which(vars == target)
-    alpha = alpha_est[[which(sapply(alpha_est, length) == arities[targetIndex])]]
-    forward_greedy_fast(data, di, arities, vars, n, target, alpha)
-      }
-  saveRDS(mbcpt, paste0(dir, model, "/mml_cpt_est_prior/", filename, ".rds"))
+  # mbcpt = foreach(target = vars,
+  #     .combine = list,
+  #     .multicombine = TRUE) %dopar% {
+  #   forward_greedy_fast(data, di, arities, vars, n, target)
+  #     }
+  # saveRDS(mbcpt, paste0(dir, model, "/mml_cpt_est_prior/", filename, ".rds"))
 
   # mbnb = foreach(target = vars,
   #     .combine = list,
@@ -142,11 +112,11 @@ for (ii in 1:length(datasets)) {
   #   forward_greedy(data, arities, vars, n, target, "nb")
   # saveRDS(mbnb, paste0(dir, model, "/mml_nb/", filename, ".rds"))
   # 
-  # mbrand = foreach(target = vars,
-  #     .combine = list,
-  #     .multicombine = TRUE) %dopar%
-  #   forward_greedy(data, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
-  # saveRDS(mbrand, paste0(dir, model, "/mml_rand/", filename, ".rds"))
+  mbrand = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data_num, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+  saveRDS(mbrand, paste0(dir, model, "/mml_rand_ver2/", filename, ".rds"))
 
 }
 
@@ -390,7 +360,7 @@ m[, 2] = round(amb, 1)
 m[, 3] = c(500, 1000, 5000)
 l = 4
 
-for (folder in c("mml_cpt", "mml_cpt_est_prior", "mml_rand", "iamb_cpp", "pcmb", "sll")) {
+for (folder in c("mml_cpt", "mml_rand", "mml_rand_ver2", "iamb_cpp", "pcmb", "sll")) {
   
   for (n in c(500, 1000, 5000)) {
     
@@ -737,42 +707,124 @@ ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/")
 
 
 ## MML w/ wrong prior
+for alpha < 1 close to 0, all priors performs similarly; for priors > 1, such as 100, 200, alpha=1 is the best, even better than using true prior; for alpha=1, alpha=1 is the best.
 ```{r}
-dag = randDag(5, 2)
-cpts = randCPTs(dag, 2, 1)
+# dag = randDag(10, 3)
+# graphviz.plot(dag)
+dag = readRDS("~/Documents/Experiments/kdd_exp/30_5_4_1/dag/dag_134445.rds")
+vv = c(seq(0.1, 1, 0.3), seq(10, 100, 30))
+df = c()
+#beta = 0.1
 n = 500
+itr = 20
+v0 = v3 = c()
+no_cores = 4
+registerDoParallel(no_cores)
+for (beta in vv) {
+  cat(beta, "\n")
+  cnt = matrix(0, itr, 2)
+for (rr in 1:itr) {
+  
+cat(rr, "\n")
+cpts = randCPTs(dag, 4, beta)
 data = rbn(cpts, n)
 vars = colnames(data)
 nvars = length(vars)
-#data_cat = numeric2categorical(data)
 arities = sapply(data, nlevels)
 varCnt = di = count_occurance(data, arities)
-#data = data.matrix(data)
-target = "V1"
-targetIndex = which(vars == target)
-bnlearn::mb(dag, target)
-forward_greedy(data, arities, vars, n, target, "cpt", varCnt = di, debug = T)
+mbt = lapply(vars, bnlearn::mb, x = dag)
 
-alpha_est = list()
-ls = list()
+# alpha_est = list()
+# ls = list()
+# for (i in 1:nvars) {
+#   ls[[i]] = freqs(table(data[, i]))
+# }
+# k = 1
+# for (i in unique(arities)) {
+#   par = data.frame()
+#   ind = which(arities == i)
+#   if (length(ind) > 0) {
+#     for (j in ind) {
+#       par = rbind(par, ls[[j]])
+#     }
+#     alpha_est[[k]] = dirichlet.mle(par)$alpha
+#   }
+#   k = k + 1
+# }
+# alpha2 = alpha_est[[1]]
+# 
+# xx = c()
+# for (i in 1:nvars) {
+#   temp = cpts[[i]]$prob
+#   xx = c(xx, as.vector(temp))
+# }
+# xx = matrix(xx, ncol = 2, byrow = T)
+# alpha1 = dirichlet.mle(xx)$alpha
+
+e0 = e1 = e2 = e3 = c()
+
+l0 = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar% {
+    forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=1)
+      }
+
+# l1 = foreach(target = vars,
+#       .combine = list,
+#       .multicombine = TRUE) %dopar% {
+#     forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=alpha1)
+#       }
+# 
+# l2 = foreach(target = vars,
+#       .combine = list,
+#       .multicombine = TRUE) %dopar% {
+#     forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=alpha2)
+#       }
+
+l3 = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar% {
+        targetIndex = which(vars == target)
+        alpha3 = rep(beta, arities[targetIndex])
+    forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=alpha3)
+      }
+
 for (i in 1:nvars) {
-  ls[[i]] = freqs(table(data_cat[, i]))
-}
-k = 1
-for (i in unique(arities)) {
-  par = data.frame()
-  ind = which(arities == i)
-  if (length(ind) > 0) {
-    for (j in ind) {
-      par = rbind(par, ls[[j]])
-    }
-    alpha_est[[k]] = dirichlet.mle(par)$xsi
-  }
-  k = k + 1
+  e0 = c(e0, mb_false_finding(mbt[[i]], l0[[i]]))
+  # e1 = c(e1, mb_false_finding(mbt[[i]], l1[[i]]))
+  # e2 = c(e2, mb_false_finding(mbt[[i]], l2[[i]]))
+  e3 = c(e3, mb_false_finding(mbt[[i]], l3[[i]]))
 }
 
-alpha = which(sapply(alpha_est, length) == arities[targetIndex])
-forward_greedy_fast(data, di, arities, vars, n, target, alpha=1, debug = F)
+v0 = c(v0, e0)
+v3 = c(v3, e3)
+cnt[rr, ] = c(mean(e0), mean(e3))
+# cnt[rr,] = c(mean(e0),mean(e1),mean(e2),mean(e3))
+# ind = which(c(mean(e0), mean(e1), mean(e2), mean(e3)) == min(c(mean(e0), mean(e1), mean(e2), mean(e3))))
+# cnt[rr, ind] = 1
+}
+df = c(df, colMeans(cnt))
+}
+stopImplicitCluster()
+#m_melt500=m_melt
+#error500=error
+df = matrix(df, ncol = 2, byrow = T)
+m = cbind(log(vv), df)
+error = c(1.96 * apply(matrix(v0, nrow = 8, byrow = T), 1, sd) / sqrt(nvars * itr), 
+          1.96 * apply(matrix(v3, nrow = 8, byrow = T), 1, sd) / sqrt(nvars * itr))
+#"est1", "est2", 
+colnames(m) = c("true_prior", "Uniform prior", "True prior")
+    m = data.frame(m)
+    m_melt = melt(m, id = "true_prior")
+    colnames(m_melt)[2] = "Prior"
+    figure = ggplot(m_melt, aes(x = true_prior, y = value, group = Prior, colour = Prior)) +
+      ylab(label = "Edit distance") + xlab("Log(True prior)") + geom_line(aes(linetype = Prior)) + geom_point(aes(shape = Prior)) +
+      ylim(0, 10) + xlim(-3, 5) + guides(linetype = guide_legend()) +
+      theme(legend.key.width = unit(1.5, "cm")) + 
+      geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
+figure
+filename = "ed_vs_trueprior_30_5_4_alpha_134445_5000_v2.pdf"
+ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/", width = 7.29, height = 4.5, units = "in")
 ```
 
 
