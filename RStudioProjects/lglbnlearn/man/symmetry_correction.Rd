@@ -16,7 +16,7 @@ above.}
 }
 \description{
 This function enforces the symmetry check for each learned mb. That is, if a node x is is mb(y), but y isn't
-in mb(x), then either add y into mb(x) or delete x from mb(y), depending on which deterministic rule to 
+in mb(x), then either add y into mb(x) or delete x from mb(y), depending on which deterministic rule to
 follow. The two famous deterministic rules are the AND and OR rules. For MB discovery using MML, we prefer
 to use the AND rule due to the high precision and low recall of mml_cpt.
 }
