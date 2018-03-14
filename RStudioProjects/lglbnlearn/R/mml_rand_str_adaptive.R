@@ -61,10 +61,12 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
     if (sum(str[, vars[targetIndex]]) == length(mbIndices)) {# if all nodes are parents
 
       res = mml_cpt(varCnt, arities, sampleSize, mbIndices, targetIndex, alpha, statingPara)
+      if (debug) cat(j, res, " cpt \n")
 
     } else if (sum(str[vars[targetIndex], ]) == length(mbIndices)) {# if all nodes are children
 
       res = mml_nb_adaptive(data, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, mbIndices)
+      if (debug) cat(j, res, "nb \n")
 
     } else {# if there is a mixture of parents, children and spouses
 
@@ -73,10 +75,12 @@ mml_rand_str_adaptive = function(data, vars, arities, sampleSize, varCnt, target
       res = lst$llh
       cachedPXGivenY = lst$cachedPXGivenY
       cachInd = lst$cachInd
+      if (debug) cat(j, res, "P:", vars[c(mbIndices, targetIndex)][which(str[, vars[targetIndex]] == 1)], "C:",
+                     vars[c(mbIndices, targetIndex)][which(str[vars[targetIndex], ] == 1)], "\n")
 
     }
 
-    if (debug) cat(j, res, "\n")
+    #if (debug) cat(j, res, "\n")
     l[j] = res
 
   }

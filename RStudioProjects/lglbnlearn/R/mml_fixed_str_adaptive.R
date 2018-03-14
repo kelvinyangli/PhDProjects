@@ -22,24 +22,24 @@
 mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, logProbTarget,
                                   cachedPXGivenT, probsMtx, str, mbIndices, cachedPXGivenY, cachInd) {
 
-  lp = logProbTarget # log probability
+  lp = 0
   # a matrix to store the normalizting constant in p(T|Xs)
-  margProbs = cachedPXGivenT[[targetIndex]]
+  margProbs = matrix(1, arities[targetIndex], sampleSize)
 
-  for (curIndex in mbIndices) {# go through each node in a given str
+  for (curIndex in c(targetIndex, mbIndices)) {# go through each node in a given str
 
     # if it has at least one parent,
     # then get the adaptive count of it given its parent set
     curPa = which(str[, vars[curIndex]] == 1)
-    curPaIndices = which(vars %in% names(curPa))
-    #cat(vars[curIndex], "=", vars[curPaIndices], "\n")
-    if (length(curPaIndices) > 0) {
 
+    if (length(curPa) > 0) {
+
+      curPaIndices = which(vars %in% names(curPa))
       ind = which(names(cachedPXGivenY) == paste(c(curIndex, curPaIndices), collapse = ""))
       if (length(ind) > 0) {
 
         condProbsAdpt = cachedPXGivenY[[ind]]
-        #cat(ind, "\n")
+
       } else {# cach condProbsAdpt if it hasn't been cached
 
         condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex, curPaIndices)
@@ -50,10 +50,17 @@ mml_fixed_str_adaptive = function(data, vars, arities, sampleSize, targetIndex, 
 
       }
 
-      lp = lp + sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+      lpEachNode = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
       margProbs = margProbs * condProbsAdpt
+      lp = lp + lpEachNode
 
-    }
+    } else if ((curIndex == targetIndex) && (length(curPa) < 1)) {
+
+      lpEachNode = logProbTarget
+      margProbs = margProbs * cachedPXGivenT[[targetIndex]]
+      lp = lp + lpEachNode
+
+    } # end if else
 
   }
 
