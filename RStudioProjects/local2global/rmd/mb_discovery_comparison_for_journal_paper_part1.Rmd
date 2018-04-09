@@ -80,7 +80,7 @@ for (nvars in vnvars) {
 
 ## mml + cpt, nb, rand learning using parallel computing on real models 
 ```{r}
-model = "alarm"
+model = "child"
 dir = "~/Documents/Experiments/kdd_exp/"
 n = sampleSize = 500
 datasets = list.files(paste0(dir, model, "/data_csv/", n))
@@ -112,11 +112,11 @@ for (ii in 1:length(datasets)) {
   #   forward_greedy(data, arities, vars, n, target, "nb")
   # saveRDS(mbnb, paste0(dir, model, "/mml_nb/", filename, ".rds"))
   # 
-  # mbrand = foreach(target = vars,
-  #     .combine = list,
-  #     .multicombine = TRUE) %dopar%
-  #   forward_greedy(data_num, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
-  # saveRDS(mbrand, paste0(dir, model, "/mml_rand_ver2/", filename, ".rds"))
+  mbrand = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar%
+    forward_greedy(data_num, arities, vars, n, target, "random", varCnt = di, prior = "uniform")
+  saveRDS(mbrand, paste0(dir, model, "/mml_rand/", filename, ".rds"))
 
 }
 
@@ -333,7 +333,7 @@ setwd("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/")
 ## Evaluating on real models
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
-for (model in c("child", "insurance", "alarm", "hailfinder")) {
+for (model in c("alarm")) {
 
   dag = readRDS(paste0(dir, model, "/dag/", model, ".rds"))
   vars = bnlearn::nodes(dag)

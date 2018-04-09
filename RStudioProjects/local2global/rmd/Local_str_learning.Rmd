@@ -1,0 +1,164 @@
+---
+title: "Further analysis on mml with random local models"
+author: "Yang (Kelvin) Li"
+date: "13 March 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+```
+
+Given the learned mbs, steps for local str learning: 
+
+1. bootstrapping data n times {d_1, \dots, d_n}
+2. for each bootstrapped sample d_i, score p(T|Xs) under all the markov blanket polytrees in the strList, and select the one with the lowest score, 
+3. repeat the process for n times so that a list of lowest score over all mbps are stored, 
+4. obtain the confidence of each stored str and use the one with the highest confidence to obtain global str. 
+
+Alternatively, 
+1. same as above, 
+2. same as above, 
+3. assign str prior to each mbps in the strList (uniform or camml prior), 
+4. calculate likelihood (or mml?) of each mbp and update to obtain posterior (prior for next d_i+1),
+5. repeat until go through all n bootstrapped data d_n, 
+6. use the one with the lowest mml score to build global model.
+
+
+```{r}
+dag = randDag(10, 2)
+cpts = randCPTs(dag, 4, 1)
+n = sampleSize = 1000
+smpl = randData(cpts, n)
+varCnt = count_occurance(smpl$data, smpl$arities)
+data = data.matrix(smpl$data)
+arities = smpl$arities
+vars = smpl$vars
+nvars = length(vars)
+
+no_cores = 4
+registerDoParallel(no_cores)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  forward_greedy_fast(smpl$data, varCnt, arities, vars, n, target)
+    }
+stopImplicitCluster()
+mbcpt = symmetry_correction(vars, mbcpt, "AND")
+
+# forward_greedy(data, arities, vars, n, "V5", model = model, varCnt = varCnt, prior = prior, debug = debug)
+```
+
+```{r}
+# dag = empty.graph(c("T","X","Y","Z"))
+# dag = set.arc(dag, "X", "T")
+# dag = set.arc(dag, "T", "Y")
+# dag = set.arc(dag, "Z", "Y")
+# dag = set.arc(dag, "X", "Z")
+# dag = set.arc(dag, "X", "Y")
+
+# targetIndex = 1
+# mbIndices = c(2,3,4)
+nBoot = 10
+no_cores = 4
+registerDoParallel(no_cores)
+
+optimalStrList = foreach(i = 1:nvars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+      if (length(mbcpt[[i]]) > 1) {
+        optStrInd = rep(0, nBoot)
+        targetIndex = i
+        mbIndices = which(vars %in% mbcpt[[i]])
+        strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+        for (r in 1:nBoot) {
+          ind = sample(n, n, replace = T)
+          varCnt = count_occurance(smpl$data[ind, ], smpl$arities)
+          data = data.matrix(smpl$data[ind, ])
+          l = f(data, arities, vars, n, strList, targetIndex, mbIndices)
+          optStrInd[r] = which.min(l)
+        }# end bootstrapping
+        optStrInd
+      } else {
+        i
+      }
+    }
+
+stopImplicitCluster()
+
+# str0 = dag2matrix(dag)
+# bestInd = c()
+# m = matrix(0, 2, 10)
+# cpts = randCPTs(dag, 4, 1)
+# n = 5000
+# smpl = randData(cpts, n)
+# arities = smpl$arities
+# vars = smpl$vars
+# bestInd
+# m
+# res0 = mml_fixed_str_adaptive(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT,
+#                                      probsMtx, str0, mbIndices, cachedPXGivenY=list(), cachInd=1)
+#       m[1, r] = res0$llh
+#       m[2, r] = min(l)
+    
+```
+
+A function to generate data as well as arities and vars. 
+```{r}
+randData = function(cpts, n) {
+  
+  dt = rbn(cpts, n)
+  arities = sapply(dt, nlevels)
+  vars = colnames(dt)
+  lst = list(vars = vars, arities = arities, data = dt)
+  return(lst)
+  
+}
+```
+
+```{r}
+probsMtx = matrix(0.5, arities[targetIndex], n)
+cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+for (i in 1:length(vars)) {
+
+  if (i == targetIndex) {
+
+    cachedPXGivenT[[i]] = probs_adaptive(data, arities, n, probsMtx, targetIndex)
+
+  } else {
+
+    cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, n, targetIndex, probsMtx, i, targetIndex)
+
+  }
+
+}
+
+logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+  
+dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2)
+
+f = function(data, arities, vars, n, str, targetIndex, mbIndices) {
+  
+  
+  res = mml_fixed_str_adaptive(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT, 
+                               probsMtx, str, mbIndices, cachedPXGivenY = list(), cachInd = 1)
+  
+  
+}
+```
+
+
+
+
+
+
+
+
+
+

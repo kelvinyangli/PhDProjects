@@ -1,8 +1,7 @@
 #' MML for a fixed Markov blanket model using adaptive code approach
 #'
 #' This function calculates the mml score of the target under a fixed Markov blanket model. The structure
-#' can be a general DAG. This returns the 2nd part of MML that is the likelihood of data given the
-#' structure, since the MML cost of the structure is not stated.
+#' can be a general DAG. This returns the message length without stating the mml estimate of the parameters.
 #' @param data A dataset whost variables are in numeric/integer format. Any categorical variables must be
 #' converted into numeric/integer first.
 #' @param vars A vector of all variables in data, in the same order as the column names of data.

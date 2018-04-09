@@ -1,0 +1,244 @@
+---
+title: "Metropolis-Hasting approximate of local structures posterior"
+author: "Kelvin Li"
+date: "19 March 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+```
+
+
+```{r}
+randData = function(cpts, n) {
+  
+  dt = rbn(cpts, n)
+  arities = sapply(dt, nlevels)
+  vars = colnames(dt)
+  lst = list(vars = vars, arities = arities, data = dt)
+  return(lst)
+  
+}
+```
+
+
+## Score a local structure
+
+This function calculates I(D, H). It is the same as mml_fixed_str_adaptive, but without caching some results. 
+```{r}
+mml_local_str = function(data, vars, arities, sampleSize, targetIndex, logProbTarget,
+                                  cachedPXGivenT, probsMtx, str, mbIndices) {
+  
+  lp = 0
+  # a matrix to store the normalizting constant in p(T|Xs)
+  margProbs = matrix(1, arities[targetIndex], sampleSize)
+  for (curIndex in c(targetIndex, mbIndices)) {# go through each node in a given str
+    
+    # if it has at least one parent,
+    # then get the adaptive count of it given its parent set
+    curPa = which(str[, vars[curIndex]] == 1)
+    if (length(curPa) > 0) {
+      
+      curPaIndices = which(vars %in% names(curPa))
+      condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, 
+                                          curIndex, curPaIndices)
+      lpEachNode = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+      margProbs = margProbs * condProbsAdpt
+      lp = lp + lpEachNode
+      
+    } else if ((curIndex == targetIndex) && (length(curPa) < 1)) {
+      
+      lpEachNode = logProbTarget
+      margProbs = margProbs * cachedPXGivenT[[targetIndex]]
+      lp = lp + lpEachNode
+      
+    } # end if else
+    
+  }
+  
+  nlp = -(lp - sum(log(apply(margProbs, 2, sum)))) # -log(p(T|Xs))
+  return(nlp)
+  
+}
+```
+
+```{r}
+#dag = randDag(10, 2)
+dag = empty.graph(c("A", "T", "S", "L", "E", "B", "X", "D"))
+dag = set.arc(dag, "A", "T")
+dag = set.arc(dag, "T", "E")
+dag = set.arc(dag, "S", "L")
+dag = set.arc(dag, "S", "B")
+dag = set.arc(dag, "B", "D")
+dag = set.arc(dag, "L", "E")
+dag = set.arc(dag, "E", "X")
+dag = set.arc(dag, "E", "D")
+cpts = randCPTs(dag, 2, 1)
+n = sampleSize = 1000
+smpl = randData(cpts, n)
+varCnt = count_occurance(smpl$data, smpl$arities)
+data = data.matrix(smpl$data)
+arities = smpl$arities
+vars = smpl$vars
+nvars = length(vars)
+graphviz.plot(dag)
+```
+
+```{r}
+no_cores = 4
+registerDoParallel(no_cores)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  forward_greedy_fast(smpl$data, varCnt, arities, vars, n, target)
+    }
+stopImplicitCluster()
+mbcpt = symmetry_correction(vars, mbcpt, "AND")
+names(mbcpt) = vars
+```
+
+## MH-algorithm
+go through the entire space w/o mutations, assuming uniform str prior
+```{r}
+metropolis_hasting = function(data, vars, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, mbIndices, strList, nItrs) {
+  
+  nVisits = rep(0L, length(strList))
+  indCurrent = sample(length(strList), 1)
+  strCurrent = strList[[indCurrent]]
+  ICurrent = mml_local_str(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT, probsMtx,
+                strCurrent, mbIndices)
+  for (itr in 1:nItrs) {
+    indNext = sample((1:length(strList))[-indCurrent], 1)
+    strNext = strList[[indNext]]
+    INext = mml_local_str(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT, probsMtx,
+                  strNext, mbIndices)
+    # comparing the current and next msg len 
+    r = ICurrent - INext
+    acceptRate = min(c(r, 0))
+    u = log(runif(1))
+    #cat("r:", r, "-- rate:", acceptRate, "-- u:", u, "\n")
+    if (u < acceptRate) {
+      # accept
+      indCurrent = indNext
+      ICurrent = INext
+      nVisits[indCurrent] = nVisits[indCurrent] + 1
+    } else {
+      nVisits[indCurrent] = nVisits[indCurrent] + 1
+    }
+  }
+  return(nVisits)
+  
+}
+```
+
+apply mh to all nodes having at least 1 parent
+```{r}
+no_cores = 4
+registerDoParallel(no_cores)
+posteriorList = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+      targetIndex = which(vars == target)  
+      mbl = mbcpt[[targetIndex]]
+      mbIndices = which(vars %in% mbl)
+      if (length(mbl) > 0) {
+        strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+        ii = 1
+        for (s in strList) {
+          dimnames(s) = rep(list(vars[c(mbIndices, targetIndex)]), 2) 
+          strList[[ii]] = s
+          ii = ii + 1
+        }
+        probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+        cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+        for (i in 1:nvars) {
+          if (i == targetIndex) {
+            cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+          } else {
+            cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+          }
+        }
+        logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), 
+                                                                       data[, targetIndex])]))
+        metropolis_hasting(data, vars, arities, sampleSize, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, mbIndices, strList, nItrs = 1000)
+      } else {
+        -targetIndex
+      }
+    } # end parallel computing
+stopImplicitCluster()
+posteriorList
+```
+
+## Exact posterior
+calculating the exact posterior
+```{r}
+I = c()
+targetIndex = 2
+mbIndices = which(vars %in% mbcpt[[targetIndex]])
+strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+for (i in 1:length(strList)) {
+  str = strList[[i]]
+  dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) 
+  probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+  cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+  for (i in 1:nvars) {
+    if (i == targetIndex) {
+      cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+    } else {
+      cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+    }
+  }
+  logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), 
+                                                                 data[, targetIndex])]))
+  I = c(I, mml_local_str(data, vars, arities, n,t argetIndex, logProbTarget, cachedPXGivenT, probsMtx,
+                  str, mbIndices))
+}
+p = exp(-I)
+df = data.frame("exact" = round(p / sum(p) * 1000, 0), mcmc = posteriorList[[targetIndex]])
+(df = df[order(df[,1], decreasing = T),])
+```
+
+mutation function. This function assumes the last column is always the target var. Think carefully how to define a mutation function!
+```{r}
+mutate = function(str) {
+  
+  index = ncol(str) # target index
+  p = which(str[-index, index] == 1) # parents indices
+  c = which(str[index, -index] == 1) # children indices
+  s = (1:index)[-c(p, c)] # spouses indices
+  
+}
+```
+
+## Unifying local structures
+This can be transformed into an optimization problem as the following: what is the global DAG G that has no arc or MB conflicts and the highest combined posterior distribution. 
+```{r}
+
+ind = sapply(posteriorList, which.max)
+highPosteriorStrs = list()
+for (i in 1:nvars) {
+  mbl = mbcpt[[i]]
+  mbIndices = which(vars %in% mbl)
+  if (length(mbl) > 0) {
+    strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbl), ".rds"))
+    str = strList[[ind[i]]]
+    dimnames(str) = rep(list(vars[c(mbIndices, i)]), 2) 
+    highPosteriorStrs[[i]] = str
+  } else {
+    highPosteriorStrs[[i]] = 0
+  }
+  
+  
+}
+
+```
+
+
+
