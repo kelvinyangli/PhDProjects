@@ -1,0 +1,93 @@
+---
+title: "scale_up_camml_using_mb"
+author: "Kelvin Li"
+date: "18 April 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+library(plyr)
+```
+
+## mode generation
+Generated 10 random models with 500 sample for each model. 
+```{r}
+n = sampleSize = 500
+sd = randSeed()
+set.seed(sd)
+dag = randDag(30, 4)
+cpts = randCPTs(dag, 5, 1)
+smpl = randData(cpts, n)
+filename = paste0("30_4_5_1_500_", sd)
+saveRDS(dag, paste0("~/Documents/Experiments/camml_with_prior_testing/dag/dag_", filename, ".rds"))
+saveRDS(cpts, paste0("~/Documents/Experiments/camml_with_prior_testing/cpts/cpts_", filename, ".rds"))
+write.csv(smpl$data, paste0("~/Documents/Experiments/camml_with_prior_testing/data_csv/", filename, ".csv"), row.names=FALSE)
+saveRDS(smpl$data, paste0("~/Documents/Experiments/camml_with_prior_testing/data_rds/", filename, ".rds"))
+```
+
+## camml w/o prior
+Learning has been done in GUI for now.
+```{r}
+dagst = list.files("~/Documents/Experiments/camml_with_prior_testing/dag/")
+dagsl = list.files("~/Documents/Experiments/camml_with_prior_testing/camml_no_prior/")
+error = rep(0, length(dagst))
+for (i in 1:length(dagst)) {
+  dagt = readRDS(paste0("~/Documents/Experiments/camml_with_prior_testing/dag/", dagst[i]))
+  dagl = netica2bnlearn(paste0("~/Documents/Experiments/camml_with_prior_testing/camml_no_prior/", dagsl[i]))
+  dagl = parentsList2BN(dagl)
+  error[i] = hamming(dagl, dagt)
+}
+error
+mean(error)
+sd(error) * 1.96 / sqrt(length(error))
+```
+
+## format camml prior
+Use true structure prior. 
+```{r}
+files = list.files("~/Documents/Experiments/camml_with_prior_testing/dag/")
+for (i in 1:length(files)) {
+  dag = readRDS(paste0("~/Documents/Experiments/camml_with_prior_testing/dag/", files[i]))
+  arcs = dag$arcs
+  txt = cammlPrior(arcs, 0.9)
+  filename = strsplit(files[i], "_")[[1]][-c(1)]
+  filename = paste0(c("prior", filename), collapse = "_")
+  write_file(txt, paste0("~/Documents/Experiments/camml_with_prior_testing/prior/", filename, ".txt"))  
+}
+```
+
+## camml w/ prior
+## camml w/o prior
+Learning has been done in GUI for now.
+```{r}
+dagst = list.files("~/Documents/Experiments/camml_with_prior_testing/dag/")
+dagsl = list.files("~/Documents/Experiments/camml_with_prior_testing/camml_with_prior_0.9/")
+error = rep(0, length(dagst))
+for (i in 1:length(dagst)) {
+  dagt = readRDS(paste0("~/Documents/Experiments/camml_with_prior_testing/dag/", dagst[i]))
+  dagl = netica2bnlearn(paste0("~/Documents/Experiments/camml_with_prior_testing/camml_with_prior_0.9/", dagsl[i]))
+  dagl = parentsList2BN(dagl)
+  error[i] = hamming(dagl, dagt)
+}
+error
+mean(error)
+sd(error) * 1.96 / sqrt(length(error))
+```
+
+
+
+
+
+
+
+
+
+
+

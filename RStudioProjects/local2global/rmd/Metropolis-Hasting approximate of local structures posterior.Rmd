@@ -70,16 +70,16 @@ mml_local_str = function(data, vars, arities, sampleSize, targetIndex, logProbTa
 ```
 
 ```{r}
-#dag = randDag(10, 2)
-dag = empty.graph(c("A", "T", "S", "L", "E", "B", "X", "D"))
-dag = set.arc(dag, "A", "T")
-dag = set.arc(dag, "T", "E")
-dag = set.arc(dag, "S", "L")
-dag = set.arc(dag, "S", "B")
-dag = set.arc(dag, "B", "D")
-dag = set.arc(dag, "L", "E")
-dag = set.arc(dag, "E", "X")
-dag = set.arc(dag, "E", "D")
+dag = randDag(10, 2)
+# dag = empty.graph(c("A", "T", "S", "L", "E", "B", "X", "D"))
+# dag = set.arc(dag, "A", "T")
+# dag = set.arc(dag, "T", "E")
+# dag = set.arc(dag, "S", "L")
+# dag = set.arc(dag, "S", "B")
+# dag = set.arc(dag, "B", "D")
+# dag = set.arc(dag, "L", "E")
+# dag = set.arc(dag, "E", "X")
+# dag = set.arc(dag, "E", "D")
 cpts = randCPTs(dag, 2, 1)
 n = sampleSize = 1000
 smpl = randData(cpts, n)
@@ -88,6 +88,7 @@ data = data.matrix(smpl$data)
 arities = smpl$arities
 vars = smpl$vars
 nvars = length(vars)
+mbt = lapply(vars, bnlearn::mb, x = dag)
 graphviz.plot(dag)
 ```
 
@@ -102,6 +103,10 @@ mbcpt = foreach(target = vars,
 stopImplicitCluster()
 mbcpt = symmetry_correction(vars, mbcpt, "AND")
 names(mbcpt) = vars
+
+errors = rep(0, nvars)
+for (i in 1:nvars) errors[i] = mb_false_finding(mbt[[i]], mbcpt[[i]])
+errors
 ```
 
 ## MH-algorithm
@@ -179,66 +184,412 @@ posteriorList
 ## Exact posterior
 calculating the exact posterior
 ```{r}
-I = c()
-targetIndex = 2
-mbIndices = which(vars %in% mbcpt[[targetIndex]])
-strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
-for (i in 1:length(strList)) {
-  str = strList[[i]]
-  dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) 
-  probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
-  cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
-  for (i in 1:nvars) {
-    if (i == targetIndex) {
-      cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
-    } else {
-      cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+#mmlList = list()
+subgraphList = list()
+
+no_cores = 4
+registerDoParallel(no_cores)
+mmlList = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  targetIndex = which(vars == target)
+  I = c()
+  mbIndices = which(vars %in% mbcpt[[targetIndex]])
+  if (length(mbIndices) > 0) {
+    strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+    for (i in 1:length(strList)) {
+      str = strList[[i]]
+      dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) 
+      probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+      cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+      for (i in 1:nvars) {
+        if (i == targetIndex) {
+          cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+        } else {
+          cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+        }
+      }
+      logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), 
+                                                                     data[, targetIndex])]))
+      I = c(I, mml_local_str(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str, mbIndices))
+    }
+    I
+  }
+    }
+stopImplicitCluster()
+
+# assign 0 to empty mb
+mmlList[[which(sapply(mmlList, length) == 0)]] = 0
+
+# for (targetIndex in 1:nvars) {
+#   I = c()
+#   mbIndices = which(vars %in% mbcpt[[targetIndex]])
+#   strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+#   for (i in 1:length(strList)) {
+#     str = strList[[i]]
+#     dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) 
+#     probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+#     cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+#     for (i in 1:nvars) {
+#       if (i == targetIndex) {
+#         cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+#       } else {
+#         cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+#       }
+#     }
+#     logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), 
+#                                                                    data[, targetIndex])]))
+#     I = c(I, mml_local_str(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str, mbIndices))
+#   }
+#   mmlList[[targetIndex]] = I
+#   
+# }
+
+```
+## Merging all subgraphs
+```{r}
+optSubgraphList = list()
+optSubgraphInd = sapply(mmlList, which.min)
+for (targetIndex in 1:nvars) {
+  mbIndices = which(vars %in% mbcpt[[targetIndex]])
+  if (length(mbIndices) > 0) {
+    strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+    str = strList[[optSubgraphInd[targetIndex]]]
+    dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2)
+    optSubgraphList[[targetIndex]] = str
+  } else {
+    optSubgraphList[[targetIndex]] = 0
+  }
+}
+
+arcs = function(mtx) {
+  e = c()
+  for (i in 1:nrow(mtx)) {
+    for (j in 1:ncol(mtx)) {
+      if (mtx[i, j] == 1) e = c(e, rownames(mtx)[i], colnames(mtx)[j])
     }
   }
-  logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), 
-                                                                 data[, targetIndex])]))
-  I = c(I, mml_local_str(data, vars, arities, n,t argetIndex, logProbTarget, cachedPXGivenT, probsMtx,
-                  str, mbIndices))
+  e = matrix(e, ncol = 2, byrow = T)
+  colnames(e) = c("from", "to")
+  return(e)
 }
-p = exp(-I)
-df = data.frame("exact" = round(p / sum(p) * 1000, 0), mcmc = posteriorList[[targetIndex]])
-(df = df[order(df[,1], decreasing = T),])
-```
 
-mutation function. This function assumes the last column is always the target var. Think carefully how to define a mutation function!
-```{r}
-mutate = function(str) {
-  
-  index = ncol(str) # target index
-  p = which(str[-index, index] == 1) # parents indices
-  c = which(str[index, -index] == 1) # children indices
-  s = (1:index)[-c(p, c)] # spouses indices
-  
+# global str matrix
+globalMtx = matrix(0, nvars, nvars)
+dimnames(globalMtx) = rep(list(vars), 2)
+blacklist = data.frame(stringsAsFactors = F)
+conflictVars = c()
+for (targetIndex in 1:nvars) {
+  if (length(mbcpt[[targetIndex]]) > 0) {
+    str = optSubgraphList[[targetIndex]]
+    directedEdges = arcs(str)
+    for (i in 1:nrow(directedEdges)) {
+      #e = c(directedEdges[i, 1], directedEdges[i, 2])
+      from = directedEdges[i, 1]
+      to = directedEdges[i, 2]
+      e = c(from, to)
+      if (is.na(row.match(e, blacklist))) {# if not in blacklist
+        if (globalMtx[to, from] == 0) {# if no conflict, update cnt
+          globalMtx[from, to] = globalMtx[from, to] + 1  
+        } else {# else, remove both directions
+          globalMtx[to, from] = 0
+          blacklist = rbind(blacklist, e, stringsAsFactors = F)
+        }
+      }
+    }
+  }
 }
-```
 
-## Unifying local structures
-This can be transformed into an optimization problem as the following: what is the global DAG G that has no arc or MB conflicts and the highest combined posterior distribution. 
-```{r}
-
-ind = sapply(posteriorList, which.max)
-highPosteriorStrs = list()
-for (i in 1:nvars) {
-  mbl = mbcpt[[i]]
-  mbIndices = which(vars %in% mbl)
-  if (length(mbl) > 0) {
-    strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbl), ".rds"))
-    str = strList[[ind[i]]]
-    dimnames(str) = rep(list(vars[c(mbIndices, i)]), 2) 
-    highPosteriorStrs[[i]] = str
+# dealing with conflicts
+# find for which target var conflicts occur
+for (i in 1:nrow(blacklist)) {
+  sumDif = 0 
+  e = c(blacklist[i, 1], blacklist[i, 2])
+  for (targetIndex in 1:nvars) {
+    if (length(mbcpt[[targetIndex]]) > 0) {
+      if (prod(e %in% c(vars[targetIndex], mbcpt[[targetIndex]]))) {
+        cat(vars[targetIndex], "\n")
+        mbIndices = which(vars %in% mbcpt[[targetIndex]])
+        strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+      
+        str = optSubgraphList[[targetIndex]]
+        if (str[e[1], e[2]] == 1) {
+          tempStr1 = str
+          dimnames(tempStr1) = rep(list(c(paste0("V", 1:length(mbIndices)), "T")), 2)
+          l1 = mmlList[[targetIndex]][which(sapply(strList, all.equal, tempStr1) == TRUE)]
+        } else if (str[e[2], e[1]] == 1) {
+          tempStr2 = str
+          dimnames(tempStr2) = rep(list(c(paste0("V", 1:length(mbIndices)), "T")), 2)
+          l2 = mmlList[[targetIndex]][which(sapply(strList, all.equal, tempStr2) == TRUE)]
+        } else {
+          l1 = l2 = 0
+        }
+        
+        deltaMML = l1 - l2 # mml difference b/w two structures 
+        cat(deltaMML, "\n")
+        sumDif = sumDif + deltaMML
+      }
+    }
+  }
+  if (sumDif > 0) {
+    globalMtx[e[2], e[1]] = 1
   } else {
-    highPosteriorStrs[[i]] = 0
+    globalMtx[e[1], e[2]] = 1
+  }
+}
+
+globalMtx = ceiling(globalMtx / max(globalMtx))
+is_dag(globalMtx)
+```
+## hill-climbing dag search 
+operations include: arc removal (0.4), reversial (0.4), addition (0.2)
+```{r}
+dagl = matrix2dag(globalMtx)
+for (i in 1:100) {
+  if (runif(1) < 0.4) {# arc removal
+    ind = sample(1:nrow(dagl$arcs), 1)
+    e = dagl$arcs[ind, ]
+    from = e[1]
+    to = e[2]
+    fromInd = which(vars == from)
+    toInd = which(vars == to)
+    toPa = bnlearn::parents(dagl, to)
+    toPaInd = which(vars %in% toPa)
+    lbefore = mml_cpt(varCnt, arities, n, toPaInd, toInd, rep(1, arities[toInd]), F)
+    lafter = mml_cpt(varCnt, arities, n, toPaInd[toPaInd != fromInd], toInd, rep(1, arities[toInd]), F)
+    ldiff = lbefore - lafter
+    cat("--remove", e, ":", ldiff, "? \n")
+    #if (!ldiff < 0) {# apply operation
+    if (abs(ldiff) < 2) {
+      dagl = drop.arc(dagl, from, to)
+      cat("Yes! \n")
+    }
+  } else if (runif(1) < 0.7) {# arc reversial 
+    ind = sample(1:nrow(dagl$arcs), 1) 
+    e = dagl$arcs[ind, ]
+    from = e[1]
+    to = e[2]
+    if (acyclic(reverse.arc(dagl, from, to, check.cycles = F), directed = T)) {# check acyclic
+      fromInd = which(vars == from)
+      toInd = which(vars == to)
+      # for node from
+      fromPa = bnlearn::parents(dagl, from)
+      fromPaInd = which(vars %in% fromPa)
+      lbefore = mml_cpt(varCnt, arities, n, fromPaInd, fromInd, rep(1, arities[fromInd]), F)
+      lafter = mml_cpt(varCnt, arities, n, c(fromPaInd, toInd), fromInd, rep(1, arities[fromInd]), F)
+      ldiffFrom = lbefore - lafter
+      # for node to
+      toPa = bnlearn::parents(dagl, to)
+      toPaInd = which(vars %in% toPa)
+      lbefore = mml_cpt(varCnt, arities, n, toPaInd, toInd, rep(1, arities[toInd]), F)
+      lafter = mml_cpt(varCnt, arities, n, toPaInd[toPaInd != fromInd], toInd, rep(1, arities[toInd]), F)
+      ldiffTo = lbefore - lafter
+      ldiff = ldiffFrom + ldiffTo
+      cat("<>reverse", e, ":", ldiff, "? \n")
+      #if (!ldiff < 0) {# apply operation
+      if (abs(ldiff) < 2) {
+        dagl = reverse.arc(dagl, from, to)
+        cat("Yes! \n")
+      }
+    }
+  } else {# arc addition
+    var = sample(vars, 1)
+    varInd = which(vars == var)
+    toAdd = sample(vars[-varInd], 1)
+    toAddInd = which(vars == toAdd)
+    if (acyclic(set.arc(dagl, toAdd, var, check.cycles = F))) {
+      pa = bnlearn::parents(dagl, var)
+      paInd = which(vars %in% pa)
+      lbefore = mml_cpt(varCnt, arities, n, paInd, varInd, rep(1, arities[varInd]), F)
+      lafter = mml_cpt(varCnt, arities, n, c(paInd, toAddInd), varInd, rep(1, arities[varInd]), F)
+      ldiff = lbefore - lafter
+      cat("++addition", e, ":", ldiff, "? \n")
+      #if (!ldiff < 0) {# apply operation
+      if (abs(ldiff) < 2) {
+        dagl = set.arc(dagl, toAdd, var)
+        cat("Yes! \n")
+      }
+    }
+  }
+}
+
+
+```
+
+
+```{r}
+editDistDags(matrix2dag(globalMtx), dag)
+editDistDags(dagl, dag, debug = T)
+editDistDags(mmhc(smpl$data), dag)
+#graphviz.plot(matrix2dag(globalMtx))
+```
+
+```{r}
+# this function check if a given graph is a dag
+# the input is based on graph adjacency matrix
+# mtx %^% n is the power of a mtrix, this requires the library expm
+is_dag = function(mtx) {
+  
+  eligible = TRUE
+  
+  for (n in 1:ncol(mtx)) {
+    
+    if (sum(diag(mtx %^% n)) > 0) {
+      
+      eligible = FALSE
+      break
+      
+    } # end if 
+    
+  } # end for n
+  
+  return(eligible)
+  
+}
+
+is_dag2 = function(x) {
+  
+  if (!is.matrix(x)) {
+    
+    lnodes = bnlearn::nodes(x)
+    lpars = list()
+    for (i in 1:length(lnodes)) {
+      
+      lpars[[i]] = x$nodes[[i]]$parents  
+      
+    }
+    
+  } else {
+    
+    lnodes = colnames(x)
+    lpars = list()
+    for (i in 1:length(lnodes)) {
+      
+      lpars[[i]] = which(x[, i] == 1)
+      
+    }  
+    
+  } # end else 
+  
+  return(isDAG(lnodes, lpars))
+  
+}
+
+# check if arcs x and y are same, reversed, or different
+# this function is called by editDistDags/hammingDags
+checkArc = function(x, y) {
+  
+  if (prod(x == y)) {# when x and y are identical
+    
+    allEqual = 1
+    
+  } else if (prod(x == rev(y))) {# when x and y are in a reverse order
+    
+    allEqual = -1
+    
+  } else {# when x and y are not equal
+    
+    allEqual = 0
+    
   }
   
+  return(allEqual)
   
 }
 
+# edit distance between dags
+# this is the same function as the hammingDags function used in autoEditDistance in bn evaluations
+editDistDags = function(learned, true, debug = FALSE) {
+  
+  arcsLearned = directed.arcs(learned) 
+  
+  arcsTrue = directed.arcs(true)
+  
+  addition = 0
+  deletion = 0
+  reversion = 0
+  
+  # checkTrue = 0 means arc in true not in learned
+  # hence addition add 1
+  # checkTrue = -1 means arc in both but wrong direction
+  # hence reversion add 1
+  
+  if ((nrow(arcsTrue) == 0) && (nrow(arcsLearned) > 0)) {
+    
+    # if dagTrue is empty but not dagLearned 
+    deletion = nrow(arcsLearned)
+    if (debug) cat("All arcs in the learned dag need to be deleted. \n")
+    
+  } else if ((nrow(arcsTrue) > 0) && (nrow(arcsLearned) == 0)) {
+    
+    # if dagLearned is empty but not dagTrue
+    addition = nrow(arcsTrue)
+    if (debug) cat("All arcs in the true dag need to be added to the learned dag. \n")
+    
+  } else if ((nrow(arcsTrue) > 0) && (nrow(arcsLearned) > 0)) {
+    
+    # if both dags are not empty
+    for (i in 1:nrow(arcsTrue)) {
+      
+      # check if each arc in true appears in learned with the correct or reversed direction
+      # as there can be only one 1 or -1, then sum up all results
+      checkTrue = sum(apply(arcsLearned, 1, checkArc, x = arcsTrue[i,]))
+      
+      if (checkTrue == 0) {
+        
+        addition = addition + 1
+        if (debug) {
+          
+          cat("* arcs between", arcsTrue[i,][[1]], "and", arcsTrue[i,][[2]], "do not match (addition). \n")
+          cat("  > the learned network contains no arc between", arcsTrue[i,][[1]], "and", arcsTrue[i,][[2]], ". \n")
+          cat("  > the true network contains", arcsTrue[i,][[1]], "->", arcsTrue[i,][[2]], ". \n")
+          
+        } # end debug
+        
+      } else if (checkTrue == -1) {
+        
+        reversion = reversion + 1
+        if (debug) {
+          
+          cat("* arcs between", arcsTrue[i,][[1]], "and", arcsTrue[i,][[2]], "do not match (reversion). \n")
+          cat("  > the learned network contains", arcsTrue[i,][[2]], "->", arcsTrue[i,][[1]], ". \n")
+          cat("  > the true network contains", arcsTrue[i,][[1]], "->", arcsTrue[i,][[2]], ". \n")
+          
+        } # end debug
+        
+      } # end else if
+      
+    } # end for i
+    
+    for (j in 1:nrow(arcsLearned)) {
+      
+      # check if each arc in learned appears in true
+      # as there can be only one 1 or -1, sum up all results
+      checkLearned = sum(apply(arcsTrue, 1, checkArc, x = arcsLearned[j,]))
+      
+      if (checkLearned == 0) {
+        
+        deletion = deletion + 1
+        if (debug) {
+          
+          cat("* arcs between", arcsLearned[j,][[1]], "and", arcsLearned[j,][[2]], "do not match (deletion). \n")
+          cat("  > the learned network contains", arcsLearned[j,][[1]], "->", arcsLearned[j,][[2]], ". \n")
+          cat("  > the true network contains no arc between", arcsLearned[j,][[1]], "and", arcsLearned[j,][[2]], ". \n")
+          
+        } # end debug
+      
+      } # end if 
+      
+    } # end for j
+    
+  }
+  
+  return(sum(addition, deletion, reversion))
+  
+}
 ```
+
+
 
 
 

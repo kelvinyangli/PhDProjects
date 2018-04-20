@@ -1,0 +1,528 @@
+---
+title: "Merging MBs"
+author: "Kelvin Li"
+date: "12 April 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+library(plyr)
+```
+
+
+```{r}
+randData = function(cpts, n) {
+  
+  dt = rbn(cpts, n)
+  arities = sapply(dt, nlevels)
+  vars = colnames(dt)
+  lst = list(vars = vars, arities = arities, data = dt)
+  return(lst)
+  
+}
+
+cond_mi = function(x, y, z, data) {
+  
+  if (is.null(z)) {
+    cmi = infotheo::condinformation(data[, x], data[, y])
+  } else {
+    cmi = infotheo::condinformation(data[, x], data[, y], data[, z])  
+  }
+  return(cmi)
+  
+}
+
+# x is a vector of length 3
+interact_info = function(x, data) {
+  
+  ii = cond_mi(x[1], x[2], NULL, data) - cond_mi(x[1], x[2], x[3], data)
+  return(ii)
+  
+}
+
+quotient_interact_info = function(x, y, z, data) {
+  
+  qii = cond_mi(x, y, z, data) / cond_mi(x, y, NULL, data)
+  return(qii)
+  
+}
+
+three_nodes_linear = function(dag, vars) {
+  
+  mtx = data.frame(stringsAsFactors = F)
+  for (x in vars) {
+    
+    xNbrs = bnlearn::nbr(dag, x)
+    for (y in xNbrs) {
+      
+      yNbrs = bnlearn::nbr(dag, y)
+      yNbrs = yNbrs[yNbrs != x] # since x is in yNbrs
+      if (length(yNbrs) > 0) {
+        
+        for (z in yNbrs) {
+          
+          chain = c(x, y, z)
+          chain = chain[order(chain)]
+          if (length(mtx) > 0) {
+            if (is.na(row.match(chain, mtx))) mtx = rbind(mtx, chain, stringsAsFactors = F)  
+          } else {
+            mtx = rbind(mtx, chain, stringsAsFactors = F)
+          }
+          
+        }
+        
+      }
+      
+    }
+    
+  }
+  colnames(mtx) = c("x", "y", "z")
+  return(mtx)
+  
+}
+
+is_clique = function(m, x) {
+  
+  if ((sum(m[x, x]) / 2) == length(x)) {
+    i = TRUE
+  } else {
+    i = FALSE
+  }
+  return(i)
+  
+}
+
+# x is an adjacency matrix
+find_arcs = function(x) {
+  
+  vars = colnames(x)
+  arcs = c()
+  for (i in 1:nrow(x)) {
+    
+    for (j in 1:ncol(x)) {
+      
+      if (x[i, j] == 1) arcs = c(arcs, vars[i], vars[j])
+      
+    }
+    
+  }
+  arcs = matrix(arcs, ncol = 2, byrow = TRUE)
+  return(arcs)
+  
+}
+
+mml_local_str = function(data, vars, arities, sampleSize, targetIndex, logProbTarget,
+                                  cachedPXGivenT, probsMtx, str, mbIndices) {
+  
+  lp = 0
+  # a matrix to store the normalizting constant in p(T|Xs)
+  margProbs = matrix(1, arities[targetIndex], sampleSize)
+  for (curIndex in c(targetIndex, mbIndices)) {# go through each node in a given str
+    
+    # if it has at least one parent,
+    # then get the adaptive count of it given its parent set
+    curPa = which(str[, vars[curIndex]] == 1)
+    if (length(curPa) > 0) {
+      
+      curPaIndices = which(vars %in% names(curPa))
+      condProbsAdpt = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, 
+                                          curIndex, curPaIndices)
+      lpEachNode = sum(log(t(condProbsAdpt)[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+      margProbs = margProbs * condProbsAdpt
+      lp = lp + lpEachNode
+      
+    } else if ((curIndex == targetIndex) && (length(curPa) < 1)) {
+      
+      lpEachNode = logProbTarget
+      margProbs = margProbs * cachedPXGivenT[[targetIndex]]
+      lp = lp + lpEachNode
+      
+    } # end if else
+    
+  }
+  
+  nlp = -(lp - sum(log(apply(margProbs, 2, sum)))) # -log(p(T|Xs))
+  return(nlp)
+  
+}
+```
+
+```{r}
+# dag = empty.graph(c("A", "T", "S", "L", "E", "B", "X", "D"))
+# dag = set.arc(dag, "A", "T")
+# dag = set.arc(dag, "T", "E")
+# dag = set.arc(dag, "S", "L")
+# dag = set.arc(dag, "S", "B")
+# dag = set.arc(dag, "B", "D")
+# dag = set.arc(dag, "L", "E")
+# dag = set.arc(dag, "E", "X")
+# dag = set.arc(dag, "E", "D")
+dag = randDag(30, 4)
+cpts = randCPTs(dag, 4, 1)
+n = sampleSize = 1000
+smpl = randData(cpts, n)
+varCnt = count_occurance(smpl$data, smpl$arities)
+data = data.matrix(smpl$data)
+arities = smpl$arities
+vars = smpl$vars
+nvars = length(vars)
+mbt = lapply(vars, bnlearn::mb, x = dag)
+#graphviz.plot(dag)
+dagMMHC = mmhc(smpl$data)
+write.csv(smpl$data, "~/Documents/camml_test_data.csv", row.names=FALSE)
+
+no_cores = 4
+registerDoParallel(no_cores)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  forward_greedy_fast(smpl$data, varCnt, arities, vars, n, target)
+    }
+stopImplicitCluster()
+#mbcpt = symmetry_correction(vars, mbcpt, "AND")
+names(mbcpt) = vars
+
+# errors = rep(0, nvars)
+# for (i in 1:nvars) errors[i] = mb_false_finding(mbt[[i]], mbcpt[[i]])
+# errors
+
+## Merging by edit distance 
+# The idea is to start with a random dag, read off the MB of each node and calculate the edit distance from these MBs from the learned MBs. Then revise the dag in light of minimizing the edit distance.
+# 
+# mbl variables can be all added as pc of var
+
+dagl = empty.graph(vars)
+for (x in vars) {
+  if (length(mbcpt[[x]]) > 0) {
+    for (y in mbcpt[[x]])
+    dagl = set.edge(dagl, x, y)  
+  }
+}
+
+sumED = 0
+for (var in vars) {
+  mbl = bnlearn::mb(dagl, var)
+  sumED = sumED + edit_dist_mb(mbcpt[[var]], mbl, vars, var)
+}
+
+# sumED
+# bnlearn::hamming(dagl, dag)
+# bnlearn::hamming(dagMMHC, dag)
+bnlearn::compare(skeleton(dag), dagl)
+bnlearn::compare(skeleton(dag), skeleton(dagMMHC))
+
+highConfArcs = matrix(nrow = nvars, ncol = 2)
+i = 1
+for (x in vars) {
+  if (length(mbcpt[[x]]) > 0) {
+    y = mbcpt[[x]][1]
+    e = c(x, y)
+    highConfArcs[i, ] = vars[which(vars %in% e)]
+    i = i + 1
+  }
+}
+ind = which(is.na(highConfArcs[,1]))
+if (length(ind) > 0) highConfArcs = highConfArcs[-ind, ]
+highConfArcs = unique(highConfArcs)
+colnames(highConfArcs) = c("from", "to")
+# 
+par(mfrow = c(1,2))
+graphviz.plot(dag)
+highlight.opts = list(arcs = highConfArcs, col = "red")
+graphviz.plot(dagl, highlight = highlight.opts)
+
+# txt = cammlPrior(highConfArcs, 0.95)
+# write_file(txt, "~/Documents/camml_prior.txt")
+```
+
+## Camml output
+```{r}
+dagCaMML = netica2bnlearn("~/Documents/camml_output.dne")
+dagCaMML = parentsList2BN(dagCaMML)
+bnlearn::compare(skeleton(dag), skeleton(dagCaMML))
+bnlearn::shd(dag, dagCaMML)
+bnlearn::shd(dag, dagMMHC)
+mbcamml = list()
+for (i in 1:nvars) {
+  mbcamml[[i]] = bnlearn::mb(dagCaMML, vars[i])
+}
+mbmmhc = list()
+for (i in 1:nvars) {
+  mbmmhc[[i]] = bnlearn::mb(dagMMHC, vars[i])
+}
+errors = rep(0, nvars)
+for (i in 1:nvars) errors[i] = mb_false_finding(mbt[[i]], mbcpt[[i]])
+sum(errors)
+errors = rep(0, nvars)
+for (i in 1:nvars) errors[i] = mb_false_finding(mbt[[i]], mbcamml[[i]])
+sum(errors)
+errors = rep(0, nvars)
+for (i in 1:nvars) errors[i] = mb_false_finding(mbt[[i]], mbmmhc[[i]])
+sum(errors)
+# errors = rep(0, nvars)
+# for (i in 1:nvars) errors[i] = mb_false_finding(mbt[[i]], mbsll[[i]])
+# sum(errors)
+```
+
+For each var, go through its mb, starting from the 2nd found node in its mb. Now the question is should the 2nd node connected w/ the var directly or indirectly via a collider. Check the cur var's pc. If there is no pc then connect the 2nd node to the cur var directly. If there are any pc then test cmi for collider, if the test result should there is likely to be a collider then add directions to make a collider and add the directed edge b/w the 2nd node and the current var into blacklist (since there should be an edge b/w these two, otherwise the collider test won't show any positive sign? check this experimentally!!!). 
+
+If for a chain of three nodes, cmi of two conditioning on one does not give similar values then these three nodes are likely to be mutually connected. 
+
+For every chain of three nodes, calculate cmi b/w the two sides conditioning and not conditioning on the middle one, if the cmi increased by "a lot" after conditioning on the middle one, then the middle node is very likely to be a collider.
+
+use graphviz layout algorithm to get an ordering?
+
+```{r}
+mtx = dag2matrix(dagl)
+threeNodesCliques = c()
+threeVarsMtx = three_nodes_linear(dagl, vars)
+iim = rep(0, nrow(threeVarsMtx))
+for (i in 1:nrow(threeVarsMtx)) {
+  x = threeVarsMtx[i, 1]
+  y = threeVarsMtx[i, 2]
+  z = threeVarsMtx[i, 3]
+  iim[i] = interact_info(c(x, y, z), data)
+  
+  if (is_clique(mtx, unlist(threeVarsMtx[i, ]))) {
+    threeNodesCliques = c(threeNodesCliques, unlist(threeVarsMtx[i, ]))
+  }
+}
+df = data.frame(arcs = threeVarsMtx, iim = iim)
+df = df[order(iim), ]
+threeNodesCliques = matrix(threeNodesCliques, ncol = 3, byrow = T)
+```
+
+## Interaction information
+```{r}
+for (i in 1:nrow(threeNodesCliques)) {
+  cat(threeNodesCliques[i, ], "\n")
+  qii1 = quotient_interact_info(threeNodesCliques[i, 3], threeNodesCliques[i, 2], 
+                               threeNodesCliques[i, 1], data)  
+  qii2 = quotient_interact_info(threeNodesCliques[i, 3], threeNodesCliques[i, 1], 
+                               threeNodesCliques[i, 2], data)
+  qii3 = quotient_interact_info(threeNodesCliques[i, 1], threeNodesCliques[i, 2], 
+                               threeNodesCliques[i, 3], data)
+  cat(threeNodesCliques[i, 1], ":", qii1, "--",
+      threeNodesCliques[i, 2], ":", qii2, "--",
+      threeNodesCliques[i, 3], ":", qii3, "\n")
+}
+```
+
+## Exact posterior
+calculating the exact posterior
+```{r}
+mbptLists = list()
+files = list.files("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/")
+for (i in 1:8) {
+  mbptLists[[i]] = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", files[i])) 
+}
+ 
+mbcpt = symmetry_correction(vars, mbcpt, "AND")
+subgraphList = list()
+no_cores = 4
+registerDoParallel(no_cores)
+mmlList = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  targetIndex = which(vars == target)
+  mbIndices = which(vars %in% mbcpt[[targetIndex]])
+  if (length(mbIndices) > 0) {
+    strList = mbptLists[[length(mbIndices) + 1]]
+    I = rep(0, length(strList))
+    for (ii in 1:length(strList)) {
+      str = strList[[ii]]
+      dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2) 
+      probsMtx = matrix(0.5, arities[targetIndex], sampleSize)
+      cachedPXGivenT = list() # empty list to cach condProbsAdpt calculated by mml_fixed_str_adaptive()
+      for (i in 1:nvars) {
+        if (i == targetIndex) {
+          cachedPXGivenT[[i]] = probs_adaptive(data, arities, sampleSize, probsMtx, targetIndex)
+        } else {
+          cachedPXGivenT[[i]] = cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, i, targetIndex)
+        }
+      }
+      logProbTarget = sum(log(t(cachedPXGivenT[[targetIndex]])[cbind(seq_along(data[, targetIndex]), data[, targetIndex])]))
+      I[ii] = mml_local_str(data, vars, arities, n, targetIndex, logProbTarget, cachedPXGivenT, probsMtx, str, mbIndices)
+    }
+    I
+  }
+    }
+stopImplicitCluster()
+
+# assign 0 to empty mb
+for (i in 1:nvars) {
+  if (length(mbcpt[[vars[i]]]) < 1) mmlList[[i]] = 0
+}
+
+optSubgraphList = list()
+optSubgraphInd = sapply(mmlList, which.min)
+for (targetIndex in 1:nvars) {
+  mbIndices = which(vars %in% mbcpt[[targetIndex]])
+  if (length(mbIndices) > 0) {
+    strList = readRDS(paste0("~/Documents/PhDProjects/RStudioProjects/local2global/MBPTs_ordered/", length(mbIndices), ".rds"))
+    str = strList[[optSubgraphInd[targetIndex]]]
+    dimnames(str) = rep(list(vars[c(mbIndices, targetIndex)]), 2)
+    optSubgraphList[[targetIndex]] = str
+  } else {
+    optSubgraphList[[targetIndex]] = 0
+  }
+}
+names(optSubgraphList) = vars
+```
+
+## Get initial arc directions from the best mb polytree for each node
+```{r}
+dagll = dagl
+ptArcs = data.frame(stringsAsFactors = F)
+for (var in vars) {
+  pt = optSubgraphList[[var]]
+  if (length(pt) > 1) ptArcs = rbind(ptArcs, find_arcs(pt), stringsAsFactors = F)
+}
+names(ptArcs) = c("from", "to")
+arcsCount = ddply(ptArcs, .(from, to), nrow)
+
+for (i in 1:nrow(dagl$arcs)) {
+  e = dagl$arcs[i,]
+  indE = row.match(e, arcsCount[, -3])
+  indRevE = row.match(rev(e), arcsCount[, -3])  
+  if (is.na(indE)) {
+    eCnt = 0 
+  } else {
+    eCnt = arcsCount[indE, 3]
+  }
+  
+  if (is.na(indRevE)) {
+    revECnt = 0 
+  } else {
+    revECnt = arcsCount[indRevE, 3]
+  }
+  
+  if (eCnt > revECnt) {
+    dagll = set.arc(dagll, e[1], e[2])
+  } else if (eCnt < revECnt) {
+    dagll = set.arc(dagll, e[2], e[1])
+  } 
+}
+bnlearn::shd(dagll, dag)
+bnlearn::shd(mmhc(smpl$data), dag)
+
+par(mfrow = c(1,2))
+graphviz.plot(dag)
+highlight.opts = list(arcs = highConfArcs, col = "red")
+graphviz.plot(dagll, highlight = highlight.opts)
+```
+
+## hill-climbing dag search 
+operations include: arc removal (0.4), reversial (0.4), addition (0.2)
+```{r}
+for (i in 1:100) {
+  if (runif(1) < 0.4) {# arc removal
+    ind = sample(1:nrow(dagll$arcs), 1)
+    e = dagll$arcs[ind, ]
+    from = e[1]
+    to = e[2]
+    fromInd = which(vars == from)
+    toInd = which(vars == to)
+    toPa = bnlearn::parents(dagll, to)
+    toPaInd = which(vars %in% toPa)
+    lbefore = mml_cpt(varCnt, arities, n, toPaInd, toInd, rep(1, arities[toInd]), F)
+    lafter = mml_cpt(varCnt, arities, n, toPaInd[toPaInd != fromInd], toInd, rep(1, arities[toInd]), F)
+    ldiff = lbefore - lafter
+    cat("--remove", e, ":", ldiff, "? \n")
+    #if (!ldiff < 0) {# apply operation
+    if (abs(ldiff) < 2) {
+      dagll = drop.arc(dagll, from, to)
+      cat("Yes! \n")
+    }
+  } else if (runif(1) < 0.7) {# arc reversial 
+    ind = sample(1:nrow(dagll$arcs), 1) 
+    e = dagll$arcs[ind, ]
+    from = e[1]
+    to = e[2]
+    if (acyclic(reverse.arc(dagll, from, to, check.cycles = F), directed = T)) {# check acyclic
+      fromInd = which(vars == from)
+      toInd = which(vars == to)
+      # for node from
+      fromPa = bnlearn::parents(dagll, from)
+      fromPaInd = which(vars %in% fromPa)
+      lbefore = mml_cpt(varCnt, arities, n, fromPaInd, fromInd, rep(1, arities[fromInd]), F)
+      lafter = mml_cpt(varCnt, arities, n, c(fromPaInd, toInd), fromInd, rep(1, arities[fromInd]), F)
+      ldiffFrom = lbefore - lafter
+      # for node to
+      toPa = bnlearn::parents(dagll, to)
+      toPaInd = which(vars %in% toPa)
+      lbefore = mml_cpt(varCnt, arities, n, toPaInd, toInd, rep(1, arities[toInd]), F)
+      lafter = mml_cpt(varCnt, arities, n, toPaInd[toPaInd != fromInd], toInd, rep(1, arities[toInd]), F)
+      ldiffTo = lbefore - lafter
+      ldiff = ldiffFrom + ldiffTo
+      cat("<>reverse", e, ":", ldiff, "? \n")
+      #if (!ldiff < 0) {# apply operation
+      if (abs(ldiff) < 2) {
+        dagll = reverse.arc(dagll, from, to)
+        cat("Yes! \n")
+      }
+    }
+  } else {# arc addition
+    var = sample(vars, 1)
+    varInd = which(vars == var)
+    toAdd = sample(vars[-varInd], 1)
+    toAddInd = which(vars == toAdd)
+    if (acyclic(set.arc(dagll, toAdd, var, check.cycles = F))) {
+      pa = bnlearn::parents(dagll, var)
+      paInd = which(vars %in% pa)
+      lbefore = mml_cpt(varCnt, arities, n, paInd, varInd, rep(1, arities[varInd]), F)
+      lafter = mml_cpt(varCnt, arities, n, c(paInd, toAddInd), varInd, rep(1, arities[varInd]), F)
+      ldiff = lbefore - lafter
+      cat("++addition", e, ":", ldiff, "? \n")
+      #if (!ldiff < 0) {# apply operation
+      if (abs(ldiff) < 2) {
+        dagll = set.arc(dagll, toAdd, var)
+        cat("Yes! \n")
+      }
+    }
+  }
+}
+
+
+```
+
+## structure_learning experiments 
+not complete yet
+```{r}
+dir = "~/Documents/Experiments/"
+model = "child"
+nvars = 20
+vars = paste0("V", 1:nvars)
+metric = "mml_cpt"
+n = 500
+mbcpt = list.files(paste0(dir, "kdd_exp/", model, "/", metric), "500_")
+for (i in 1:length(mbcpt)) {
+  mbl = readRDS(paste0(dir, "kdd_exp/", model, "/", metric, "/", mbcpt[i]))
+  names(mbl) = vars
+  dagl = empty.graph(vars)
+  for (x in vars) {
+    if (length(mbcpt[[x]]) > 0) {
+      for (y in mbcpt[[x]])
+      dagl = set.edge(dagl, x, y)  
+    }
+  }
+  bnlearn::hamming(dagl, dag)
+}
+
+
+```
+
+
+
+
+
+
+
+

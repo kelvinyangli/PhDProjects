@@ -1,0 +1,131 @@
+---
+title: "First found MB node"
+author: "Kelvin Li"
+date: "14 April 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+```
+
+```{r}
+randData = function(cpts, n) {
+  
+  dt = rbn(cpts, n)
+  arities = sapply(dt, nlevels)
+  vars = colnames(dt)
+  lst = list(vars = vars, arities = arities, data = dt)
+  return(lst)
+  
+}
+
+find_spouses = function(dag, var) {
+  
+  mbt = bnlearn::mb(dag, var)
+  nbrs = bnlearn::nbr(dag, var)
+  sps = mbt[-which(mbt %in% nbrs)]
+  return(sps)
+  
+}
+```
+
+## First found mb node
+```{r}
+v = c(2, 3, 4, 5, 6)
+nreps = 5
+accuracy = rep(0, length(v) * nreps)
+no_cores = 4
+registerDoParallel(no_cores)
+ind = 1
+for (npa in v) {
+for (ii in 1:nreps) {
+tp = fp = 0
+dag = randDag(20, npa)
+cpts = randCPTs(dag, 4, 1)
+n = sampleSize = 500
+smpl = randData(cpts, n)
+varCnt = count_occurance(smpl$data, smpl$arities)
+data = data.matrix(smpl$data)
+arities = smpl$arities
+vars = smpl$vars
+nvars = length(vars)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  forward_greedy_fast(smpl$data, varCnt, arities, vars, n, target)
+    }
+for (i in 1:nvars) {
+  if (length(mbcpt[[i]]) > 0) {
+    if (mbcpt[[i]][1] %in% bnlearn::nbr(dag, vars[i])) {
+      tp = tp + 1
+    } else {
+      fp = fp + 1
+    }
+  }
+}
+
+accuracy[ind] = tp / (tp + fp)
+ind = ind + 1
+}
+}
+stopImplicitCluster()
+m = matrix(accuracy, ncol = length(v), byrow = F)
+colMeans(m)
+```
+
+## Last found mb node
+```{r}
+accuracy = c()
+v = c(2, 3, 4, 5, 6)
+nreps = 5
+accuracy = rep(0, length(v) * nreps)
+no_cores = 4
+registerDoParallel(no_cores)
+ind = 1
+for (npa in v) {
+for (ii in 1:nreps) {
+tp = fp = 0
+dag = randDag(20, npa)
+cpts = randCPTs(dag, 4, 1)
+n = sampleSize = 500
+smpl = randData(cpts, n)
+varCnt = count_occurance(smpl$data, smpl$arities)
+data = data.matrix(smpl$data)
+arities = smpl$arities
+vars = smpl$vars
+nvars = length(vars)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  forward_greedy_fast(smpl$data, varCnt, arities, vars, n, target)
+    }
+for (i in 1:nvars) {
+  if (length(mbcpt[[i]]) > 1) {
+    x = mbcpt[[i]][length(mbcpt[[i]])]
+    sps = find_spouses(dag, vars[[i]])
+    if (x %in% sps) {
+      tp = tp + 1
+    } else {
+      fp = fp + 1
+    }
+  }
+}
+
+accuracy[ind] = tp / (tp + fp)
+ind = ind + 1
+}
+}
+stopImplicitCluster()
+m = matrix(accuracy, ncol = length(v), byrow = F)
+colMeans(m)
+```
+
+
+
