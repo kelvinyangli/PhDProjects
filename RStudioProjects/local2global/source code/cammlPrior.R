@@ -34,7 +34,7 @@ cammlPrior = function(arcs, priors) {
 
 
 #############################################################################################
-cammlPrior = function(arcs, prior) {
+cammlPrior = function(arcs) {
   
   #if (length(arc_list$single) == 2) arc_list$single = matrix(arc_list$single, 1, 2) 
   #if (length(arc_list$bi) == 2) arc_list$bi = matrix(arc_list$bi, 1, 2) 
@@ -45,7 +45,7 @@ cammlPrior = function(arcs, prior) {
     
     for (i in 1:nrow(arcs)) {
       
-      text = paste(text, "\n", arcs[i, 1], "--", arcs[i, 2], prior, ";")
+      text = paste(text, "\n", arcs[i, 1], "--", arcs[i, 2], arcs[i, 3], ";")
 
     } # end for i 
     

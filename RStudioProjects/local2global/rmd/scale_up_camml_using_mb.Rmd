@@ -48,6 +48,27 @@ error
 mean(error)
 sd(error) * 1.96 / sqrt(length(error))
 ```
+```{r}
+# a function to create false arcs 
+false_arcs = function(dag, nArcs) {
+  vars = bnlearn::nodes(dag)
+  m = matrix(0, nArcs, 2)
+  i = 1
+  repeat {
+    e = sample(vars, 2)
+    a = is.na(row.match(e, dag$arcs))
+    b = is.na(row.match(e, m))
+    #cat(e, trueArc, "\n")
+    if (a && b) {
+      m[i, ] = e
+      i = i + 1
+    }
+    if (i == (nArcs + 1)) break
+  }
+  colnames(m) = c("from", "to")
+  return(m)
+}
+```
 
 ## format camml prior
 Use true structure prior. 
@@ -55,24 +76,25 @@ Use true structure prior.
 files = list.files("~/Documents/Experiments/camml_with_prior_testing/dag/")
 for (i in 1:length(files)) {
   dag = readRDS(paste0("~/Documents/Experiments/camml_with_prior_testing/dag/", files[i]))
-  arcs = dag$arcs
-  txt = cammlPrior(arcs, 0.9)
+  #arcs = dag$arcs
+  arcs = false_arcs(dag, 20)
+  txt = cammlPrior(arcs, 0.8)
   filename = strsplit(files[i], "_")[[1]][-c(1)]
-  filename = paste0(c("prior", filename), collapse = "_")
-  write_file(txt, paste0("~/Documents/Experiments/camml_with_prior_testing/prior/", filename, ".txt"))  
+  filename = paste0(filename, collapse = "_")
+  filename = paste0(strsplit(filename, ".rds")[[1]][1], ".txt")
+  write_file(txt, paste0("~/Documents/Experiments/camml_with_prior_testing/prior/", filename))  
 }
 ```
 
 ## camml w/ prior
-## camml w/o prior
 Learning has been done in GUI for now.
 ```{r}
 dagst = list.files("~/Documents/Experiments/camml_with_prior_testing/dag/")
-dagsl = list.files("~/Documents/Experiments/camml_with_prior_testing/camml_with_prior_0.9/")
+dagsl = list.files("~/Documents/Experiments/camml_with_prior_testing/camml_with_false_prior/1.0/")
 error = rep(0, length(dagst))
-for (i in 1:length(dagst)) {
+for (i in 1:6) {
   dagt = readRDS(paste0("~/Documents/Experiments/camml_with_prior_testing/dag/", dagst[i]))
-  dagl = netica2bnlearn(paste0("~/Documents/Experiments/camml_with_prior_testing/camml_with_prior_0.9/", dagsl[i]))
+  dagl = netica2bnlearn(paste0("~/Documents/Experiments/camml_with_prior_testing/camml_with_false_prior/1.0/", dagsl[i]))
   dagl = parentsList2BN(dagl)
   error[i] = hamming(dagl, dagt)
 }
