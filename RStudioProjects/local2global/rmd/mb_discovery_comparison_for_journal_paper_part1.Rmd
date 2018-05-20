@@ -595,7 +595,7 @@ for (ii in 1:6) {
 
 m = round(m, 1)
 w = round(w, 1)
-colnames(m) = colnames(w) = c("nmb", "MML_CPT", "MML_NB", "MML_RANDOM", "IAMB", "PCMB", "SLL")
+colnames(m) = colnames(w) = c("nmb", "MML_CPT", "MML_NB", "MBMML_ENSEMBLE", "IAMB", "PCMB", "SLL")
 m = m[, c(1:4, 7, 5, 6)]
 m = data.frame(m)
 m_melt = melt(m, id = "nmb")
@@ -609,7 +609,7 @@ figure = ggplot(m_melt, aes(x = nmb, y = value, group = Algorithm, colour = Algo
 figure
 filename = paste0("ed_vs_mbsize_", nvars, "_5_4_1_", n, collapse = "")
 filename = paste0(filename, ".pdf", collapse = "")
-ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/", width = 7.29, height = 4.5, units = "in")
+ggsave(filename, device = "pdf", path = "~/Documents/Papers during PhD/Journal paper on MB discovery/figures", width = 7.29, height = 4.5, units = "in")
 
 }
 ```
@@ -651,8 +651,9 @@ m[k, ] = c(mean(ed), mean(ed_sym), mean(ed_sym2))
 ```
 
 
+## plotting
 ```{r}
-model = "barley"
+model = "50_5_4_1"
 if (model == "30_5_4_1") {
 # 30_5_4_1
 x = c(7.5,7.3,7.2,7.5,8.7,7.4,4.5,6.2,4.6,6.2,5.7,6.3,3.3,5.1,3.5,5.2,3.5,4.4,2.6,4.5,3,4.7,2.6,2.9)
@@ -686,12 +687,12 @@ error = c(.3,.2,.3,.2,.5,.3,.3,.2,.3,.2,.4,.3,.3,.2,.3,.2,.2,.3)
 if (model %in% c("30_5_4_1", "50_5_4_1")) {
 m = matrix(x, 4, 6, byrow = T)
 m = cbind((c(100, 500, 2000, 5000)), m)
-colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_RANDOM", "IAMB", "PCMB", "SLL")
+colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_ENSEMBLE", "IAMB", "PCMB", "SLL")
 m = m[,c(1:4,7,5,6)]
 } else {
 m = matrix(x, 3, 6, byrow = T)
 m = cbind((c(500, 1000, 5000)), m)
-colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_RANDOM", "IAMB", "PCMB", "SLL")
+colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_ENSEMBLE", "IAMB", "PCMB", "SLL")
 m = m[,c(1:4,7,5,6)]
 }
 
@@ -705,7 +706,7 @@ theme(legend.key.width = unit(1.5, "cm")) +
 geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
 figure
 filename = paste0("ed_vs_samplesize_", model, ".pdf", collapse = "")
-ggsave(filename, device = "pdf", path = "~/Documents/Journal paper on MB discovery/figures/", width = 7.29, height = 4.5, units = "in")
+ggsave(filename, device = "pdf", path = "~/Documents/Papers during PhD/Journal paper on MB discovery/figures", width = 7.29, height = 4.5, units = "in")
 ```
 
 
@@ -714,18 +715,24 @@ for alpha < 1 close to 0, all priors performs similarly; for priors > 1, such as
 ```{r}
 # dag = randDag(10, 3)
 # graphviz.plot(dag)
-dag = readRDS("~/Documents/Experiments/kdd_exp/30_5_4_1/dag/dag_134445.rds")
-vv = c(seq(0.1, 1, 0.3), seq(10, 100, 30))
-df = c()
+dag = readRDS("~/Documents/Experiments/kdd_exp/30_5_4_1/dag/dag_172007.rds")
+nvars = bnlearn::nnodes(dag)
+#vv = c(seq(0.1, 1, 0.3), seq(10, 100, 30))
+vv = c(0.1, 0.4, 0.7, 1, 10, 40, 70, 100)
+#df = c()
 #beta = 0.1
 n = 500
-itr = 20
-v0 = v3 = c()
-no_cores = 4
+itr = 2
+df0 = df3 = matrix(0, length(vv) * itr * nvars, 5)
+# e0 = e1 = e2 = e3 = rep(0, length(vv) * itr * nvars)
+# acc0 = acc3 = matrix(0, length(vv) * itr * nvars, 2)
+iii = 1
+no_cores = 3
 registerDoParallel(no_cores)
 for (beta in vv) {
   cat(beta, "\n")
   cnt = matrix(0, itr, 2)
+  
 for (rr in 1:itr) {
   
 cat(rr, "\n")
@@ -737,52 +744,11 @@ arities = sapply(data, nlevels)
 varCnt = di = count_occurance(data, arities)
 mbt = lapply(vars, bnlearn::mb, x = dag)
 
-# alpha_est = list()
-# ls = list()
-# for (i in 1:nvars) {
-#   ls[[i]] = freqs(table(data[, i]))
-# }
-# k = 1
-# for (i in unique(arities)) {
-#   par = data.frame()
-#   ind = which(arities == i)
-#   if (length(ind) > 0) {
-#     for (j in ind) {
-#       par = rbind(par, ls[[j]])
-#     }
-#     alpha_est[[k]] = dirichlet.mle(par)$alpha
-#   }
-#   k = k + 1
-# }
-# alpha2 = alpha_est[[1]]
-# 
-# xx = c()
-# for (i in 1:nvars) {
-#   temp = cpts[[i]]$prob
-#   xx = c(xx, as.vector(temp))
-# }
-# xx = matrix(xx, ncol = 2, byrow = T)
-# alpha1 = dirichlet.mle(xx)$alpha
-
-e0 = e1 = e2 = e3 = c()
-
 l0 = foreach(target = vars,
       .combine = list,
       .multicombine = TRUE) %dopar% {
     forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=1)
       }
-
-# l1 = foreach(target = vars,
-#       .combine = list,
-#       .multicombine = TRUE) %dopar% {
-#     forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=alpha1)
-#       }
-# 
-# l2 = foreach(target = vars,
-#       .combine = list,
-#       .multicombine = TRUE) %dopar% {
-#     forward_greedy_fast(data, varCnt, arities, vars, n, target, alpha=alpha2)
-#       }
 
 l3 = foreach(target = vars,
       .combine = list,
@@ -793,46 +759,70 @@ l3 = foreach(target = vars,
       }
 
 for (i in 1:nvars) {
-  e0 = c(e0, mb_false_finding(mbt[[i]], l0[[i]]))
-  # e1 = c(e1, mb_false_finding(mbt[[i]], l1[[i]]))
-  # e2 = c(e2, mb_false_finding(mbt[[i]], l2[[i]]))
-  e3 = c(e3, mb_false_finding(mbt[[i]], l3[[i]]))
+  df0[iii, 1] = mb_false_finding(mbt[[i]], l0[[i]])
+  df0[iii, 2:3] = mb_retrieval(mbt[[i]], l0[[i]], nvars)
+  df0[iii, 4] = beta
+  df3[iii, 1] = mb_false_finding(mbt[[i]], l3[[i]])
+  df3[iii, 2:3] = mb_retrieval(mbt[[i]], l3[[i]], nvars)
+  df3[iii, 4] = beta
+  df0[iii, 5] = sum(sapply(l0, length))
+  df3[iii, 5] = sum(sapply(l3, length))
+  iii = iii + 1
 }
 
-v0 = c(v0, e0)
-v3 = c(v3, e3)
-cnt[rr, ] = c(mean(e0), mean(e3))
-# cnt[rr,] = c(mean(e0),mean(e1),mean(e2),mean(e3))
-# ind = which(c(mean(e0), mean(e1), mean(e2), mean(e3)) == min(c(mean(e0), mean(e1), mean(e2), mean(e3))))
-# cnt[rr, ind] = 1
-}
-df = c(df, colMeans(cnt))
-}
+# v0 = c(v0, e0)
+# v3 = c(v3, e3)
+# cnt[rr, ] = c(mean(e0), mean(e3))
+
+}# end for each itr
+# df = c(df, colMeans(cnt))
+}# end for each prior
+
 stopImplicitCluster()
-#m_melt500=m_melt
-#error500=error
-df = matrix(df, ncol = 2, byrow = T)
-m = cbind(log(vv), df)
-error = c(1.96 * apply(matrix(v0, nrow = 8, byrow = T), 1, sd) / sqrt(nvars * itr), 
-          1.96 * apply(matrix(v3, nrow = 8, byrow = T), 1, sd) / sqrt(nvars * itr))
-#"est1", "est2", 
-colnames(m) = c("true_prior", "Uniform prior", "True prior")
-    m = data.frame(m)
-    m_melt = melt(m, id = "true_prior")
-    colnames(m_melt)[2] = "Prior"
-    figure = ggplot(m_melt, aes(x = true_prior, y = value, group = Prior, colour = Prior)) +
-      ylab(label = "Edit distance") + xlab("Log(True prior)") + geom_line(aes(linetype = Prior)) + geom_point(aes(shape = Prior)) +
-      ylim(0, 10) + xlim(-3, 5) + guides(linetype = guide_legend()) +
-      theme(legend.key.width = unit(1.5, "cm")) + 
-      geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
+
+m0 = m3 = s0 = s3 = matrix(0, length(vv), ncol(df0))
+a = nrow(df0)/length(vv)
+for (i in 1:length(vv)) {
+  m0[i,] = apply(df0[((i-1)*a + 1):(i*a),], 2, mean)
+  s0[i,] = apply(df0[((i-1)*a + 1):(i*a),], 2, sd)
+  m3[i,] = apply(df3[((i-1)*a + 1):(i*a),], 2, mean)
+  s3[i,] = apply(df3[((i-1)*a + 1):(i*a),], 2, sd)
+}
+```
+
+# plot
+```{r}
+df = cbind(m0[,1], m3[,1], log(m0[,4]))
+colnames(df) = c("uniform", "true", "prior")
+df = as.data.frame(df)
+m_melt = melt(df, "prior")
+error = c(s0[,1], s3[,1])
+error = 1.96 * error / sqrt(length(a))
+figure = ggplot(m_melt, aes(x = prior, y = value, group = variable, colour = variable))+ylab(label = "Edit distance") + xlab("Log(True prior)") + geom_line(aes(linetype = variable)) + geom_point(aes(shape = variable))+
+guides(linetype = guide_legend()) +
+theme(legend.key.width = unit(1.5, "cm")) + ylim(0, 10) + xlim(-3, 5)
 figure
-filename = "ed_vs_trueprior_30_5_4_alpha_134445_5000_v2.pdf"
-ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/", width = 7.29, height = 4.5, units = "in")
+# + 
+# geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
+# figure
+# + 
+# filename = "ed_vs_trueprior_30_5_4_alpha_134445_5000_v2.pdf"
+# ggsave(filename, device = "pdf", path = "~/Documents/Journal KDD/figures/", width = 7.29, height = 4.5, units = "in")
 ```
 
 
+## mean mb size
+```{r}
+files = list.files("~/Documents/Experiments/kdd_exp/50_5_4_1/dag/")
+ss = 0
+for (i in 1:length(files)) {
+  dag = readRDS(paste0("~/Documents/Experiments/kdd_exp/50_5_4_1/dag/", files[i]))
+  vars = bnlearn::nodes(dag)
+  ss = ss + mean(sapply(sapply(vars, bnlearn::mb, x = dag), length))
+}
+ss/length(files)
 
-
+```
 
 
 

@@ -103,9 +103,205 @@ mean(error)
 sd(error) * 1.96 / sqrt(length(error))
 ```
 
+## MB prior
+```{r}
+nMRFs = function(n) 2 ^ (choose(n, 2))
+
+nChordals = function(n) nMRFs(n) - (choose(n - 1, 2) * factorial(n - 3) * n * (2 ^ (n - 3) - 1))
+
+nChordals = function(n) {
+  k = 0
+  for (r in 0:n) {
+    k = k + choose(n, r) * (2 ^ (r * (n - r)))
+  }
+  return(k)
+}
+
+nMBs = function(n) {
+  
+  k = 1
+  if (n > 1) {
+    
+    for (i in 1:(n - 1)) k = k * (2 ^ (n - i))  
+    
+  }
+  
+  return(k)
+  
+}
+
+nToms = function(n) {
+  n = factorial(n) * (2 ^ (n * (n - 1) / 2))
+  return(n)
+}
+```
+
+# randomly generating mbs
+```{r}
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
+# sampling
+n = 5
+nsamples = 100000000
+l = rep(list(0), 1050)
+k = 1
+for (j in 1:nsamples) {
+  mtx = matrix(0, n, n)
+  for (i in 1:nrow(mtx)) {
+    m_i = resample(0:(n - 1), 1)
+    mtx[i, resample((1:n)[-i], m_i)] = 1
+  }
+  
+  if (g(mtx) == 1) {# if mb symmetric
+    if (sum(sapply(l[1:(k - 1)], identical, mtx)) == 0) {# if not duplicated
+      l[[k]] = mtx
+      k = k + 1  
+    }
+  }
+}
+
+# checking for mb symmetric
+g = function(mtx) {
+  isSym = 1
+  for (i in 1:nrow(mtx)) {
+    mb_i = which(mtx[i, ] == 1)
+    for (j in mb_i) {
+      if (mtx[j, i] != 1) {
+        isSym = 0
+        break
+      }
+    }
+  }
+  return(isSym)
+}
+```
+
+## Check if B_X is consistent with a DAG
+```{r}
+nvars = 7
+vars = paste0("V", 1:nvars)
+nitr = 1000
+nitr2 = 100
+cnt2 = 0
+itr = 1
+#cnt = 0 
+lf = lg = list()
+repeat {
+  
+  if (itr == nitr) break
+  itr = itr + 1
+  # sample a random undirected graph
+  nedges = sample(choose(nvars, 2), 1)
+  f = empty.graph(vars)
+  for (i in 1:nedges) {
+    repeat {
+      e = sample(1:nvars, 2)
+      if (is.na(row.match(vars[e], f$arcs))) {
+        f = set.edge(f, vars[e[1]], vars[e[2]])
+        break
+      }
+    }# end repeat
+  }
+  
+  # check if it can be directed s.t. N_X^F = B_X^G
+  itr2 = 1
+  cnt = 0
+  repeat {
+    if (itr2 == 10000) break
+    ord = sample(vars)
+    g = pdag2dag(f, ord)
+    nf = lapply(vars, nbr, x = f)
+    bg = lapply(vars, mb, x = g)
+    if (prod(all.equal(nf, bg) == T) == 1) {
+      cnt = 1
+      break # break if find a G
+    }
+    itr2 = itr2 + 1
+  }
+  
+  # record F if it doesn't have a G s.t. N_X^F = B_X^G 
+  if (cnt == 0) {
+    if (sum(sapply(lf, all.equal, f) == T) < 1) {# check for duplication
+      cnt2 = cnt2 + 1
+      lf[[cnt2]] = f
+    }
+  }
+  
+}
+cnt2
+# par(mfrow = c(1, 2))
+# graphviz.plot(f)
+# graphviz.plot(g)
+```
+
+
+# manually check 
+```{r}
+# random undirected graphs
+nvars = 6
+vars = paste0("V", 1:nvars)
+nedges = sample(choose(nvars, 2), 1)
+f = empty.graph(vars)
+for (i in 1:nedges) {
+  repeat {
+    e = sample(1:nvars, 2)
+    if (is.na(row.match(vars[e], f$arcs))) {
+      f = set.edge(f, vars[e[1]], vars[e[2]])
+      break
+    }
+  }# end repeat
+}
+graphviz.plot(f)
+
+nvars = 7
+vars = paste0("V", 1:nvars)
+f = empty.graph(vars)
+f = set.edge(f, "V1", "V2")
+f = set.edge(f, "V2", "V3")
+f = set.edge(f, "V3", "V4")
+f = set.edge(f, "V4", "V1")
+f = set.edge(f, "V5", "V2")
+f = set.edge(f, "V5", "V3")
+f = set.edge(f, "V6", "V2")
+f = set.edge(f, "V6", "V5")
+f = set.edge(f, "V7", "V2")
+f = set.edge(f, "V7", "V3")
+f = set.edge(f, "V7", "V5")
+
+
+itr2 = 1
+cnt = 0
+repeat {
+  if (itr2 == 100000) break
+  ord = sample(vars)
+  g = pdag2dag(f, ord)
+  nf = lapply(vars, nbr, x = f)
+  bg = lapply(vars, mb, x = g)
+  if (prod(all.equal(nf, bg) == T) == 1) {# if a consistent dag exists 
+    cnt = 1
+    break # break if find a G
+  }
+  itr2 = itr2 + 1
+}
+cnt
+```
+
+## simplicial node
+```{r}
+
+
+```
 
 
 
+## enumerating
+A simplicial node with m-1 neighbours form a m-clique. To test if a undirected graph F has an DAG extension s.t. N_X^F = B_X^G, identify a simplicial node then remove it and its edges. Repeat this process until there is no simplicial node in the remaining graph. If the remaining graph is has no cycle or it has a cycle but shares an edge with the previously deleted simplicial node's neighbours, then the original undirected graph F has a DAG extension G such that N_X^F = B_X^G. 
+
+Even if we can't find a formula for computing the space of such F, we can use this program as a way of checking if F has an DAG extension. 
+```{r}
+
+
+```
 
 
 

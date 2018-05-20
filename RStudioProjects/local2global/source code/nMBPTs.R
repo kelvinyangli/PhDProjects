@@ -55,27 +55,32 @@ nWithSp = function(n, m, k) {
   
 }
 
-nMBPTs = function(n) {
+nMBPTs = function(n, debug = FALSE) {
   
   sum_count = nWithNoSp(n) 
-  cat("-------------------------------\n")
-  cat("|mb|=", n, "\n")
-  cat("|spouses|=", 0, "=> |mbDags|=", sum_count, "\n")
-  cat("-------------------------------\n")
+  
+  if (debug) {
+    
+    cat("-------------------------------\n")
+    cat("|mb|=", n, "\n")
+    cat("|spouses|=", 0, "=> |mbDags|=", sum_count, "\n")
+    cat("-------------------------------\n")
+    
+  }
   
   for (m in 1:floor(n / 2)) {
     
-    cat("|colliders|=", m, "\n")
+    if (debug) cat("|colliders|=", m, "\n")
     
     for (k in 1:(n - 2 * m + 1)) {
       
       sub_count = nWithSp(n, m, k)
       sum_count = sum_count + sub_count 
-      cat("|spouses|=", k, "=> |mbDags|=", sub_count, "\n")
+      if (debug) cat("|spouses|=", k, "=> |mbDags|=", sub_count, "\n")
       
     } # end for k 
     
-    cat("-------------------------------\n")
+    if (debug) cat("-------------------------------\n")
     
   } # end for m
   
