@@ -1,0 +1,416 @@
+---
+title: "Weak recursively simplicial"
+author: "Kelvin Li"
+date: "21 May 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+library(plyr)
+library(igraph)
+```
+
+## randomly generating undirected graphs
+```{r}
+for (i in 1:10000) {
+
+# randomly generate a w.r.s. graph
+dag = randDag(8, 3)
+#graphviz.plot(dag)
+g = moral(dag)
+G = dag2matrix(g)
+vars = colnames(G)
+#if ((!is_wrs(G)) && (is_chordal(G))) break
+if (!is_wrs(G)) break
+}
+i
+```
+
+## plotting
+```{r}
+graph = G
+nodes = colnames(graph)
+nbrsList = lapply(nodes, find_nbr, graph = graph)
+names(nbrsList) = nodes
+(simplicialNodes = find_simplicial(graph, nbrsList, nodes))
+par(mfrow=c(1,2))
+graphviz.plot(dag)
+graphviz.plot(g)
+```
+
+```{r}
+gg = matrix2dag(subgraph(G, "V8"))
+gg = drop.edge(gg, "V3", "V4")
+gg = drop.edge(gg, "V3", "V7")
+gg = drop.edge(gg, "V7", "V4")
+graphviz.plot(gg)
+```
+
+## functions
+1. a function to find nbrs
+2. a function to identify clique among vars
+3. a function to test simplicity of a node
+4. a function to find all simplicial nodes 
+```{r}
+# graph is an adj mtx with col and row names equal to vars
+# the outputs are var names 
+find_nbr = function(graph, node) names(which(graph[node, ] == 1))
+
+# a function to compute the total degree of a node in an undirected graph
+degree = function(graph, node) {
+  
+  nbrs = find_nbr(graph, node)
+  return(length(nbrs))
+  
+}
+
+# identify if the given nodes form a clique
+is_clique = function(graph, nodes) {
+  
+  clq = 1
+  for (i in 1:(length(nodes) - 1)) {
+    
+    if (clq == 0) break
+    x = nodes[i]
+    for (j in (i + 1):length(nodes)) {
+      
+      y = nodes[j]
+      if (graph[x, y] != 1) {
+        clq = 0
+        break
+      }
+      
+    }
+    
+  }
+  return(clq)
+}
+
+# identify if a given node is simplicial in the given graph
+is_simplicial = function(graph, node, nbrs) {
+  
+  if (length(nbrs) == 1) {
+    clq = 1
+  } else {
+    clq = is_clique(graph, nbrs)
+  }
+  return(clq)
+  
+}
+
+# find all simplicial nodes in a graph
+# treat isolated node as a simplicial node for programming convenience
+find_simplicial = function(graph, nbrsList, nodes) {
+  
+  sim = c()
+  for (i in 1:ncol(graph)) {
+    
+    if (length(nbrsList[[i]]) > 0) {
+      if (is_simplicial(graph, nodes[i], nbrsList[[i]])) sim = c(sim, nodes[i])  
+    } else {
+      sim = c(sim, nodes[i])
+    }
+    
+  }
+  return(sim)
+  
+}
+
+# get subgraph by removing a node x
+subgraph = function(graph, x) {
+  
+  nodes = colnames(graph)
+  nodeIndex = which(nodes == x)
+  return(graph[-nodeIndex, -nodeIndex])
+  
+}
+
+# check if a graph is empty
+is_empty_graph = function(graph) {
+  
+  empty = 0
+  if (sum(graph) < 1) empty = 1
+  return(empty)
+  
+}
+
+# check if a graph is chordal using igraph::is_chordal
+# but need to convert adj mtx to an igraph object
+is_chordal = function(graph) {
+  
+  ig = igraph::graph_from_adjacency_matrix(graph, mode = "undirected")
+  return(as.numeric(igraph::is_chordal(ig)$chordal))
+  
+}
+
+# a function to find common nbrs of two nodes 
+common_nbrs = function(graph, x, y) {
+  
+  xNbrs = names(which(graph[x, ] == 1))
+  yNbrs = names(which(graph[y, ] == 1))
+  return(intersect(xNbrs, yNbrs))
+  
+}
+```
+
+
+## a function to check is a graph is wrs
+```{r}
+# check if a graph is wrs or not 
+# steps:
+# 4. find all simplicial nodes in g, sub_g := g
+# 5.1. for each simplicial node x, sub_g := sub_g[X-x]
+# 5.2*. find simplicial nodes in nbrs(x) in sub_g
+# 6*. remove edge y-z if: 
+# a. none of y and z is a simplicial node in either g or sub_g and,
+# b. y-z doesn't belong to the neighbouring clique of a simplicial node in g or sub_g.  
+# 7*. g = sub_g, go back to step 5.1 and repeat for another simplicial node in g, 
+# 8. once all simplicial nodes in g have been considered, g := sub_g
+# 9. go back to step 4
+# termination criteria is not correct!
+is_wrs = function(graph) {
+  
+  repeat {
+    
+    # stop if the current graph is chordal
+    if (is_chordal(graph)) {
+      
+      wrs = 1
+      break
+      
+    }
+    
+    # if the current graph is non-chordal, continue...
+    # step 4:
+    nodes = colnames(graph)
+    nbrsList = lapply(nodes, find_nbr, graph = graph)
+    names(nbrsList) = nodes
+    simplicialNodes = find_simplicial(graph, nbrsList, nodes)
+    subG = graph
+    if (length(simplicialNodes) > 0) {
+      
+      # step 5.1:
+      for (x in simplicialNodes) {# for each sim node x in graph
+        
+        subG = subgraph(subG, x)
+        xNbrs = nbrsList[[which(nodes == x)]] 
+        xNbrs = xNbrs[xNbrs %in% colnames(subG)]  # remove deleted nodes from xNbrs
+        nonSim = c()
+        
+        # only check if x's nbrs are simplicial in subG if it has more than 1 nbr
+        if (length(xNbrs) > 1) {
+          
+          # step 5.2: check simplicial of nbrs(x) in subG
+          for (y in xNbrs) {# for each y in nbrs(x)
+            yNbrs = nbrsList[[which(nodes == y)]]
+            yNbrs = yNbrs[yNbrs != x] # remove x because x isn't in tempG
+            yNbrs = yNbrs[yNbrs %in% colnames(subG)] # remove deleted nodes from yNbrs
+            # check if y is a simplicial node in tempG
+            if (!y %in% simplicialNodes) {# if y is non-sim in G...
+              # ... and y is non-sim in subG, record it
+              if (!is_simplicial(subG, y, yNbrs)) nonSim = c(nonSim, y)  
+            }
+          } # end of step 5.2
+        
+          # step 6:
+          # remove edge y-z b/w non-simplicial nbrs in tempG if 
+          # a. none of y and z is a simplicial node in either g or sub_g (checked in step 5.2) and,
+          # b. y, z are not nbrs of another simplicial node in g or subG
+          if (length(nonSim) > 1) {# only if there are at leat 2 non-sim nodes
+            
+            # find mutual nbrs b/w each pair of non-sim nodes in nbrs(x)
+            for (i in 1:(length(nonSim) - 1)) {
+              for (j in (i + 1):length(nonSim)) {
+                
+                safeToRemove = 1
+                # check if their nbrs are sim nodes in either G or subG
+                mutualNbrs = common_nbrs(subG, nonSim[i], nonSim[j]) 
+                mutualNbrs = mutualNbrs[mutualNbrs != x] # remove x 
+                mutualNbrs = mutualNbrs[mutualNbrs %in% colnames(subG)] # remove deleted nodes from mutualNbrs
+                for (k in mutualNbrs) {
+                  if (k %in% simplicialNodes) {# if k is sim in g
+                    safeToRemove = 0
+                    break
+                  }
+                  kInd = which(nodes == k)
+                  kNbrs = nbrsList[[kInd]]
+                  kNbrs = kNbrs[kNbrs %in% colnames(subG)]
+                  if (is_simplicial(subG, k, kNbrs)) {# if k is sim in subG
+                    safeToRemove = 0
+                    break
+                  }
+                }# end for checking mutualNbrs
+                
+                if (safeToRemove) subG[nonSim[i], nonSim[j]] = subG[nonSim[j], nonSim[i]] = 0
+                
+              }
+            }
+            
+          } # end of step 6
+          
+        } # end of step 5.2
+        
+      }# end of step 5.1 for each sim node x
+      
+      graph = subG # update graph
+    
+    } else if (length(simplicialNodes) < 1) {
+      
+      # if the current is non-chordal and has no simplicial node, then it isn't wrs
+      wrs = 0
+      break 
+      
+    }
+    
+  } # end repeat
+  
+  return(wrs)
+  
+}
+```
+
+
+# 3rd version
+```{r}
+# check if a graph is wrs or not 
+# steps:
+# 4. find all simplicial nodes in g, sub_g := g
+# 5.1. for each simplicial node x, sub_g := sub_g[X-x]
+# 5.2*. find simplicial nodes in nbrs(x) in sub_g
+# 6*. remove edge y-z if: 
+# a. none of y and z is a simplicial node in either g or sub_g and,
+# b. y-z doesn't belong to the neighbouring clique of a simplicial node in g or sub_g.  
+# 7*. g = sub_g, go back to step 5.1 and repeat for another simplicial node in g, 
+# 8. once all simplicial nodes in g have been considered, g := sub_g
+# 9. go back to step 4
+# termination criteria is not correct!
+# 
+# remove as fewer edges as possible
+# by that i mean if delete a node x and its edges introduce another sim node y (y in nbrs(x)) in the subgraph, will y still be a sim node in subgraph if only remove partial edges of x
+is_wrs = function(graph) {
+  
+  repeat {
+    
+    # stop if the current graph is chordal
+    if (is_chordal(graph)) {
+      
+      wrs = 1
+      break
+      
+    }
+    
+    # if the current graph is non-chordal, continue...
+    # step 4:
+    nodes = colnames(graph)
+    nbrsList = lapply(nodes, find_nbr, graph = graph)
+    names(nbrsList) = nodes
+    simplicialNodes = find_simplicial(graph, nbrsList, nodes)
+    if (length(simplicialNodes) > 0) {
+      
+      # order simplicial nodes by node degree ascending
+      degrees = sapply(simplicialNodes, degree, graph = graph)
+      simplicialNodes = simplicialNodes[order(degrees)]
+      # step 5.1:
+      #for (x in simplicialNodes) {# for each sim node x in graph
+        x = simplicialNodes[1] # take the 1st simplicial node
+        subG = subgraph(graph, x)
+        xNbrs = nbrsList[[which(nodes == x)]] 
+        #xNbrs = xNbrs[xNbrs %in% colnames(subG)]  # remove deleted nodes from xNbrs
+        nonSim = c()
+        
+        # only check if x's nbrs are simplicial in subG if it has more than 1 nbr
+        if (length(xNbrs) > 1) {
+          
+          # step 5.2: check simplicial of nbrs(x) in subG
+          for (y in xNbrs) {# for each y in nbrs(x)
+            yNbrs = nbrsList[[which(nodes == y)]]
+            yNbrs = yNbrs[yNbrs != x] # remove x because x isn't in tempG
+            #yNbrs = yNbrs[yNbrs %in% colnames(subG)] # remove deleted nodes from yNbrs
+            # check if y is a simplicial node in tempG
+            if (!y %in% simplicialNodes) {# if y is non-sim in G...
+              # ... and y is non-sim in subG, record it
+              if (!is_simplicial(subG, y, yNbrs)) nonSim = c(nonSim, y)  
+            }
+          } # end of step 5.2
+        
+          # step 6:
+          # remove edge y-z b/w non-simplicial nbrs in tempG if 
+          # a. none of y and z is a simplicial node in either g or sub_g (checked in step 5.2) and,
+          # b. y, z are not nbrs of another simplicial node in g or subG
+          if (length(nonSim) > 1) {# only if there are at leat 2 non-sim nodes
+            
+            # find mutual nbrs b/w each pair of non-sim nodes in nbrs(x)
+            for (i in 1:(length(nonSim) - 1)) {
+              for (j in (i + 1):length(nonSim)) {
+                
+                safeToRemove = 1
+                # check if their nbrs are sim nodes in either G or subG
+                mutualNbrs = common_nbrs(subG, nonSim[i], nonSim[j]) 
+                mutualNbrs = mutualNbrs[mutualNbrs != x] # remove x 
+                #mutualNbrs = mutualNbrs[mutualNbrs %in% colnames(subG)] # remove deleted nodes from mutualNbrs
+                for (k in mutualNbrs) {
+                  if (k %in% simplicialNodes) {# if k is sim in g
+                    safeToRemove = 0
+                    break
+                  }
+                  kInd = which(nodes == k)
+                  kNbrs = nbrsList[[kInd]]
+                  kNbrs = kNbrs[kNbrs != x]
+                  #kNbrs = kNbrs[kNbrs %in% colnames(subG)]
+                  if (is_simplicial(subG, k, kNbrs)) {# if k is sim in subG
+                    safeToRemove = 0
+                    break
+                  }
+                }# end for checking mutualNbrs
+                
+                if (safeToRemove) subG[nonSim[i], nonSim[j]] = subG[nonSim[j], nonSim[i]] = 0
+                
+              }
+            }
+            
+          } # end of step 6
+          
+        } # end of step 5.2
+        
+      #}# end of step 5.1 for each sim node x
+      
+      graph = subG # update graph
+    
+    } else if (length(simplicialNodes) < 1) {
+      
+      # if the current is non-chordal and has no simplicial node, then it isn't wrs
+      wrs = 0
+      break 
+      
+    }
+    
+  } # end repeat
+  
+  return(wrs)
+  
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

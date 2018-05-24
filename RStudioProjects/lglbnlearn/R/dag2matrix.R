@@ -12,11 +12,15 @@ dag2matrix = function(dag) {
 
   mtx = matrix(0, nrow = nvars, ncol = nvars, dimnames = list(vars, vars))
 
-  if (nvars > 1) {
+  if (nrow(dag$arcs) > 0) {
 
-    for (i in 1:nrow(dag$arcs)) {
+    if (nvars > 1) {
 
-      mtx[dag$arcs[i, 1], dag$arcs[i, 2]] = 1
+      for (i in 1:nrow(dag$arcs)) {
+
+        mtx[dag$arcs[i, 1], dag$arcs[i, 2]] = 1
+
+      }
 
     }
 

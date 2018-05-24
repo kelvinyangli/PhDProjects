@@ -39,8 +39,7 @@ The function outputs the message length of a fixed structure.
 }
 \description{
 This function calculates the mml score of the target under a fixed Markov blanket model. The structure
-can be a general DAG. This returns the 2nd part of MML that is the likelihood of data given the
-structure, since the MML cost of the structure is not stated.
+can be a general DAG. This returns the message length without stating the mml estimate of the parameters.
 }
 \keyword{This}
 \keyword{cond_probs_adaptive().}
