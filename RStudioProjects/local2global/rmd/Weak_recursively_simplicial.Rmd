@@ -19,19 +19,19 @@ library(igraph)
 
 ## randomly generating undirected graphs
 ```{r}
-for (i in 1:50000) {
+for (i in 1:30000) {
 
 # randomly generate a w.r.s. graph
 sd = randSeed()
 set.seed(sd)
-dag = randDag(8, 4)
+dag = randDag(9, 4)
 #graphviz.plot(dag)
 g = moral(dag)
 G = dag2matrix(g)
 vars = colnames(G)
 #if ((!is_wrs(G)) && (is_chordal(G))) break
-if (!is_wrs3(G)) {
-  saveRDS(dag, paste0("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/counter_example_", sd, ".rds"))
+if (!is_wrs5(G)) {
+  #saveRDS(dag, paste0("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/counter_example_", sd, ".rds"))
   break
 }
 }
@@ -42,20 +42,21 @@ i
 ## plotting
 ```{r}
 #dag = randDag(7, 3)
-#dag = readRDS("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/counter_example_108683.rds")
+#dag = readRDS("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/counter_example.rds")
 g = moral(dag)
 G = dag2matrix(g)
 vars = colnames(G)
-is_wrs3(G)
+is_wrs5(G)
 graph = G
 nodes = colnames(graph)
 nbrsList = lapply(nodes, find_nbr, graph = graph)
 names(nbrsList) = nodes
-(simplicialNodes = find_simplicial(graph, nbrsList, nodes))
+(simplicialNodes = find_simplicial(graph, nodes))
 par(mfrow=c(1,2))
 graphviz.plot(dag)
 graphviz.plot(g)
 #identify cycles in F, protect the clique that can break the cycles. 
+write.csv(G, "~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx.csv", row.names = F)
 ```
 
 ## functions
@@ -98,9 +99,10 @@ is_clique = function(graph, nodes) {
   return(clq)
 }
 
-# identify if a given node is simplicial in the given graph
-is_simplicial = function(graph, node, nbrs) {
+# identify if a given node is simplicial in a graph
+is_simplicial = function(graph, node) {
   
+  nbrs = names(which(graph[node, ] == 1))
   if (length(nbrs) < 2) {
     clq = 1
   } else {
@@ -110,30 +112,58 @@ is_simplicial = function(graph, node, nbrs) {
   
 }
 
-# find all simplicial nodes in a graph
-# treat isolated node as a simplicial node for programming convenience
-find_simplicial = function(graph, nbrsList, nodes) {
+# identify if a given set of nodes are simplicial in a graph
+# names(nbrsList) must contain the given nodes
+are_simplicial = function(graph, nodes) {
   
-  sim = c()
-  for (i in 1:ncol(graph)) {
-    
-    if (length(nbrsList[[i]]) > 0) {
-      if (is_simplicial(graph, nodes[i], nbrsList[[i]])) sim = c(sim, nodes[i])  
-    } else {
-      sim = c(sim, nodes[i])
-    }
-    
+  sim = rep(0, length(nodes))
+  i = 1
+  for (x in nodes) {
+    sim[i] = is_simplicial(graph, x)
+    i = i + 1
   }
   return(sim)
   
 }
 
-# get subgraph by removing a node x
-subgraph = function(graph, x) {
+# find all simplicial nodes in a graph
+# treat isolated node as a simplicial node for programming convenience
+# the output is a vector of simplicial nodes in a graph, ordered by degree ascending
+find_simplicial = function(graph, nodes) {
   
-  nodes = colnames(graph)
-  nodeIndex = which(nodes == x)
-  return(graph[-nodeIndex, -nodeIndex])
+  sim = c()
+  degrees = c()
+  for (x in nodes) {
+    nbrs = names(which(graph[x, ] == 1))
+    if (length(nbrs) < 1) {
+      sim = c(sim, x)
+      degrees = c(degrees, 0)
+    } else {
+      if (is_simplicial(graph, x)) {
+        sim = c(sim, x)
+        degrees = c(degrees, length(nbrs))
+      }
+    }
+  }
+  if (length(sim) > 1) sim = sim[order(degrees)]
+  return(sim)
+  
+}
+
+# get subgraph by removing a node x
+subgraph = function(graph, nodes, type = c("nodes", "edges")) {
+  
+  if (type == "nodes") {
+    nodeIndex = which(colnames(graph) %in% nodes)  
+    graph = graph[-nodeIndex, -nodeIndex]
+  } else if (type == "edges") {
+    for (x in nodes) {
+      for (y in nodes[nodes != x]) {
+        graph[x, y] = 0
+      }
+    }
+  }
+  return(graph)
   
 }
 
@@ -161,6 +191,22 @@ common_nbrs = function(graph, x, y) {
   xNbrs = names(which(graph[x, ] == 1))
   yNbrs = names(which(graph[y, ] == 1))
   return(intersect(xNbrs, yNbrs))
+  
+}
+
+
+# a function to list all edges
+edge_set = function(graph, nodes) {
+  
+  m = matrix(0, ncol = 2, nrow = sum(graph[nodes, nodes]) / 2)
+  k = 1
+  for (i in 1:(length(nodes) - 1)) {
+    for (j in (i + 1):length(nodes)) {
+      m[k, ] = c(nodes[c(i, j)])
+      k = k + 1
+    }
+  }
+  return(m)
   
 }
 ```
@@ -517,6 +563,104 @@ is_wrs4 = function(graph) {
 }
 ```
 
+
+## 5th version
+
+```{r}
+# check if a graph is wrs or not 
+# steps:
+# 4. find all simplicial nodes in g
+# 5.0 order simplicial nodes by degree ascending
+# 5.1. for simplicial node x that has the smallest degree, sub_g := sub_g[X-x]
+# 5.2. check if nbrs(x) are simplcial nodes in sub_g
+# 6. remove edge e = y-z if the removal of e change y, z from non-sim to sim
+# i.e. if none or one of y and z is a sim before removing e but more are sim after removing
+# 7. g = sub_g, go back to step 4
+# stop: if the remaining graph is non-chordal and has no simplicial node
+is_wrs5 = function(graph) {
+  
+  repeat {
+    
+    # stop if the current graph is chordal
+    if (is_chordal(graph)) {
+      
+      wrs = 1
+      break
+      
+    }
+    
+    # if the current graph is non-chordal, continue...
+    # step 4:
+    nodes = colnames(graph)
+    nbrsList = lapply(nodes, find_nbr, graph = graph)
+    names(nbrsList) = nodes
+    simplicialNodes = find_simplicial(graph, nodes)
+    if (length(simplicialNodes) > 0) {
+  
+      # step 5.1: find the node x w/ the smallest degree
+      x = simplicialNodes[1]
+      subG = subgraph(graph, x, "nodes")
+      xNbrs = nbrsList[[x]] 
+      if (length(xNbrs) > 1) {
+        
+        # step 5.2: check simplicial of nbrs(x) in subG 
+        xNbrsSimInSubG = are_simplicial(subG, xNbrs)
+        
+        # step 6: remove edge e = y-z if the removal of e change y, z from non-sim to sim
+        # i.e. if none or one of y and z is a sim before removing e but more are sim after removing
+        if (sum(xNbrsSimInSubG) < length(xNbrs)) {
+          # remove all edges to check how many new sim could be produced
+          tempG = subgraph(subG, xNbrs, "edges")
+          xNbrsSimInTempG = are_simplicial(tempG, xNbrs)
+          # if new sim nodes are introduced...
+          if (sum(xNbrsSimInTempG) > sum(xNbrsSimInSubG)) {
+            # ... remove corresponding edges
+            newSim = xNbrs[which(xNbrsSimInTempG > xNbrsSimInSubG)]
+            edges = edge_set(subG, xNbrs)
+            #############################################
+            for (i in 1:nrow(edges)) {
+              tempGG = tempG
+              tempGG[edges[i, 1], edges[i, 2]] = tempGG[edges[i, 2], edges[i, 1]] = 1
+              if (prod(are_simplicial(tempGG, newSim))) {# if yes, add the edge
+                tempG = tempGG
+              }
+            }
+            subG = tempG
+            # ... but only remove minimal edge set
+            # toDeleteEdges = minimal_edge_removal(subG, xNbrs, newSim)
+            # for (i in 1:nrow(toDeleteEdges)) {
+            #   subG[toDeleteEdges[i, 1], toDeleteEdges[i, 2]] = 
+            #     subG[toDeleteEdges[i, 2], toDeleteEdges[i, 1]] = 0
+            # }
+            # for (p in xNbrs) {
+            #   for (q in xNbrs[xNbrs != p]) {
+            #     if ((p %in% newSim) || (q %in% newSim)) subG[p, q] = 0 
+            #   }
+            # }# end for p
+            #############################################
+            
+          }
+        }
+          
+      } # end of step 5.2
+    
+      # step 7:
+      graph = subG # update graph
+      
+    } else if (length(simplicialNodes) < 1) {
+      
+      # if the current is non-chordal and has no simplicial node, then it isn't wrs
+      wrs = 0
+      break 
+      
+    }
+    
+  } # end repeat
+  
+  return(wrs)
+  
+}
+```
 
 
 
