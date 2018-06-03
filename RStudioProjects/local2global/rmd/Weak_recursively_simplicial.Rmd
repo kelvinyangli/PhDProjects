@@ -15,25 +15,27 @@ if (.Platform$OS.type == "windows") {
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
 library(plyr)
 library(igraph)
+library(svMisc)
 ```
 
 ## randomly generating undirected graphs
 ```{r}
-for (i in 1:30000) {
-
+n = 1000
+for (i in 1:n) {
+  cat(i, "\n")
 # randomly generate a w.r.s. graph
-sd = randSeed()
-set.seed(sd)
-dag = randDag(9, 4)
-#graphviz.plot(dag)
-g = moral(dag)
-G = dag2matrix(g)
-vars = colnames(G)
-#if ((!is_wrs(G)) && (is_chordal(G))) break
-if (!is_wrs5(G)) {
-  #saveRDS(dag, paste0("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/counter_example_", sd, ".rds"))
-  break
-}
+  repeat {
+    sd = randSeed()
+    set.seed(sd)
+    dag = randDag(15, 5)
+    g = moral(dag)
+    G = dag2matrix(g)
+    if (!is_chordal(G)) break
+  }
+  vars = colnames(G)
+  if (!is_wrs7(G)) {
+    break
+  }
 }
 
 i
@@ -41,22 +43,33 @@ i
 
 ## plotting
 ```{r}
-#dag = randDag(7, 3)
+#dag = randDag(10, 4)
 #dag = readRDS("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/counter_example.rds")
 g = moral(dag)
 G = dag2matrix(g)
 vars = colnames(G)
 is_wrs5(G)
+is_wrs6(G)
+is_wrs7(G)
 graph = G
 nodes = colnames(graph)
 nbrsList = lapply(nodes, find_nbr, graph = graph)
 names(nbrsList) = nodes
-(simplicialNodes = find_simplicial(graph, nodes))
+(simplicialNodes = find_simplicial(graph))
 par(mfrow=c(1,2))
 graphviz.plot(dag)
 graphviz.plot(g)
 #identify cycles in F, protect the clique that can break the cycles. 
 write.csv(G, "~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx.csv", row.names = F)
+```
+
+# compare mb
+```{r}
+dd = read.csv("~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx.csv", header = T)
+row.names(dd) = colnames(dd)
+dd = matrix2dag(dd)
+acyclic(dd)
+all.equal(sapply(nodes, mb, x = dd), sapply(nodes, mb, x = dag))
 ```
 
 ## functions
@@ -65,6 +78,16 @@ write.csv(G, "~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx.csv", r
 3. a function to test simplicity of a node
 4. a function to find all simplicial nodes 
 ```{r}
+# a function to remove duplicated rows in a data frame
+remove_df_duplicated_with_no_order = function(df) {
+  
+  for (i in 1:nrow(df)) df[i, ] = df[i, ][order(df[i, ])]
+  df = df[!duplicated.data.frame(df), ]
+  row.names(df) = c()
+  return(df)
+  
+}
+
 # graph is an adj mtx with col and row names equal to vars
 # the outputs are var names 
 find_nbr = function(graph, node) names(which(graph[node, ] == 1))
@@ -129,8 +152,9 @@ are_simplicial = function(graph, nodes) {
 # find all simplicial nodes in a graph
 # treat isolated node as a simplicial node for programming convenience
 # the output is a vector of simplicial nodes in a graph, ordered by degree ascending
-find_simplicial = function(graph, nodes) {
+find_simplicial = function(graph) {
   
+  nodes = colnames(graph)
   sim = c()
   degrees = c()
   for (x in nodes) {
@@ -176,8 +200,7 @@ is_empty_graph = function(graph) {
   
 }
 
-# check if a graph is chordal using igraph::is_chordal
-# but need to convert adj mtx to an igraph object
+# check if a graph (in adj mtx format) is chordal using igraph::is_chordal
 is_chordal = function(graph) {
   
   ig = igraph::graph_from_adjacency_matrix(graph, mode = "undirected")
@@ -207,6 +230,36 @@ edge_set = function(graph, nodes) {
     }
   }
   return(m)
+  
+}
+
+# a function to find the minimal edges cut to make a non-sim node x into a sim node in subG
+# subset is a vector of nodes that must be appeared in all cliques, it could be empty
+minimal_edges_cut = function(subG, x, xNbrs, subset) {
+  
+  # the task here is to find the maximal clique from c(removed, remained) 
+  # that contains all nodes in remained
+  ig = igraph::graph_from_adjacency_matrix(subG[xNbrs, xNbrs], mode = "undirected")
+  # run cliques(ig, min = 3) to find all cliques w/ >= 3 nodes 
+  # and idenfity the maximal clique containing remained 
+  # if no such a clique then the minimal edge cut to make node sim 
+  # is the set of edges b/w nodea nd removed 
+  allQ = cliques(ig, min = length(subset))
+  qSizes = sapply(allQ, length)
+  keep = rep(1, length(allQ))
+  if (length(subset) > 0) {
+    for (i in 1:length(allQ)) {
+      if (prod(subset %in% names(allQ[[i]])) == 0) keep[i] = 0
+    }
+  }
+  
+  maxQSize = qSizes[max(which(keep == 1))]
+  maxQList = allQ[keep == 1][which(qSizes[keep == 1] == maxQSize)]
+  edgesCut = rep(list(NULL), length(maxQList))
+  for (i in 1:length(maxQList)) {
+    edgesCut[[i]] = c(edgesCut[[i]], xNbrs[!xNbrs %in% names(maxQList[[i]])])
+  }
+  return(edgesCut)
   
 }
 ```
@@ -577,7 +630,8 @@ is_wrs4 = function(graph) {
 # i.e. if none or one of y and z is a sim before removing e but more are sim after removing
 # 7. g = sub_g, go back to step 4
 # stop: if the remaining graph is non-chordal and has no simplicial node
-is_wrs5 = function(graph) {
+# new observation**: combination of edge removal from multiple simplicial nodes could result in more sim nodes, when non single node edge removal produces sim nodes!!!
+is_wrs5 = function(graph, debug = F) {
   
   repeat {
     
@@ -594,13 +648,15 @@ is_wrs5 = function(graph) {
     nodes = colnames(graph)
     nbrsList = lapply(nodes, find_nbr, graph = graph)
     names(nbrsList) = nodes
-    simplicialNodes = find_simplicial(graph, nodes)
+    simplicialNodes = find_simplicial(graph)
     if (length(simplicialNodes) > 0) {
   
       # step 5.1: find the node x w/ the smallest degree
       x = simplicialNodes[1]
+      if (debug) cat("sim node:", x, "\n")
       subG = subgraph(graph, x, "nodes")
       xNbrs = nbrsList[[x]] 
+      if (debug) cat("nbrs:", xNbrs, "\n")
       if (length(xNbrs) > 1) {
         
         # step 5.2: check simplicial of nbrs(x) in subG 
@@ -625,6 +681,8 @@ is_wrs5 = function(graph) {
                 tempG = tempGG
               }
             }
+            if (debug) cat("remove edges: \n")
+            if (debug) print(subG - tempG)
             subG = tempG
             # ... but only remove minimal edge set
             # toDeleteEdges = minimal_edge_removal(subG, xNbrs, newSim)
@@ -646,7 +704,7 @@ is_wrs5 = function(graph) {
     
       # step 7:
       graph = subG # update graph
-      
+      if (debug) cat("----------------------------- \n")
     } else if (length(simplicialNodes) < 1) {
       
       # if the current is non-chordal and has no simplicial node, then it isn't wrs
@@ -655,6 +713,258 @@ is_wrs5 = function(graph) {
       
     }
     
+  } # end repeat
+  
+  return(wrs)
+  
+}
+```
+
+# 6th version
+```{r}
+# steps:
+# 3. find nbrsList for all nodes
+# 4. find all sim nodes in G
+# 5. remove all sim nodes simultaneously and update 
+#    subG = G[X - sim]
+# 7. list all nbrs of the removed sims
+# 8. for each nbr y, find the minimal edge set, removing which y becomes sim 
+#    the edge set could be empty, which implies either y is a sim or no way to be a sim
+#    for some node, there maybe more than one set of edges to make it a sim
+#    in the end we want a collection of edges to be as small as possible 
+#    but keep all nodes connected (i.e., no isolated nodes) 
+# 9. remove the minimal edge sets,
+#    G = subG and back to step 4
+is_wrs6 = function(graph, debug = F) {
+  
+  repeat {
+    
+    # stop if the current graph is chordal
+    if (is_chordal(graph)) {
+      wrs = 1
+      break
+    }
+    
+    # if the current graph is non-chordal, continue...
+    # step 3: find nbrsList for all nodes
+    # nodes = colnames(graph)
+    # nbrsList = lapply(nodes, find_nbr, graph = graph)
+    # names(nbrsList) = nodes
+    # step 4: find all sim nodes in graph
+    simInG = find_simplicial(graph)
+    
+    if (length(simInG) > 0) {
+  
+      if (debug) cat("sim nodes:", simInG, "\n")
+      
+      # step 5: remove all sim nodes simultaneously 
+      subG = subgraph(graph, simInG, "nodes") # update subG
+      
+      # step 6.1: list all nbrs in G of the removed sim nodes
+      simNbrsList = lapply(simInG, find_nbr, graph = graph)
+      names(simNbrsList) = simInG
+      
+      # step 6.2: for each nbr y, find its nbr in subG from simNbrsList
+      selectedNodes = unique(unlist(simNbrsList))
+      # remove those sim nodes that have been removed
+      selectedNodes = selectedNodes[!selectedNodes %in% simInG]
+      selectedNodesNbrsList = rep(list(NULL), length(selectedNodes))
+      for (i in 1:length(selectedNodes)) {
+        x = selectedNodes[i]
+        for (j in 1:length(simNbrsList)) {
+          if ((x %in% simNbrsList[[j]]) && (length(simNbrsList[[j]]) > 1)) {
+            xPartialNbrs = simNbrsList[[j]] 
+            xPartialNbrs = xPartialNbrs[xPartialNbrs != x] # remove x
+            # remove all sim nodes that have been removed 
+            xPartialNbrs = xPartialNbrs[!xPartialNbrs %in% simInG] 
+            selectedNodesNbrsList[[i]] = 
+              c(selectedNodesNbrsList[[i]], xPartialNbrs)
+          }
+        }
+      }
+      selectedNodesNbrsList = lapply(selectedNodesNbrsList, unique)
+      names(selectedNodesNbrsList) = selectedNodes
+      #l = c()
+      totalEdgesCut = data.frame()
+      # step 7.1: for each non-sim node y in selectedNodes, check if it has the potential 
+      # to be a sim by removing all its nbrs in selectedNodesNbrsList
+      for (x in selectedNodes) {
+        if ((length(selectedNodesNbrsList[[x]]) > 0) && (!is_simplicial(subG, x))) {
+          # remove all its nbrs from selectedNodesNbrsList
+          tempG = subG
+          tempG[x, selectedNodesNbrsList[[x]]] = tempG[selectedNodesNbrsList[[x]], x] = 0
+          if (is_simplicial(tempG, x)) {
+            xTotalNbrs = names(which(subG[x, ] == 1))
+            xOtherNbrs = xTotalNbrs[!xTotalNbrs %in% selectedNodesNbrsList[[x]]]
+            eCut = minimal_edges_cut(subG, x, xTotalNbrs, xOtherNbrs)
+            
+            # there maybe cases with more than one set of edges cut for a node
+            # in this case select the set that makes the entire edges cut set minimal
+            # if no unique solution, then pick the 1st set
+            # if only one set then proceed...
+            #if (length(eCut) == 1) {
+              #cat(length(eCut), "\n")
+              for (y in unlist(eCut[[1]])) {
+                e = c(x, y)
+                e = e[order(e)]
+                # only bind non-existence edges
+                if (is.na(row.match(e, totalEdgesCut))) {
+                  totalEdgesCut = rbind(totalEdgesCut, e, stringsAsFactors = F)  
+                }
+              }
+            #} else {# otherwise...
+              
+              #cat("error!")
+            #}
+          }
+        }
+      }
+      
+      # step 7.2: remove edges from subG
+      if (nrow(totalEdgesCut) > 0) {
+        for (i in 1:nrow(totalEdgesCut)) {
+          subG[totalEdgesCut[i, 1], totalEdgesCut[i, 2]] = 
+            subG[totalEdgesCut[i, 2], totalEdgesCut[i, 1]] = 0
+          if (is_chordal(subG)) {
+            wrs = 1
+            break
+          }
+        }
+      }
+      
+      # step 8:
+      graph = subG # update graph
+      
+    } else {# if graph is non-chordal and has no sim nodes 
+      
+      wrs = 0
+      break 
+      
+    }
+    
+  } # end repeat
+  
+  return(wrs)
+  
+}
+```
+
+# 7th version
+```{r}
+# steps:
+# 3. find nbrsList for all nodes
+# 4. find all sim nodes in G
+# 5. remove all sim nodes simultaneously and update 
+#    subG = G[X - sim]
+# 7. list all nbrs of the removed sims
+# 8. for each nbr y, find the minimal edge set, removing which y becomes sim 
+#    the edge set could be empty, which implies either y is a sim or no way to be a sim
+#    for some node, there maybe more than one set of edges to make it a sim
+#    in the end we want a collection of edges to be as small as possible 
+#    but keep all nodes connected (i.e., no isolated nodes) 
+# 9. remove the minimal edge sets,
+#    G = subG and back to step 4
+is_wrs7 = function(graph, debug = F) {
+  
+  # cach all edges b/w nbrs of sim nodes
+  # exist duplicated edges, fixed it!!!
+  cachedEdges = data.frame(stringsAsFactors = F)
+  repeat {
+    # stop if the current graph is chordal
+    if (is_chordal(graph)) {
+      wrs = 1
+      break
+    }
+    
+    simInG = find_simplicial(graph)
+    if (debug) cat("sim:", simInG, "\n")
+    if (length(simInG) > 0) {
+      subG = subgraph(graph, simInG, "nodes") # update subG
+      simNbrsList = lapply(simInG, find_nbr, graph = graph)
+      names(simNbrsList) = simInG
+      selectedNodes = unique(unlist(simNbrsList))
+      selectedNodes = selectedNodes[!selectedNodes %in% simInG]
+      selectedNodesNbrsList = rep(list(NULL), length(selectedNodes))
+      cachedEdgesTemp = data.frame(stringsAsFactors = F)
+      for (i in 1:length(selectedNodes)) {
+        x = selectedNodes[i]
+        for (j in 1:length(simNbrsList)) {
+          if ((x %in% simNbrsList[[j]]) && (length(simNbrsList[[j]]) > 1)) {
+            xPartialNbrs = simNbrsList[[j]] 
+            xPartialNbrs = xPartialNbrs[xPartialNbrs != x] # remove x
+            # remove all sim nodes that have been removed 
+            xPartialNbrs = xPartialNbrs[!xPartialNbrs %in% simInG] 
+            if (length(xPartialNbrs) > 0) {
+              cachedEdgesTemp = rbind(cachedEdgesTemp, data.frame(from = x, to = xPartialNbrs, stringsAsFactors = F))
+              selectedNodesNbrsList[[i]] = c(selectedNodesNbrsList[[i]], xPartialNbrs)
+            }
+          }
+        }
+      }
+      
+      selectedNodesNbrsList = lapply(selectedNodesNbrsList, unique)
+      names(selectedNodesNbrsList) = selectedNodes
+      cachedEdgesTemp = remove_df_duplicated_with_no_order(cachedEdgesTemp)
+      cachedEdges = rbind(cachedEdges, cachedEdgesTemp)
+      cachedEdges = remove_df_duplicated_with_no_order(cachedEdges)
+      # remove minimal edges cut one by one
+    
+      # step 7.1: for each non-sim node y in selectedNodes, check if it has the potential 
+      # to be a sim by removing all its nbrs in selectedNodesNbrsList
+      for (x in selectedNodes) {
+        if ((x %in% c(t(cachedEdges))) && (!is_simplicial(subG, x))) {
+          # remove all its nbrs from selectedNodesNbrsList
+          tempG = subG
+          # a vector of nodes that have formed a clique with x so far
+          Y = selectedNodesNbrsList[[x]]
+          Y = c(Y, c(t(cachedEdges[apply(cachedEdges, 1, is.element, el = x), ])))
+          Y = unique(Y)
+          Y = Y[Y != x]
+          Y = Y[Y %in% colnames(tempG)]
+          tempG[x, Y] = tempG[Y, x] = 0
+          if (is_simplicial(tempG, x)) {
+            xTotalNbrs = names(which(subG[x, ] == 1))
+            xOtherNbrs = xTotalNbrs[!xTotalNbrs %in% Y]
+            eCut = minimal_edges_cut(subG, x, xTotalNbrs, xOtherNbrs)
+            if (length(eCut) > 1) {
+              eCut = eCut[which.max(sapply(eCut, length))]
+            }
+            # there maybe cases with more than one set of edges cut for a node
+            # in this case select the set that makes the entire edges cut set minimal
+            # if no unique solution, then pick the 1st set
+            # if only one set then proceed...
+            #if (length(eCut) == 1) {
+            #cat(length(eCut), "\n")
+              
+            if (debug) cat(x, "-", unlist(eCut), "\n")
+            for (y in unlist(eCut)) {
+              subG[x, y] = subG[y, x] = 0
+              e = c(x, y)
+              e = e[order(e)]
+              ind = row.match(e, cachedEdges)
+              if (!is.na(ind)) {
+                cachedEdges = cachedEdges[-ind, ]
+              }
+            }
+          }
+            #} else {# otherwise...
+              
+              #cat("error!")
+            #}
+        } 
+      }
+      
+      
+      # step 8:
+      graph = subG # update graph
+      
+    } else {# if graph is non-chordal and has no sim nodes 
+      
+      wrs = 0
+      break 
+      
+    }
+    if (debug) cat("----------------------- \n")
   } # end repeat
   
   return(wrs)
