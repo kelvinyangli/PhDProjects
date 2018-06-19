@@ -38,12 +38,12 @@ for (i in 1:length(ndsl)) nds = c(nds, as.integer(ndsl[[i]][2]))
 ```{r}
 n = 10000
 for (i in 1:n) {
-  progress(i, 10, n)
+  progress(i, 100, n)
 # randomly generate a w.r.s. graph
   repeat {
     #sd = randSeed()
     #set.seed(sd)
-    dag = randDag(15, 8)
+    dag = randDag(15, 3)
     g = moral(dag)
     G = dag2matrix(g)
     if (!is_chordal(G)) break
@@ -67,28 +67,13 @@ i
 
 ## plotting
 ```{r}
-# dag = readRDS("~/Documents/wrs_graph_counter_examples/0302018_1345.rds")
-
-# repeat{
-# dag = randDag(10, 3)
 g = moral(dag)
 G = dag2matrix(g)
-# if (!is_chordal(G)) break
-# }
 
-# is_chordal(G)
-# is_chordal2(G)
-# is_wrs7(G)
-# graph = G
-# nodes = colnames(graph)
-# nbrsList = lapply(nodes, find_nbr, graph = graph)
-# names(nbrsList) = nodes
-# (simplicialNodes = find_simplicial(graph))
 par(mfrow=c(1,2))
 graphviz.plot(dag)
 graphviz.plot(g, shape = "rectangle")
 
-#identify cycles in F, protect the clique that can break the cycles.
 #write.table(G,"~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx.csv", row.names = F, col.names = F)
 #nds = as.integer(sapply(nodes, gsub, pattern = "[^0-9]", replacement = ""))
 #write.table(nds, "~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx_nodes.csv", row.names = F, col.names = F)
@@ -545,115 +530,8 @@ is_wrs7 = function(graph, debug = F) {
 1. sim nodes in step 1 contain leaves. 
 2. if x is a sim node in step 1 and y is in nb(x), remove x doesn't necessary make y a sim node in step 2, because y could have parents and spouses, which are not fully connect to each other after moralization. 
 3. But if all edges b/w nb(x) are also removed, the remaining nodes are those that connect w/ y, but not with x. If these remaining nodes could form a clique, then y could be a sim node by removing all nb(x) edges. But there are chances that useful edges are removed. 
-4. but even if all nb(x) edges are removed, the remaining nodes of y may not form a clique. However, the idea is to eleminate nodes from bottom to top, so children are removed first,                              
+4. but even if all nb(x) edges are removed, the remaining nodes of y may not form a clique. However, the idea is to eleminate nodes from bottom to top, so children are removed first,  
 
-## 9th version Backtracking search
-```{r}
-
-is_wrs = function(G, debug = F) {
-  
-  if (is_chordal(G)) {
-    if (debug) cat("chordal \n")
-    return(1)
-  }
-  
-  sim = find_simplicial(G)
-  
-  if (length(sim) > 0) {
-    
-    nbrsNbrMtx = matrix(0, 0, 2)
-    simNbrList = list()
-    if (debug) cat("\n *sim:", sim, "\n")
-    if (debug) cat("nbrs: \n")
-    
-    # find sim's nbrs
-    for (x in sim) {
-      xNbrs = find_nbr(G, x)
-      xNbrs = xNbrs[!xNbrs %in% sim]
-      simNbrList[[x]] = xNbrs
-      if (debug) {
-        cat(x, "-", xNbrs, "\n")
-      }
-    }
-    
-    # list unique nbrs
-    nbrs = unique(unlist(simNbrList))
-    
-    # omit deleted sim
-    nbrs = nbrs[!nbrs %in% sim]
-    
-    # remove sim 
-    G = subgraph(G, nodes = sim, type = "nodes")
-    
-    # find all edge cuts
-    # notice this may cause different mb in the resulting dag 
-    # for (x in nbrs) {
-    #   y = names(which(G[x, ] == 1))
-    #   if (length(y) > 0) nbrsNbrMtx = rbind(nbrsNbrMtx, cbind(x, y))
-    # }
-    for (x in nbrs) {
-      for (i in 1:length(simNbrList)) {
-        if (is.element(x, simNbrList[[i]])) {
-          if (length(simNbrList[[i]]) > 1) {
-            xNbrs = simNbrList[[i]]
-            xNbrs = xNbrs[xNbrs != x]
-            xNbrs = xNbrs[!xNbrs %in% sim]
-            nbrsNbrMtx = rbind(nbrsNbrMtx, cbind(x, xNbrs))
-          }
-        }
-      }
-    }
-    
-    # remove duplicated edge cuts
-    if (length(nbrsNbrMtx) > 0) nbrsNbrMtx = remove_duplicated_edges(nbrsNbrMtx)
-    if (length(nbrsNbrMtx) == 2) nbrsNbrMtx = matrix(nbrsNbrMtx, 1, 2)
-    
-    # backup G
-    backup = G
-    
-    if (debug) cat("remove edges: 2 ^", nrow(nbrsNbrMtx), "options \n")
-    
-    
-    if (nrow(nbrsNbrMtx) > 0) {
-      indices = c()
-      i = 0
-      while (length(indices) < nrow(nbrsNbrMtx)) {
-        if (i > 0) {
-          # restore backup
-          G = backup
-          
-          if (nrow(nbrsNbrMtx) > 1) {
-            # compute indices   
-            indices = combn_ind(i, nrow(nbrsNbrMtx))
-          } else {
-            indices = i
-          }
-          
-          # iteratively remove edges
-          for (ind in indices) {
-            from = nbrsNbrMtx[ind, 1]
-            to = nbrsNbrMtx[ind, 2]
-            G = subgraph(G, from = from, to = to, type = "edges")
-          }
-          
-        } 
-        
-        if (is_wrs(G, debug) == 1) {
-          return(1)
-        } 
-        i = i + 1
-      }# end while
-    } else {
-      if (is_wrs(G, debug) == 1) {
-        return(1)
-      } 
-    }
-     
-    
-  } 
-  return(0)
-}
-```
 
 ## 10th
 ```{r}
@@ -674,8 +552,8 @@ wrs_bktr = function(G, D, debug = F) {
     # a matrix to store all valid edges that can be removed 
     nbrsNbrMtx = matrix(0, 0, 2)
     simNbrList = list()
-    if (debug) cat("\n *sim:", sim, "\n")
-    if (debug) cat("nbrs: \n")
+    if (debug) cat("sim:", sim, "\n")
+    #if (debug) cat("nbrs: \n")
     
     # for each sim node x...
     for (x in sim) {
@@ -685,9 +563,9 @@ wrs_bktr = function(G, D, debug = F) {
       xNbrs = xNbrs[!xNbrs %in% sim]
       # ... store them in a list
       simNbrList[[x]] = xNbrs
-      if (debug) {
-        cat(x, "-", xNbrs, "\n")
-      }
+      # if (debug) {
+      #   cat(x, "-", xNbrs, "\n")
+      # }
       # ... orient D
       D[x, xNbrs] = 0
     }
@@ -724,60 +602,67 @@ wrs_bktr = function(G, D, debug = F) {
     if (length(nbrsNbrMtx) > 0) nbrsNbrMtx = remove_duplicated_edges(nbrsNbrMtx)
     if (length(nbrsNbrMtx) == 2) nbrsNbrMtx = matrix(nbrsNbrMtx, 1, 2)
     
-    # backup G
-    backupG = G
-    # backup D
-    backupD = D
+    if (debug) cat("#edges:", nrow(nbrsNbrMtx), "\n")
     
-    if (debug) cat("remove edges: 2 ^", nrow(nbrsNbrMtx), "options \n")
+    if (nrow(nbrsNbrMtx) > 0) {
     
-    indices = 0
-    i = 0
-    # remove each edge combination and apply wrs_bktr()
-    while (length(indices) < nrow(nbrsNbrMtx)) {
-      
-      # when i=0, remove nothing
-      # when i > 0, remove edges
-      if (i > 0) {
-        # restore backup
-        G = backupG
-        D = backupD
+      # backup G
+      backupG = G
+      # backup D
+      backupD = D
+    
+      indices = c()
+      i = 0
+      # remove each edge combination and apply wrs_bktr()
+      while (length(indices) < nrow(nbrsNbrMtx)) {
         
-        if (nrow(nbrsNbrMtx) > 1) {
-          # compute indices   
-          indices = combn_ind(i, nrow(nbrsNbrMtx))
-        } else {
-          indices = i
+        # when i=0, remove nothing
+        # when i > 0, remove edges
+        if (i > 0) {
+          # restore backup
+          G = backupG
+          D = backupD
+          
+          if (nrow(nbrsNbrMtx) > 1) {
+            # compute indices   
+            indices = combn_ind(i, nrow(nbrsNbrMtx))
+          } else {
+            indices = i
+          }
+          
+          # iteratively remove edges
+          for (ind in indices) {
+            from = nbrsNbrMtx[ind, 1]
+            to = nbrsNbrMtx[ind, 2]
+            G = subgraph(G, from = from, to = to, type = "edges")
+            D = subgraph(D, from = from, to = to, type = "edges")
+          }
+          
+        } 
+        
+        # apply wrs_bktr recursively
+        res = wrs_bktr(G, D, debug)
+        if (res$wrs == 1) {
+          D = res$dag
+          return(list(wrs = 1, dag = D))
         }
         
-        # iteratively remove edges
-        for (ind in indices) {
-          from = nbrsNbrMtx[ind, 1]
-          to = nbrsNbrMtx[ind, 2]
-          G = subgraph(G, from = from, to = to, type = "edges")
-          D = subgraph(D, from = from, to = to, type = "edges")
-        }
+        i = i + 1
         
-      } 
-      
+      }# end while 
+    } else {
       # apply wrs_bktr recursively
       res = wrs_bktr(G, D, debug)
       if (res$wrs == 1) {
         D = res$dag
         return(list(wrs = 1, dag = D))
       }
-      
-      i = i + 1
-      
-    }# end while 
-    
+    }
   } 
   
   return(list(wrs = 0))
   
 }
-
-
 ```
 
 
