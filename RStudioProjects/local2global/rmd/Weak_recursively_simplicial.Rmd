@@ -13,9 +13,9 @@ if (.Platform$OS.type == "windows") {
   dir = "/home/"
 }
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
-library(plyr)
+#library(plyr)
 library(igraph)
-library(svMisc)
+#library(svMisc)
 ```
 
 ## randomly generating undirected graphs
@@ -38,12 +38,12 @@ for (i in 1:length(ndsl)) nds = c(nds, as.integer(ndsl[[i]][2]))
 ```{r}
 n = 10000
 for (i in 1:n) {
-  progress(i, 100, n)
+  progress(i, 10, n)
 # randomly generate a w.r.s. graph
   repeat {
     #sd = randSeed()
     #set.seed(sd)
-    dag = randDag(15, 3)
+    dag = randDag(10, 8)
     g = moral(dag)
     G = dag2matrix(g)
     if (!is_chordal(G)) break
@@ -85,6 +85,8 @@ res = wrs_bktr(G, D = G)
 dd = res$dag
 dd = matrix2dag(dd)
 dagl = cextend(dd)
+par(mfrow=c(1,2))
+graphviz.plot(dag)
 graphviz.plot(dagl)
 acyclic(dagl)
 all.equal(sapply(vars, mb, x = dagl), sapply(vars, mb, x = dag))
@@ -361,14 +363,6 @@ combn_ind = function(i, n) {
   return(combn(1:n, j)[, ind])
 }
 
-
-
-find_ind = function(n, m, totalNum) {
-  k = tail(which(n > totalNum), 1)
-  ind = n - totalNum[k]
-  cat(k, ind, "\n")
-  return(combn(1:m, k)[, ind])
-}
 ```
 
 
@@ -612,23 +606,26 @@ wrs_bktr = function(G, D, debug = F) {
       backupD = D
     
       indices = c()
-      i = 0
+      i = 1
       # remove each edge combination and apply wrs_bktr()
       while (length(indices) < nrow(nbrsNbrMtx)) {
         
-        # when i=0, remove nothing
-        # when i > 0, remove edges
-        if (i > 0) {
+        # when i=1, remove nothing
+        # when i > 1, remove edges
+        if (i > 1) {
           # restore backup
           G = backupG
           D = backupD
           
-          if (nrow(nbrsNbrMtx) > 1) {
-            # compute indices   
-            indices = combn_ind(i, nrow(nbrsNbrMtx))
-          } else {
-            indices = i
-          }
+          # compute indices   
+          indices = combn_ind(i, nrow(nbrsNbrMtx))
+            
+          # if (nrow(nbrsNbrMtx) > 1) {
+          #   # compute indices   
+          #   indices = combn_ind(i, nrow(nbrsNbrMtx))
+          # } else {# when there is only one option
+          #   indices = i
+          # }
           
           # iteratively remove edges
           for (ind in indices) {
