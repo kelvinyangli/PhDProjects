@@ -21,29 +21,31 @@ library(igraph)
 ## randomly generating undirected graphs
 ```{r}
 repeat {
-G = randAdjmtx(10, 3)
+G = randAdjmtx(20, 3)
 G = G + t(G)
 if (!is_chordal(G)) break
 }
-graphviz.plot(matrix2dag(G))
+#graphviz.plot(matrix2dag(G))
 #write.table(G, "~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx.csv", row.names = F, col.names = F)
-nodes = colnames(G)
-ndsl = sapply(nodes,strsplit,"")
-nds = c()
-for (i in 1:length(ndsl)) nds = c(nds, as.integer(ndsl[[i]][2]))
+# nodes = colnames(G)
+# ndsl = sapply(nodes,strsplit,"")
+# nds = c()
+# for (i in 1:length(ndsl)) nds = c(nds, as.integer(ndsl[[i]][2]))
 #write.table(nds, "~/Documents/PhDProjects/RStudioProjects/lglbnlearn/adj_mtx_nodes.csv", row.names = F, col.names = F)
+wrs_bktr(G,G)
 ```
 
 ## randomly generating wrs graphs
 ```{r}
-n = 10000
+#profvis({
+n = 100000
 for (i in 1:n) {
-  progress(i, 10, n)
+  progress(i, 100, n)
 # randomly generate a w.r.s. graph
   repeat {
     #sd = randSeed()
     #set.seed(sd)
-    dag = randDag(10, 8)
+    dag = randDag(6, 4)
     g = moral(dag)
     G = dag2matrix(g)
     if (!is_chordal(G)) break
@@ -61,6 +63,7 @@ for (i in 1:n) {
 }
 
 i
+#})
 
 ```
 
@@ -610,6 +613,7 @@ wrs_bktr = function(G, D, debug = F) {
       # remove each edge combination and apply wrs_bktr()
       while (length(indices) < nrow(nbrsNbrMtx)) {
         
+        #if (debug) cat(".")
         # when i=1, remove nothing
         # when i > 1, remove edges
         if (i > 1) {
