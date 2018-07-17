@@ -16,6 +16,7 @@ source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/script
 #library(plyr)
 library(igraph)
 #library(svMisc)
+library(wrsgraph)
 ```
 
 ## randomly generating undirected graphs
@@ -40,12 +41,12 @@ wrs_bktr(G,G)
 #profvis({
 n = 100000
 for (i in 1:n) {
-  progress(i, 100, n)
+  progress(i, 10, n)
 # randomly generate a w.r.s. graph
   repeat {
     #sd = randSeed()
     #set.seed(sd)
-    dag = randDag(6, 4)
+    dag = randDag(10, 4)
     g = moral(dag)
     G = dag2matrix(g)
     if (!is_chordal(G)) break
@@ -70,6 +71,7 @@ i
 
 ## plotting
 ```{r}
+#dag = readRDS("~/Documents/wrs_graph_counter_examples/0302018_1345.rds")
 g = moral(dag)
 G = dag2matrix(g)
 
@@ -84,15 +86,34 @@ graphviz.plot(g, shape = "rectangle")
 
 # compare mb
 ```{r}
-res = wrs_bktr(G, D = G)
+res = wrs_bktr(G, D = G, T)
 dd = res$dag
 dd = matrix2dag(dd)
 dagl = cextend(dd)
-par(mfrow=c(1,2))
+gEdges = g$arcs
+daglEdges = skeleton(dagl)$arcs
+removedEdges = matrix(0, 0, 2)
+for (i in 1:nrow(gEdges)) {
+  if (is.na(row.match(gEdges[i, ], daglEdges))) {
+    removedEdges = rbind(removedEdges, gEdges[i, ])
+  }
+}
+removedEdges = remove_duplicated_edges(removedEdges)
+if (length(removedEdges) == 2) removedEdges = matrix(removedEdges, 1, 2)
+hybridl = dagl
+for (i in 1:nrow(removedEdges)) hybridl = set.edge(hybridl, removedEdges[i, 1], removedEdges[i, 2])
+par(mfrow=c(1,3))
 graphviz.plot(dag)
-graphviz.plot(dagl)
+graphviz.plot(g, shape = "rectangle")
+graphviz.plot(dagl, shape = "rectangle")
+#graphviz.plot(hybridl, highlight = list("arcs" = removedEdges), shape = "rectangle")
 acyclic(dagl)
+vars = bnlearn::nodes(dag)
 all.equal(sapply(vars, mb, x = dagl), sapply(vars, mb, x = dag))
+bnlearn::hamming(dagl, dag) # skeleton dif
+bnlearn::shd(dagl, dag) # pattern dif
+mean(sapply(vars, bnlearn::degree, object = dagl))
+mean(sapply(vars, bnlearn::degree, object = dag))
 ```
 
 ## functions

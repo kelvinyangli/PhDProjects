@@ -1,0 +1,72 @@
+---
+title: "MB learning with wrs testing"
+author: "Kelvin Li"
+date: "4 July 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+library(igraph)
+library(wrsgraph)
+```
+
+# random model generation
+```{r}
+dag = randDag(15, 5)
+cpts = randCPTs(dag, 2, 1)
+n = 10000
+data = rbn(cpts, n)
+vars = colnames(data)
+nvars = length(vars)
+data_cat = numeric2categorical(data)
+arities = sapply(data_cat, nlevels)
+di = varCnt = count_occurance(data_cat, arities)
+```
+
+# mb learning with wrs testing
+```{r}
+no_cores = 4
+registerDoParallel(no_cores)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+  forward_greedy_fast(data, di, arities, vars, n, target)
+    }
+stopImplicitCluster()
+names(mbcpt) = vars
+mbcpt = symmetry_correction(vars, mbcpt, "AND")
+
+# form an UG
+G = matrix(0, nvars, nvars)
+colnames(G) = rownames(G) = vars
+for (x in vars) {
+  G[x, mbcpt[[x]]] = 1
+}
+
+# testing wrs
+res = wrs_bktr(G, G)
+res$wrs
+dagl = res$dag
+dagl = matrix2dag(dagl)
+dagl = cextend(dagl)
+
+bnlearn::shd(dagl, dag) # pattern
+bnlearn::hamming(dagl, dag) # skeleton
+
+par(mfrow=c(1,2))
+graphviz.plot(dag)
+graphviz.plot(dagl, shape = "rectangle")
+```
+
+
+
+
+
+
