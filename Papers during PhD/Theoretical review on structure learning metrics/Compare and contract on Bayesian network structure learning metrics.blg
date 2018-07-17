@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: Compare and contract on Bayesian network structure learning metrics.aux
+The style file: named.bst
+Database file #1: causal_discovery_ref_list.bib
+Warning--there's a number but no series in li2004
+Warning--can't use both volume and number fields in liu2012empirical
+You've used 29 entries,
+            2439 wiz_defined-function locations,
+            738 strings with 9877 characters,
+and the built_in function-call counts, 12942 in all, are:
+= -- 1423
+> -- 371
+< -- 19
++ -- 119
+- -- 118
+* -- 936
+:= -- 1910
+add.period$ -- 100
+call.type$ -- 29
+change.case$ -- 174
+chr.to.int$ -- 28
+cite$ -- 31
+duplicate$ -- 596
+empty$ -- 1057
+format.name$ -- 156
+if$ -- 2851
+int.to.chr$ -- 2
+int.to.str$ -- 0
+missing$ -- 30
+newline$ -- 148
+num.names$ -- 87
+pop$ -- 180
+preamble$ -- 1
+purify$ -- 204
+quote$ -- 0
+skip$ -- 501
+stack$ -- 0
+substring$ -- 862
+swap$ -- 218
+text.length$ -- 19
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 224
+warning$ -- 2
+while$ -- 122
+width$ -- 32
+write$ -- 392
+(There were 2 warnings)

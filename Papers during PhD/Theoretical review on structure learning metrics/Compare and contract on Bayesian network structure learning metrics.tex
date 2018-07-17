@@ -1,0 +1,415 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% First comes an example EPS file -- just ignore it and
+% proceed on the \documentclass line
+% your LaTeX will extract the file if required
+\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+gsave
+newpath
+  20 20 moveto
+  20 220 lineto
+  220 220 lineto
+  220 20 lineto
+closepath
+2 setlinewidth
+gsave
+  .4 setgray fill
+grestore
+stroke
+grestore
+\end{filecontents*}
+%
+\RequirePackage{fix-cm}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb, amsfonts, mathtools}
+\usepackage{enumerate}
+\usepackage{algorithm, algpseudocode}
+\usepackage{txfonts, pxfonts}
+\usepackage{grffile}
+\usepackage{caption, subcaption}
+\usepackage{listings}
+\usepackage[table, xcdraw]{xcolor}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{chronology}
+\usetikzlibrary{arrows, shapes}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{libertine}
+\usepackage{pgfgantt}
+\usepackage{lscape}
+\usepackage{enumitem}
+\input amssym.def
+\input amssym.tex
+%
+% please place your own definitions here and don't use \def but
+\newcommand{\mmlcpt}{$mbMML_{CPT}$ }
+\newcommand{\mbptmml}{$MBPT_{mml}$ }
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\ci}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
+\newcommand{\independent}{\perp\mkern-9.5mu\perp}
+\newcommand{\notindependent}{\centernot{\independent}}
+\newcommand{\qedwhite}{\hfill \ensuremath{\Box}}
+
+\makeatletter
+% Taken from http://ctan.org/pkg/centernot
+\newcommand*{\centernot}{%
+  \mathpalette\@centernot
+}
+\def\@centernot#1#2{%
+  \mathrel{%
+    \rlap{%
+      \settowidth\dimen@{$\m@th#1{#2}$}%
+      \kern.5\dimen@
+      \settowidth\dimen@{$\m@th#1=$}%
+      \kern-.5\dimen@
+      $\m@th#1\not$%
+    }%
+    {#2}%
+  }%
+}
+\makeatother
+
+%
+% Insert the name of "your journal" with
+% \journalname{myjournal}
+%
+% This file can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+
+\begin{document}
+
+\title{Compare and contrast on Bayesian network structure learning metrics%\thanks{Grants or other notes
+%about the article that should go on the front page should be
+%placed here. General acknowledgments should be placed at the end of the article.}
+}
+%\subtitle{Do you have a subtitle?\\ If so, write it here}
+
+%\titlerunning{Short form of title}        % if too long for running head
+
+\author{First Author         \and
+        Second Author \and
+        Third Author
+}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+\institute{F. Author \at
+              first address \\
+              Tel.: +123-45-678910\\
+              Fax: +123-45-678910\\
+              \email{fauthor@example.com}           %  \\
+%             \emph{Present address:} of F. Author  %  if needed
+           \and
+           S. Author \at
+              second address
+}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+\maketitle
+
+\begin{abstract}
+\label{sec:abst}
+The purpose of this paper is to provide a theoretical review on metrics used for learning Bayesian networks structures. There are at least a handful metrics that can be used if one wants to learn structures using the so called metric-based approach. It is, however, not clear why or why not one metric is prefered over another other than being popular. This paper aims at reviewing these metrics from a theoretical point of view by looking at their assumptions, priors if there are any, and difficulty being applied to general cases.  
+\end{abstract}
+
+\section{Introduction}
+Introduce the problem of causal discovery / Bayesian network structure learning. Intrdocue the metric-based approach. Introduce the importance of having a "good" scoring function. And perhaps a short chronological history of the invention of metrics. 
+Assumptions:
+\begin{itemize}
+\item iid samples
+\item complete data
+\item independent parameter values
+\item uniform parameter values
+\item parameter modularity (heckerman1995)
+\end{itemize}
+
+\cite{liu2012empirical} an empirical study on BN structure learning metrics, including AIC, BDeu, MDL, and fNML. \textcolor{red}{look at its reference list for comparison papers}.
+
+\cite{allen2000model} an empirical comparison among AIC, MDL and a cross-validation criteria on BN structure learning, suggest MDL is the worst among these three. 
+
+\section{Bayesian network}
+Introduce basic concepts in Bayesian networks and define notaions that will be used later. 
+
+\subsection{Notations}
+\begin{table}[]
+\centering
+\caption{Notations}
+\label{my-label}
+\begin{tabular}{ll}
+\hline
+$G, B_S$ &  a directed acyclic graph or a Bayesian network structure\\
+$B_P$ & the joint distribution with which $B_S$ forms a complete Bayesian network $(B_S, B_P)$ \\
+$\Theta$ &  a set of conditional probabilities or parameters of a Bayesian network\\
+$|\cdot|$ & the cardinality of a set \\
+$X$ & a variable set \\ 
+$X_i$ & the ith variable/node in $X$ \\ 
+$x_j$ & the jth state of a variable \\ 
+$\Pi_i$ & a parents set of the variable $X_i$ \\ 
+$\Pi_{ij}$ & the jth variable in $\Pi_i$ \\
+$\prod_{j=1}^{|\Pi_i|} \Pi_{ij}$ & Cartesian product of parents states \\
+$\pi_{ij}$ & the jth state in $\prod_{j=1}^{|\Pi_i|} \Pi_{ij}$ \\
+$r_{\Pi_i}$ & $|\prod_{j=1}^{|\Pi_i|} \Pi_{ij}|$, total number of parents' states combination\\
+$D$ & a dataset \\ 
+$D^{G_i = j}$ & the rows of $D$ where the set of variables $G_i$ takes the jth instantiation \\
+$D_i^{G_i = j}$ & the ith column of the $D^{G_i = j}$ rows \\
+$r_i$ & the arity (a.k.a., number of states) of a variable $X_i$ \\ 
+$\vec{n_{ij}}$ & a vector of counts for all states of $X_i$ given $\P_i$ is in state $j$ \\
+$n_{ijk}$ & $n_{ijk} \in \vec{n_{ij}}$ is the count of $X_i$ is in state $k$ given $\Pi_i$ is in state $j$, also known as sufficient statistics\\ 
+$n_{ij}$ & the count of $\Pi_i$ is in state $j$ i.e., $\sum_{k =1}^{r_i} n_{ijk}$ \\
+$\vec{\alpha}$ & a vector of Dirichlet concentration parameters \\ 
+$\alpha_i$ & the ith parameter in $\vec{\alpha}$ \\ 
+$B(x, y)$ & the beta function \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Scoring functions}
+Brief introduction
+
+\subsection{Information theoretical approach}
+\cite{wallace1968} MML was first introduced as an inductive inference principle. Then applied on learning causal model by \cite{wallace1996causal}, \cite{neil1999learning}, \cite{li2004}, \cite{odonnell2010flexible}. 
+
+\subsubsection{Akaike information criteria}
+\cite{akaike1973information} introduced Akaike information criteria (AIC) as a model selection metric 
+\begin{align}
+\label{eq:aic}
+AIC = -2 \log (L(\hat{\theta} \mid D)) + 2K,
+\end{align}
+where $\hat{\theta}$ is the maximum likelihood estimation of the true model parameters, $K$ is the total number of parameters in a candidate model. The development of AIC was based on Kullback-Leibler divergence (also known as Kullback-Leibler information)
+\begin{align}
+\label{eq:kld}
+KLD &= \int_x f(x) \log \frac{f(x)}{g(x)}dx \\
+\label{eq:kld_alternative}
+&= \int_x f(x) \log f(x)dx - \int_x f(x)\log g(x)dx 
+\end{align} 
+where $f(x)$ is the \textit{p.d.f.} of the true distribution (unknown in reality), $g(x)$ is a candidate distribution used to estimate $f(x)$. The first term in equation \ref{eq:kld_alternative} is a constant when considering candidate models, and hence minimising the Kullback-Leibler divergence is equivalent to maximising the second integration. Since the true distribution is unknown, the KLD can only be estimated from data and hence the motivation is to find the smallest expected KLD over data. \citeauthor{akaike1973information} proved that the maximised log likelihood value is a biased estimate of the expectation of the second integral with approximately a constant $K$ difference. Hence, the AIC metric was developed. For more details, refer to \cite{burnham2004multimodel}. 
+
+AIC is only unbiased estimate of the expected estimated KLD if the true model is in the space of model selection. And its performance can be poor if $K$ is relatively large to the sample size. 
+
+AIC tends to overfit, though no theoretical explanation on its behavior of learning BN was given. \cite{liu2012empirical} compared AIC, MDL, BDeu and fNML, reported that AIC's behavior is hard to predict. 
+
+AIC's penalty term only replies on number of parameters, but not precision of parameters, unlike MML. 
+
+
+\subsubsection{Minimum message length}
+The following is an MML metric for a CPT model written in three different mathematical expression. 
+\begin{align}
+\label{eq:mmlcpt}
+I(\phi_i(\bar{X}), D_{\phi_i}) &= \sum_{k = 1}^{K} \ln \left(\frac{(n_k+\alpha_0-1)! \prod_{j=1}^{m} (\alpha_j - 1)!}{(\alpha_0-1)! \prod_{j=1}^m (n_{kj} + \alpha_j - 1)!} \right) \\
+&= \sum_{k=1}^K \ln \frac{\Gamma(n_k + \alpha_0)\prod_{j=1}^m \Gamma(\alpha_j)}{\Gamma(\alpha_0) \prod_{j=1}^m\Gamma(n_{jk}+\alpha_j)} \\
+&= \sum_{k=1}^K \ln \frac{B(\vec{\alpha})}{B(\vec{n_{\cdot k}} + \vec{\alpha})},
+\end{align}
+where $B(\vec{\alpha}) = \frac{\prod_i \Gamma(\alpha_i)}{\Gamma(\sum_i \alpha_i)}$ is a Gamma function. There is also a constant term for reach parameter that corresponds to the constant difference between the adaptive and MML87 derivation of a CPT model. Ther term is 
+\begin{align*}
+\frac{r_i |\Pi_i|}{2} \ln \frac{\pi e}{6}
+\end{align*}
+
+
+\subsubsection{Minimum description length}
+Minimum description length (MDL) principle was developed by \cite{rissanen1978modeling} for statistically inferring an optimal model based on a given dataset. It shares some properties with the MML principle but with a fundamental difference of being a non-Bayesian approach (at least in its original derivation). MDL is also a formal version of Occam's razor, so its general form is also a two-part message (or description) length including the cost for encoding a model and the cost for encoding data given this model. 
+
+Other than being a non-Bayesian approach, MDL also differs from MML in a few more ways \cite{baxter1994mdl} 
+\begin{itemize}
+\item the objective of MDL is fine the optimal model class for prediction without having to state a specific model and its parameter, in contrast MML searches for the optimal model and set of parameters that has the shortest total message length.
+\item 
+\end{itemize}
+
+MDL has been applied in a wide range of machine learning problems, including BN structure learning. There are a number of different variations of MDL for structure learning problem. \cite{bouckaert1994properties} interpreted MDL as 
+\begin{align*}
+MDL = \log p(B_S) - \log p(D \mid (B_S, \hat{B}_P)) - \frac{k}{2} \log N
+\end{align*}
+where $B_S$ is a candidate network structure, $\hat{B}_P$ is the maximum likelihood estimation of the parameters in $B_S$, $k=\sum_{X_i \in X} (r_i-1)r_{\Pi_i}$ is the number of free parameters, and $N$ is the number of samples in a given dataset $D$. The author used uniform structure prior for both K2 and MDL and empirically justified that they have similar performance for large samples. But for small and moderate samples, MDL selected networks tend to have less number of parents than K2 selected networks. 
+
+\cite{cruz2006good} 
+
+Look into different version of MDL by Suzuki, Lam and Bacchus. 
+
+Cruz-Ramı́rez et al. (2006) compared MDL against BIC and claimed the former is simlar as the latter but with a penalty term. 
+
+MDL is not a Bayesian approach? This is the fundamental difference. 
+
+General form of MDL 
+\begin{align*}
+-\log \hat{p}(x^n) + \frac{k}{2}\log n + O(1)
+\end{align*}
+The first two terms is equivalent to BIC. 
+
+\cite{lam1994learning} applied MDL on learning BN structures. 
+
+\subsubsection{Entropy score}
+\textcolor{red}{Chow and Liu's work also based on entropy but for learning trees} An early work on using information theory to learn BN was developed by \cite{herskovits1990entropy} in an algorithm named Kutat\'{o}. The metric used in it is simply the sum of conditional entropies for each variable given its parents set
+\begin{align}
+\label{eq:herskovitsentropy}
+H_{BN} &= \sum_{X_i \in X} H(X_i \mid \Pi_i) \nonumber \\
+&= -\sum_{X_i \in X} \sum_{\pi_{ik}=1}^{r_{\Pi_i}} \sum_{x_i = 1}^{r_i} p(X_i = x_i, \Pi_i = \pi_i) \ln p(X_i =x_i \mid \Pi_i = \pi_i).
+\end{align}
+The Kutat\'{o} algorithm was computationally inefficient but it has shown an idea of ranking network structures based on the amount of information they carry about a given dataset. 
+
+
+\subsubsection{Mutual information test}
+\cite{campos2006scoring} introduced a new scoring function called mutual information test (MIT). The motivation was to develop a metric that measures the 'distance' from the true distribution $B_P$ to the estimated distribution $\hat{B}_P$ which is obtained by maximum likelihood estimation of a learned network structure from data. One way of measuring distribution difference is by Kullback-Leibler divergence that can be expressed by entropy and mutual information
+\begin{align*}
+KL(\hat{B}_P, B_P) &= -H_D(X) + \sum_{X_i \in X} H_D(X_i) - \sum_{X_i \in X}^{\Pi_i \neq \emptyset} MI_D(X_i, \Pi_i).
+\end{align*}
+Because the first two terms are invariant under structures, minimising the LHS is equivalent to maximising the summation on the RHS. That is, finding an optimal parents set for each variable such that the sum of the multual information is maximised. Since mutual information will not decrease by including additional variables, \citeauthor{campos2006scoring} used $\chi^2$ values to prevent overfitting and shown it is a legitimate regularization term based on the following theorem.
+\begin{theorem}\textbf{(Kullback, 1968)}\\
+Given a dataset $D$ with $n$ elements, if the hypothesis that $X$ and $Y$ are conditionally independent given $Z$ is true, then the statistics $2NMI_D(X,Y\mid Z)$ approximates to a distribution $\chi^2(l)$ with $l=(r_X - 1)(r_Y - 1)r_Z$ degrees of freedom, where $r_X, r_Y, r_Z$ represent the number of states of variables $X, Y, Z$ respectively. If $Z=0$, the statistics $2NMI_D(X,Y)$ approximates to a distribution $\chi^2(l)$ with $l=(r_X - 1)(r_Y - 1)$ degrees of freedom.
+\end{theorem}
+
+The final expression of the MIT metric that measures the fitness of a network structure $B_S$ to a given dataset $D$ with a $\chi^2$ regularization term is 
+\begin{align}
+\label{eq:mit}
+g_{MIT}(B_S : D) = \sum_{X_i \in X}^{\Pi_i \neq \emptyset} \left(2NMI_D(X_i, \Pi_i) - \max_{\sigma_i} \sum_{j=1}^{|\Pi_i|} \chi_{\alpha, l_{i\sigma_i(j)}}\right),
+\end{align}
+where the regularizer is a sum of quantiles defined as $p(\chi^2(l_{i\sigma_i(j)}) \le \chi_{\alpha, l_{i\sigma_i(j)}}) = \alpha$ for a pre-specified significant value $\alpha$. The degrees of freedom $l_{i\sigma_i(j)} = (r_i-1)(r_{\sigma_i(j)}-1)\prod_{k=1}^{j-1} r_{\sigma_i(k)}$, where $\sigma_i(j)$ is the $jth$ element in any permutation of $\Pi_i$. The maximisation is over all permutations of $\Pi_i$ because different ways of decomposing $\Pi_i$ results in different degrees of freedom hence different $\chi^2$ values. 
+
+The way equation \ref{eq:mit} is expressed makes it a decomposable metric, but not score-equivalent due to $\chi^2$'s degrees of freedom unless all variables have the same number of states. MIT, however, was proved to be score-equivalent in the \textit{restricted partial DAG} (RPDAG) space which was used by \cite{acid2003searching} for Bayesian network structure learning. 
+Assumptions: 
+\begin{itemize}
+\item complete data, 
+\item no latent variable,
+\end{itemize}
+
+\subsection{Posterior approach}
+A Bayesian measure of the goodness of fit of a model to a given dataset is the posterior probability of the model given such dataset. 
+
+\subsubsection{Bayesian information criteria}
+\cite{schwarz1978estimating}
+\begin{align}
+\label{eq:bic}
+BIC = -2\ln L + K \log n
+\end{align}
+When apply BIC, the model selection space does not have to contain the true model, the BIC selected model does not have to be the data generating model. 
+
+
+\subsubsection{Buntine's posterior metric}
+\cite{buntine1991classifiers} draw the connection between learning classification trees and Bayesian networks (as well as any other probabilistic models), and applied the same strategy for learning trees to BNs. \cite{buntine1991theory} addressed the learning of an optimal Bayesian network starting from partial domain knowledge is an example of theory refinement. Such a refinement process can be completed by a heuristic search and an objective function that is expressed as the product of local conditional probability posteriors (i.e., a parents set and the conditional probabities) over all nodes. The full conditional probabilities can be expressed by a CPT which relies on the parents set. Hence, the first problem to be solved is the a BN structure. The structural posterior is obtained by integrating over all parameters, which is propotional to prior times likelihood
+\begin{align}
+\label{eq:buntine91}
+p(G \mid D) &= \int_{\Theta} p(G, \Theta \mid D) d\Theta \nonumber \\
+&\propto \int_{\Theta} p(G) p(\Theta \mid G) p(D \mid G, \Theta) d\Theta \nonumber \\
+&= \int_{\Theta} \prod_{X_i \in X} p(\Pi_i) \frac{\prod_{j=1}^{|\Pi_i|} \prod_{k=1}^{r_i} \theta_{ijk}^{\alpha_k-1}}{B(\vec{\alpha})} \prod_{j=1}^{|\Pi_i|} \prod_{k=1}^{r_i} \theta_{ijk}^{n_{ijk}} d\Theta \nonumber \\
+&= \prod_{X_i \in X} p(\Pi_i) \prod_{j=1}^{|\Pi_i|} \frac{1}{B(\vec{\alpha})} \int_{\Theta} \prod_{k=1}^{r_i} \theta_{ijk}^{n_{ijk} + \alpha_k - 1} d\Theta \nonumber \\
+&= \prod_{X_i \in X} p(\Pi_i) \prod_{j=1}^{|\Pi_i|} \frac{B(\vec{n_{ij}} + \vec{\alpha})}{B(\vec{\alpha})}.
+\end{align}
+Given a parents set of each node, a network structure is defined. Assuming the choice of parents set for each node is independent, the structure prior is a product of parents set prior for each node. The structure prior is $p(\Pi)$ is often assumed to be uniform hence omitted for being a constant. Since each local structure of a node given its parents set forms a conditional probability table, which in turn can be patitioned into $|\Pi_x|$ many multinomial distributions, the parameter prior $p(\Theta \mid \Pi)$ is assumed to follow a symmetric Dirichlet distribution. An computational advantage of using a Dirichlet prior its conjugate property that ensures the posterior is in the same distribution family as the prior. 
+
+The assumptions Buntine made were:
+\begin{itemize}
+\item a node (possibly causal) ordering being provided by domain experts instead of the usual faithfulness (perfect-map) assumption, because faithfulness does not always hold in practice. The metric stays unchanged with or without a node ordering. 
+\item complete data with no missing values, which later briefly mentioned can be dealt with EM algorithm. 
+\item conditional probabilities of a node given its parents set is expressed by a full CPT. This assumption can also be relaxed by approximating the condition probaibilities by lower dimension distributions (or restricted/local probability models such as noisy-OR-gate \cite{pearl1988probabilistic}, trees, lower order logit models \cite{neil1999learning} that have linear number of parameters. 
+\item parameter priors are indpendent under parents instantiations, so that total parameter prior is a product of individual parameter priors. 
+\item independence betweem local structure (i.e., a node and its parents sets) so that the posterior of a global structure can be a product of the local structure posteriors,
+\item samples are iid
+\end{itemize}
+
+To ensure equivalent structures have the same score, \cite{buntine1991theory} used a hyper-parameter $\alpha$ which is known as equivalent sample size (ess) to derive symmetric Dirichlet's concentration paremters for each variable
+\begin{align}
+\label{eq:ess}
+\vec{\alpha} = <\frac{\alpha}{r_i|\Pi_i|}>.
+\end{align}
+The factorization $p(X) = \prod_{X_i \in X} p(X_i \mid \Pi_i)$ and the assumption of an ess (\ref{eq:ess}) makes the instantiations of the joint ditribution $p(X)$ uniformly distributed. Hence, this score is often refered as the BDeu (Bayesian Dirichlet equivalent uniform). 
+
+\subsubsection{K2}
+Around the same time, \cite{cooper1992Bayesian} derived the same metric as \cite{buntine1991theory} using similar assumptions, except the specific uniform distribution assumption on model parameters. The motivation was to compare two network structure's posterior $p(G \mid D$, which is equivalent to comparing their joint density $p(G, D)$ because the normaling term is invariant under structures. The metric has the form   
+\begin{align}
+\label{eq:k2}
+p(G, D) &= p(G) \prod_{X_i \in X} \prod_{j=1}^{|\Pi_i|} \frac{(r_i-1)! \prod_{k=1}^{r_i} n_{ijk}!}{(n_{ij}+r_i-1)!} \nonumber \\
+&= \prod_{X_i \in X} p(\Pi_i) \prod_{j=1}^{|\Pi_i|} \frac{B(\vec{n_{ij}} + <1>)}{B(<1>)} \\
+\end{align}
+It is the same as equation \ref{eq:buntine91} under the uniform parameter prior circumstance when $\vec{\alpha} = <1>$. \textcolor{red} Cooper also extented the score to general case of Dirichlet prior. 
+
+Assumptions:
+\begin{itemize}
+\item $X$ is a set of discrete variables so that the likelihood function is a probability mass function and integration is over finite sets. (but why? what's the problem with continuous?) 
+\item no hidden/latent variables (relaxed later) 
+\item $D$ is complete. That is, no missing values. (relaxed later) 
+\item samples in $D$ are \textit{i.i.d.} so that the likelihood $p(D \mid G, \Theta)$ is a product of each sample. 
+\item parameter values are uniformly distributed. 
+\end{itemize}
+
+\textcolor{red}{Nothing about equivalent networks is mentioned. Heckerman1995 said K2 does not give same score to equivalent structures under the uniform Dirichlet assumption.} 
+
+K2 uses an uninformative prior $\alpha_{ijk}=1$ for parameters. 
+
+K2 is the same as the original mml metric (i.e., start counting from 1 in adaptive approach). 
+
+
+\subsubsection{BDe}
+parameter modularity and score equivalent (metrics for bn should be equivalent, but not for causal net)
+
+With the assumptions stated by \cite{cooper1992Bayesian} and \cite{buntine1991classifiers} and an additional parameter modularity assumption (that states local model parameters only depend on parents set), \cite{heckerman1995learning} developed a more general metric named Bayesian Dirichlet equivalent (BDe). Although the BDe metric uses Dirichlet parameter priors, but \cite{heckerman1995learning} proved the Dirichlet assumption can be relaxed as long as parameters takes positive real values. The metric relies on the same hyper-parameter ess as \cite{buntine1991theory}'s metric, but assign non-uniform priors to parameters based on user's prior knowlege of the joint distribution $p(X)$. \cite{heckerman1995learning} proved the BDe metric is score equivalent and worked through a toy example to demonstrate this property.  The sensitivity of BDe about ess was also emphasized by the authors and concluded that small values of ess will result the metric quickly in favor of different learned BN from the prior BN. The conclusion is not surprising since small $\alpha$ results in small Dirichlet prior for each parameter, hence its impact on the outcome quicly diminishes as more data come in. 
+
+Assumptions:
+\begin{itemize}
+\item $X$ is a set of discrete variables. 
+\item $D$'s rows are exachangable, meaning iid.
+\item $D$ is complete. 
+\item parameter independence. 
+\item defined an event $B_S^e$ for the structure $B_S$ being $B_S$ is an I-map (perhaps perfect-map) of the underlying probability distribution. 
+\item hence introduced the event and score equivalence propositions. 
+\item parameter modularity, meaning CPT parameters only depends on parents set, not the global network structure. 
+\item parameters follow a dirichlet distribution. 
+\end{itemize}
+
+\subsubsection{Others}
+\cite{spiegelhalter1993bayesian} a different score, perhaps similar as BDe. (hard to understand)
+
+\cite{campos2006scoring} MIT score. 
+
+\cite{silander2008factorized} a new score using factorized nomalized maximum likelihood (fNML), no tunable hyper-parameter as BDe, hence avoid having sensitivity issue for small samples. AIC and BIC are decomposable scores. The penalty terms are not a function of the data, but functions of structure and $r_i$. BDe with $\alpha_{ijk} = 1$ is K2, and $\alpha_{ijk} = \frac{\alpha}{r_i|\Pi_i|}$ is BDeu \cite{buntine1991theory}, where the single hyper-parameter $\alpha$ is called the equivalent sample size (ess), \textcolor{red}{which is equivalent to the initial counting value in MML}. 
+
+\cite{riggelsen2008learning} proposed a new score (but similar as BDe) for learning Bayesian networks. The only difference is that this new score finds the optimal pair of DAG and parameters for a given dataset, rather than just finding the optimal DAG as BDe does (according to the author). The parameters are estimated using MAP estimation, and hence this new score is called MAP BN. 
+
+\section{Assumptions}
+Common assumptions from the previous mentioned metrics. Can they be relaxed or not? Which one has a stronger assumption? Does it make any difference in real world? 
+
+\section{Similarities and differences}
+Compare and contrast each metrics. Draw conclusion on their similarities, such as under what circumstances or what sort of data, several metrics produce the same score. And when will they be different? The difference is caused by what? Assumtipion on priors? 
+
+\cite{steck2003dirichlet} emphasised the sensitivity of ess. 
+
+\cite{silander2007sensitivity} emphasized the sensitivity of the BDeu score on the number of arcs identified for variety values of the equivalent sufficient statisics $\alpha$ in it. The conclusion of large $\alpha$ results in more arcs was made mainly on experimental results, but with reasonable explanations. 
+
+\cite{steck2008learning} on optimizing ess. 
+
+\section{Summary}
+
+\bibliographystyle{named}
+\bibliography{/home/kl/Documents/causal_discovery_ref_list}
+
+\end{document}

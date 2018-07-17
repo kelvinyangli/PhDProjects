@@ -1,0 +1,30 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Andersson \bgroup \em et al.\egroup
+  }{1997}]{andersson1997characterization}
+S.~A. Andersson, D.~Madigan, and M.~D. Perlman.
+\newblock {A characterization of Markov equivalence classes for acyclic
+  digraphs}.
+\newblock {\em The Annals of Statistics}, 25(2):505--541, 1997.
+
+\bibitem[\protect\citeauthoryear{Chickering}{2002}]{chickering2002optimal}
+D.~M. Chickering.
+\newblock {Optimal structure identification with greedy search}.
+\newblock {\em Journal of machine learning research}, 3(Nov):507--554, 2002.
+
+\bibitem[\protect\citeauthoryear{Diestel}{2000}]{diestel2000graph}
+R.~Diestel.
+\newblock {\em Graph theory}.
+\newblock Springer-Verlag Berlin and Heidelberg GmbH \& amp, 2000.
+
+\bibitem[\protect\citeauthoryear{Frydenberg}{1990}]{frydenberg1990chain}
+M.~Frydenberg.
+\newblock {The chain graph Markov property}.
+\newblock {\em Scandinavian Journal of Statistics}, pages 333--353, 1990.
+
+\bibitem[\protect\citeauthoryear{Neapolitan}{2004}]{neapolitan2004learning}
+R.~E. Neapolitan.
+\newblock {\em {Learning bayesian networks}}, volume~38.
+\newblock Pearson Prentice Hall Upper Saddle River, NJ, 2004.
+
+\end{thebibliography}

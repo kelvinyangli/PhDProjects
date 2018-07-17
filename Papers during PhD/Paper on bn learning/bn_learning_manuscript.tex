@@ -1,0 +1,373 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% First comes an example EPS file -- just ignore it and
+% proceed on the \documentclass line
+% your LaTeX will extract the file if required
+\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+gsave
+newpath
+  20 20 moveto
+  20 220 lineto
+  220 220 lineto
+  220 20 lineto
+closepath
+2 setlinewidth
+gsave
+  .4 setgray fill
+grestore
+stroke
+grestore
+\end{filecontents*}
+%
+\RequirePackage{fix-cm}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb, amsfonts, mathtools}
+\usepackage{enumerate}
+\usepackage{algorithm, algpseudocode}
+\usepackage{txfonts, pxfonts}
+\usepackage{grffile}
+\usepackage{caption, subcaption}
+\usepackage{listings}
+\usepackage[table, xcdraw]{xcolor}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{chronology}
+\usetikzlibrary{arrows, shapes}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{libertine}
+\usepackage{pgfgantt}
+\usepackage{lscape}
+\usepackage{enumitem}
+\input amssym.def
+\input amssym.tex
+%
+% please place your own definitions here and don't use \def but
+\newcommand{\mmlcpt}{$mbMML_{CPT}$ }
+\newcommand{\mbptmml}{$MBPT_{mml}$ }
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\ci}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
+\newcommand{\independent}{\perp\mkern-9.5mu\perp}
+\newcommand{\notindependent}{\centernot{\independent}}
+\newcommand{\qedwhite}{\hfill \ensuremath{\Box}}
+
+\makeatletter
+% Taken from http://ctan.org/pkg/centernot
+\newcommand*{\centernot}{%
+  \mathpalette\@centernot
+}
+\def\@centernot#1#2{%
+  \mathrel{%
+    \rlap{%
+      \settowidth\dimen@{$\m@th#1{#2}$}%
+      \kern.5\dimen@
+      \settowidth\dimen@{$\m@th#1=$}%
+      \kern-.5\dimen@
+      $\m@th#1\not$%
+    }%
+    {#2}%
+  }%
+}
+\makeatother
+
+%
+% Insert the name of "your journal" with
+% \journalname{myjournal}
+%
+% This file can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+
+\begin{document}
+
+\title{Local-to-global causal discovery using minimum message length%\thanks{Grants or other notes
+%about the article that should go on the front page should be
+%placed here. General acknowledgments should be placed at the end of the article.}
+}
+%\subtitle{Do you have a subtitle?\\ If so, write it here}
+
+%\titlerunning{Short form of title}        % if too long for running head
+
+\author{First Author         \and
+        Second Author \and
+        Third Author
+}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+\institute{F. Author \at
+              first address \\
+              Tel.: +123-45-678910\\
+              Fax: +123-45-678910\\
+              \email{fauthor@example.com}           %  \\
+%             \emph{Present address:} of F. Author  %  if needed
+           \and
+           S. Author \at
+              second address
+}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+\maketitle
+
+Given that we can learn Markov blanekts using any one of the three proposed MML methods (i.e., $MBMML+CPT, MBMML+NB, MBMML+RANDOM$), the next step is to learn the local structures within the learned Markov blankets. There are several ways of doing so: 
+\begin{enumerate}[label=(\alph*)]
+\item Give the learned Markov blankets to \textcolor{red}{CaMML} with no additional information about the local structures. CaMML will output $n$ local DAGs, one for each node. In the end, \textcolor{red}{somehow} resolve local DAGs conflicts so that they can be unified into a global DAG.
+\item Approximate certainties of directed/indirected edges in Markov blankets using \textcolor{red}{bootstarpping} \cite{friedman1999application}. Give \textcolor{red}{CaMML} the learned Markov blankets and the estimated certainties as arc prior. Obtain $n$ local DAGs and do as above. 
+\item For each learned Markov blanket, calculate MML score of all possible Markov blanket polytrees (MBPs). Choose the one with the \textcolor{red}{shortest message length} as the most probably MBP. Repeat the process to obtain $n$ MBPs. In the end, do as above. 
+\item Use \textcolor{red}{Metropolis-Hasting} algorithm to approximate the \textcolor{red}{posterior} distribution of the space of MBPs within each learned Markov blanket. Alternatively, calculate the exact posterior distribution if there are not many MBPs. Repeat this process for each learned Markov blanket. At the end, we have $n$ dependent posterior distributions. Then we have an \textcolor{red}{optimization} problem. The task is to find $n$ non-conflicting MBPs such that the sum of their posterior probability is maximum (or MML score is minimum). 
+\end{enumerate}
+
+\section{Related works}
+\cite{cooper1992} derived an efficient formula for computing the joint distribution of a BN structure $B_s$ and a given data set $D$
+\begin{equation}
+p(B_s, D) = p(B_s) \prod_{i=1}^n \prod_{j=1}^{q_i} \frac{(r_i-1)!}{(N_{ij}+r_i-1)!}\prod_{k=1}^{r_i} N_{ijk}!.
+\end{equation}
+The probability $p(B_s)$ can be considered as a constant if the structure prior is assumed to be uniform. The formula was developed based on the assumptions of (1) no missing values, (2) i.i.d. samples, (3) discrete random variables and (4) uniform parameter values. The authors also calculated the computational complexity of the above equation. This formula was then revised to incorporate with the K2 algorithm presented with an additional assumption that a node ordering is available to K2.  
+
+\cite{friedman2000being} presented mcmc sampling the total ordering space instead of the dag space, which is much larger and peaky. Since a BN is just a collection of parents set for all nodes, and each total ordering is consist with several dags, the probability $P(D\mid ordering)$ is the sum of probabilities over all dags consistent with the ordering, which is equivalent to the sum of scores for each node over its all possible parents set consistent with the ordering. The authors stated there is an efficient way of calculating the score. The authors assumed a uniform prior over orderings, so dags that are consistent with more orderings are more likely. The operations stated for mcmc to move through the sampling space are cut deck and switch two nodes with some probabilities. For cut deck, each possible cut is equal likely. The motivation of this paper is not to learn a single best dag, but to obtain a better estimation of features such as edge or markov blanket. 
+
+\cite{gillispie2001enumerating} presented a way of enumerating all labelled essential graphs. 
+
+\cite{riggelsen2005mcmc} used Markov blanket MCMC to learn Bayesian networks. Its difference from previous MCMC works on structure learning is that MB-MCMC focuses on sampling edges within MBs to avoid being stuck in locally in the enormous large DAG space. 
+
+\cite{nagele2007bayesian} presented a local-to-global BN learning algorithm similar as MMHC. It starts by putting up an undirected skeleton over all variables by using MMPC. Then it focuses on learning local structures over a target, its distance 1 and 2 neighbours. The learned local structure is then trimmed to the target's MB and MB DAG only. This process is repeated to all variables so the output is a collection of partially overlapping local MB DAGs. To resolve edge conflicts, the authors estimated direction and edge existence based on bootstrapping. 
+
+\cite{pellet2008using} assumed MBs are correctly learned, used moral graph to help identifying spouses and hence learn a causal model using constraint-based methods.
+
+\cite{riggelsen2008learning} proposed a new score (but similar as BDe) for learning Bayesian networks. The only difference is that this new score finds the optimal pair of DAG and parameters for a given dataset, rather than just finding the optimal DAG as BDe does (according to the author). The parameters are estimated using MAP estimation, and hence this new score is called MAP BN. 
+
+\cite{pensar2014marginal} learned Markov networks (undirected) without assuming chordalysis, proposed a new scoring function, used Markov blanket concept in undirected graphs (which are just neighbours of a node), talked about global optimization of a finding a graph consistent with the $B_X$. 
+
+\cite{gao2017local} presented a local-to-global bn learning algorithm. The algorithm is based on \cite{gao2017efficient}'s Markov blanket discovery algorithm to find the local structure around an arbitrary target, then expand the structure gradually to obtain a global bn.
+
+\section{Merging Markov blankets into a global DAG}
+The first objective is to find a DAG such that the sum of the edit distance between the learned MBs and the read-off MBs from this DAG is minimum. We started by creating an empty DAG then for each node, its learned MB is connected to it as direct neighbours without assigning directions to the edges. \textcolor{red}{The resulting graph is a moral graph of the true DAG if the learned MBs are correct}. By the next proposition, we do not need to apply symmetry enforcement on the learned MBs. 
+\begin{proposition}
+Let $\{MB_i\}$ and $\{MB^s_i\}$ be the set of the learned MBs for all nodes without and with symmetry enforcement on the results respectively. $MB_i$ nodes are added as the direct neighbours of $X_i$ to produce an undirected graph $G$. Then $MB^G_i = MB^s_i$. 
+\end{proposition}
+The proof is trivial. This way we obtain a DAG that has a low total MB edit distance to the learned MBs. To imporve this initial DAG, we must first assign directions to existing arcs since our scoring metric (MML) prefers to know the parents set of each node. 
+\begin{proposition}
+Every undirected graph can be made into a DAG. 
+\end{proposition}
+The above proposition is trivial. Take an undirected graph and pick a random node, lift it up then we will have node ordering. Direct every edge from top to down, then we will end up with a DAG. This proposition ensures the current undirected graph $G$ can be made into a DAG. 
+
+We can do the following: 
+\begin{itemize}
+\item Identify the set $\mathcal{C}$ of three nodes cliques in $G$. 
+\item Assign high confidence to edges between each node and its first found MB node, and store in $E^*$. Noticing from experimental results, we are confidence that the first found MB node is in the neighbour of the target. Experimental results have shown that the certainty of the first found node being a true positive varies from $(0.75, 0.85)$ for models with 20 nodes, maximum 4 arity for each node and maximum number of parents $\{2,3,4,5,6\}$ given 100 samples. 
+\item List all arcs appeared in the MBPTs and count the number of times they occur, then assign directions to edges in $G$ according to the direction mode, if draw then leave undirected. 
+\item Alternatively, we could feed the initial DAG $G$ to camml. But camml could be improved both in speed and perhaps in accuracy. 
+\end{itemize}
+ 
+\begin{proposition}
+This is more like a conjecture! For $n \rightarrow \infty$, the learned DAG by adding $MB_i$ as neighbours of $X_i$ contains only false positives, there is no false negative.  
+\end{proposition}
+This could save mcmc time for not to consider adding more arcs, but focus on deleting arcs. And reduce the initial sampling space by admitting arcs in $G$. But I still need directions to start with. 
+
+Once this initial DAG is created, the next step is to consider edge directions especially those that form a collider. The initial DAG is denser than the true DAG because spouses (if there are any) are added as direct neighbours of each node. If we can identify variables $X, Y, Z$ such that $ind(X, Y)$ but $dep(X, Y \mid Z)$, then the edge between $X$ and $Y$ should be removed. To identify this, we could use interaction information, which is defined as $I(X, Y, Z) = I(X, Y) - I(X, Y \mid Z)$. In principle, if a DAG contains only three nodes and $Z$ is a common child of $X$ and $Y$, then $I(X, Y, Z) < 0$. But there are some issues using interaction information. 
+
+The first issue is that if $I(X, Y, Z) < 0$ then any one of these three nodes can be the common child, because $I(X, Y, Z) = I(X, Y) - I(X, Y \mid Z) = I(X, Z) - I(X, Z \mid Y) = I(Z, Y) - I(Z, Y \mid X)$. Hence, interaction information does not give any information about which is more likely to be the common child. The second issue is it is possible to have $I(X, Y, Z) < 0$ when$dep(X, Y)$ and $dep(X, Y \mid Z)$, as long as the dependency between $X$ and $Y$ is weak. 
+
+\begin{proposition}
+If $I(X, Y, Z) < 0$, then either there is a weak directed arc between the two parents, or there is a weak indirect path between the two paretns, or they are independent. 
+\end{proposition}
+Not sure if anyone has proved this in a general DAG. 
+
+
+\section{Improve CaMML's efficiency by MB}
+camml takes structure priors and based on these priors, adjust the mml score of toms. If a given prior is true with high confidence, then the toms consistent with this prior is more likely to be sampled with some probability. But does this reduce the tom space for sampling? Or does it improve mixing/convergence of MCMC? Other people who used mcmc to sample ordering considered improve convergence/mixing and reduce the burn in period. camml doesn't talk about burn in. But camml seems fixed the number of samples drawn from tom space, perhaps we could reduce the number of samples required, and make it dynamic according to something. Is it possible to avoid some regions in the tom space and group some the picky points into one group that consistent with the given mb prior so that the total sampling space is reduced and the high poterior points are group near each other. 
+
+Camml's performance is good. It beats MBCPT for MB discovery with quite a margin. But it is really slow on large models, tested on 50 variables, took about 10 mins to finish. Definitely aim for improving its efficiency using mb results. But since MB results are not particularly accurate, give its results to camml as prior will affect camml's reconstruction accuracy. Maybe it's ok to sacrifice accuracy for efficiency. 
+
+\subsection{Testing CaMML's response to various prior}
+We have done some testing on CaMML's reponse to various prior. The purpose of these experiments is to work out the impact of the best (correct MB info with high confidence) and worst (incorrect MB info with high confidence) priors. The experimental settings are 6 random DAGs with $30-4-5-1-500$, and the reporting statistics is equivalent class edit distance with 0.95 confidence interval. The results are as the following: 
+\begin{itemize}
+\item with no prior, ed = 9.5+-2.7;
+\item with true edge prior and confidence 1, ed = 0.33 +- 0.65 (non-overlapping);
+\item with true edge prior and confidence 0.95, ed = 3.5 +- 2.9;
+\item with true edge prior and confidence 0.9, ed = 4.5+-3.6;
+\item with true edge prior and confidence 0.8, ed = 5.3 +- 4;
+\item with true edge prior and confidence 0.7, ed = 5.7 +- 4.1;
+\item with true edge prior and confidence 0.5, ed = 5 +- 3.9.
+\end{itemize}
+It seems that as long as the given priors are correct, even with 0.5 confidence the accuracy still improved though not statistically significant. Now, we test on giving false priors. We randomly generated 20 false arcs and give them to camml as undirected arc priors with different confidence levels. The results are as the followings: 
+\begin{itemize}
+\item with false priors and confidence 1, ed = 37 +- 4.9 (non-overlapping); 
+\item with false priors and confidence 0.8, ed = 10 +- 3.4;
+\item with false priors and confidence 0.5, ed = 8.7 +- 2.4.
+\end{itemize}
+Now, we mix the correct and incorrect undirected arc priors and test the impact on different confidence levels. From previous results, we know that for models with this complexity and 500 samples, MML+CPT's MB discovery precision is about 0.9 and recall 0.56. Given that we currently can only treated all MB nodes as directly connected with the target, we mix 0.7 correct undirected arc priors with 0.3 incorrect undiretec arc priors. Given that once correct prior confidence is less than 0.9 and incorrect prior confidence is less than 0.8, camml does similarly as no priors given, we start experiments with these confidence levels for correct and incorrect priors respectively. The results are as the followings: 
+\begin{itemize}
+\item 0.7 true 0.3 false with confidence 0.9 and 0.8 respectively, ed = 7.6 +- 2.8;
+\item 
+\end{itemize}
+
+%---------------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------------
+
+\newpage
+\subsection{MB prior for CaMML}
+DAG prior in camml is calculated from TOM prior by 
+\begin{align*}
+p(G) = \frac{m}{|TOMs(n)|},
+\end{align*}
+for a DAG $G$ with $n$ variables and $m$ consistent TOMs. The number of TOMs of $n$ variables can be easily calculated as 
+\begin{align*}
+TOM(n) = n! * 2^{\binom{n}{2}}.
+\end{align*}
+
+TOM prior is assumed uniform in camml, so once we know the total number of TOMs, we know an uninformative TOM prior. Assuming there are $m$ TOMs that are consistent with a DAG G, then G's prior is the sum of these m TOMs' prior. This gives the first part of MML. The second part consists of model parameter and data given such a model, which can be calculated using MML87. The difficulty of calculating $m$ is avoided by MCMC sampling the TOM space then count the number of times each TOM is visited. This is an approximation of $m$. 
+
+Similarly, we can work out the total number of MBs 
+\begin{align*}
+|MB_x| = 2^{(n-1)}.
+\end{align*}
+
+This is the prior for one MB. If we can work out a prior for all MBs, then work out how many combinations of MBs are consistent with G, then we can specify the DAG prior in an alternative way. camml assumes uniform TOM prior which is uninformative. But MB prior can be informative based on learned MBs from data. This could help with camml. 
+
+camml samples tom space, so that it approximates the number $m$ of toms that are consistent with $G$. Since the number of toms is easily calculate and all toms are equal likely, it's easy to calculate the tom prior. Given an estimated $m$ from mcmc, camml obtains an estimated prior of a dag. Log of the mml score of G gives the likelihood of G (with mml estimate of the parameters?). Together with G's estimated prior, we get its posterior. The rest of the grouping steps are not my concern. 
+
+
+\iffalse
+\begin{proposition}
+If $F$ is a chordal graph, then $F$ has a simplicial node. 
+\end{proposition}
+
+\begin{proof}
+Proved in graph theory.
+\end{proof}
+
+\begin{proposition}
+\label{chordal2dag}
+If $F$ is a chordal graph, directing each simplicial node's neighbours to it will obtain a DAG $G$.
+\end{proposition}
+
+\begin{proof}
+Proved in graph theory.
+\end{proof}
+
+\begin{proposition}
+If $F$ is a chordal graph and $G$ is a DAG obtained by Proposition \ref{chordal2dag}, then $B_X^G = N_X^F$.
+\end{proposition}
+
+\begin{proof}
+Easy.
+\end{proof}
+
+\begin{proposition}
+If $F_1$ and $F_2$ are two different chordal graphs, then $N_X^{F_1} \neq N_X^{F_2}$. 
+\end{proposition}
+
+\begin{proof}
+trivial
+\end{proof}
+
+\begin{proposition}
+If $B_X^1 \neq B_X^2$, then they have different corresponding chordal graphs. 
+\end{proposition}
+
+\begin{proof}
+trivial
+\end{proof}
+
+
+\begin{corollary}
+The number of chordal graphs over $X$ is the same as the number of $B_X$. 
+\end{corollary}
+
+\begin{proof}
+follows from the above two propositions.
+\end{proof}
+
+
+\textcolor{red}{The following proposition is incorrect. It does not compute the number of Markov blankets, because not all solutions have a valid DAG.}
+\begin{proposition}
+Let $<G=(X,E), P>$ be a Bayesian network of $n$ variables. Let $B_i \subseteq X \setminus \{X_i\}$ be a variable subset, and $B_X = \{B_1, \dots, B_n\}$ such that if $X_i \in B_j$ then $X_j \in B_i, \forall i, j \in [1, n]$ and $i \neq j$. The total number $k_{n-1}$ of $B_X$ can be computed by the recurrence relation
+\begin{equation}
+k_i = k_{i-1} * 2^{n-i}
+\end{equation}
+for $i \in [1, n-1]$ with initial value $k_0 = 1$.
+\end{proposition}
+
+\begin{proof}
+Each $k_i$ is the total enumeration of the first $i$ Markov blankets. Given the Markov blankets are symmetric (i.e., $X_i \in B_j \Rightarrow X_j \in B_i$ for $i\neq j$), knowing the first $n-1$ Markov blankets fixes the last. So the total number is determined by $k_{n-1}$. Without loss of generality, we assume $B_1$ is totally free.
+
+To enumerate all $B_X$, we start with adding all possible choices of $B_1$ into an empty set $U$ (i.e., $U = U \cup \{B_1\}$), so it entails $k_1 = |U| = 2^{n-1}$. We then consider the choices for another set $V = \{B_2\}$. We can divide $U = U^0 \cup U^1$, where $U^0 = \{U \mid X_2 \notin B_1\}$ and $U^1 = U \setminus U^0$, and both having size $|U^{0}| = |U^{1}| = |U|/2 =k_1/2$. Similarly, $V = V^0 \cup V^1$, where $V^0 = \{V \mid X_1 \notin B_2\}$, $V^1 = V\setminus V^0$ and $|V^0| = |V^1| = |V|/2=2^{n-1}/2$. To satisfy the symmetry property of Markov blanket, $U^0$ can only pair with $V^0$, $U^1$ can only pair with $V^1$. Hence, we make $U = U \cup V$ and having size $k_2 = |U| = (k_1/2) * (2^{n-1}/2) * 2 = k_1 * 2^{n-2}$.
+
+Generalizing to the $i^{th}$ step, we have $U = U^{0\dots 0} \cup \dots \cup U^{1 \dots 1}$ and $V = V^{0\dots 0} \cup \dots \cup V^{1 \dots 1}$, where $U^{0\dots 0} = \{U \mid X_i \notin B_1, \dots, X_i \notin B_{i-1}\}$ and $V^{0\dots 0} = \{V \mid X_1 \notin B_i, \dots, X_{i-1} \notin B_i\}$. Each $U$ and $V$ is equally divided into $2^{i-1}$ mutually exclusive subsets. Therefore, $k_i = (k_{i-1}/2^{i-1}) * (2^{n-1}/2^{i-1})* 2^{i-1} = k_{i-1} * 2^{n-i}$. \qed
+\end{proof}
+
+\begin{proposition}
+If $<G_1=(X,E_1), P>$ and $<G_2=(X,E_2), P>$ are two Markov equivalent Bayesian networks, then $B_X^{G_1} = B_X^{G_2}$. 
+\end{proposition}
+
+\begin{proof}
+Assuming there exist $G_1$ and $G_2$ such that they are Markov equivalent and $B_X^{G_1} \neq B_X^{G_2}$. Without loss of generality, assuming $\exists X_i \in X$ such that $X_i \in B_j^{G_1}$ and $X_i \notin B_j^{G_2}$. This entails $X_i \not\!\perp\!\!\!\perp_P X_j \mid B_j^{G_1}$ and $X_i \!\perp\!\!\!\perp_P X_j \mid B_j^{G_2}$, which contradicts with the fact that $G_1$ and $G_2$ are Markov equivalent. \qed
+\end{proof}
+The converse is not true!
+\fi
+
+The number of $B_X$ is a lot smaller than TOMs. Same as total/partial ordering, each $B_X$ corresponds to a number of DAGs. 
+
+Using the same idea, we have the following options: 
+\begin{itemize}
+\item assuming the given mbs are correct, then sampling the part (much smaller) of dag space which is consistent with the given mbs to estimate dag posteriro, then select the dag with the highest posterior. pros: the sampled region is much smaller, though still exponential; cons: we don't have perfect mbs...
+\item several toms are consistent with one dag, but one mb is consistent with several dags, so given (learned) mbs for all nodes, sampling dag space and count the number m of dags that are consistent with the given mbs, then divide the mbs prior by m to get the prior for dag, then using camml steps. the mcmc step can start with a dag that is consistent with mbs (e.g. all mbs are neighbours of targets) then apply mutations (without violating consistent with the given mbs), do muations say 2 million times, afterwards count the number of unique dags. 
+\item 
+\end{itemize}
+%---------------------------------------------------------------------------------
+
+\subsection{CaMML* for MB subgraph learning}
+There are two issues with the current camml. Firstly, the operations for searching the best TOM are not valid for subgraph search within MB, so new operations are needed. Secondly, we don't want to join learned subgraphs into SEC and MMLSEC because we want to stay on DAG level so that we can joint subgraphs into one. 
+
+New operations: 
+\begin{enumerate}
+\item arc addition: add a directed arc between two variables as long as the resulting graph is still acyclic; 
+\item arc deletion: selecte a variable, delete one of its (incoming or outgoing) arcs if the variable is directed connected with the target and one of the target's children;
+\item swap order: swap the order of two variables except for the target node. If an arc exists between two variables, change the direction after swapping. 
+\item we need a big step?
+\end{enumerate}
+These operations ensure the resulting TOM represent a MB subgraph. We know there will be false positives and false negatives in MB discovery. We can leave FNs for now, since although the learned MB is a subset of the true MB, the best subgraph over the learned MB is still a true subgraph of the true model G (proof needed). The FPs are not true MB variables, hence we need to relax step two to also consider deleting arcs so that a variable is outside of the current learned MB. Hence, we define the following step to replace step 2:
+\begin{enumerate}[label=2*.]
+\item arc deletion: selecte a variable, delete (with high probability) one of its (incoming or outgoing) arcs if the variable is directed connected with the target and one of the target's children; alternatively, delete (with low probability) any of its arcs;
+\end{enumerate}
+
+In addition, we could use the best MB polytree as a starting point of MCMC sampling. This could save camml some time by not going throug step 1 (annealing step for best TOM for later MCMC sampling) to look for a good starting point. 
+
+\bibliographystyle{named}
+\bibliography{/home/kl/Documents/causal_discovery_ref_list}
+
+\end{document}

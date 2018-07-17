@@ -1,0 +1,256 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% First comes an example EPS file -- just ignore it and
+% proceed on the \documentclass line
+% your LaTeX will extract the file if required
+\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+gsave
+newpath
+  20 20 moveto
+  20 220 lineto
+  220 220 lineto
+  220 20 lineto
+closepath
+2 setlinewidth
+gsave
+  .4 setgray fill
+grestore
+stroke
+grestore
+\end{filecontents*}
+%
+\RequirePackage{fix-cm}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb, amsfonts, mathtools}
+\usepackage{enumerate}
+\usepackage{algorithm, algpseudocode}
+\usepackage{txfonts, pxfonts}
+\usepackage{grffile}
+\usepackage{caption, subcaption}
+\usepackage{listings}
+\usepackage[table, xcdraw]{xcolor}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{chronology}
+\usetikzlibrary{arrows, shapes}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{libertine}
+\usepackage{pgfgantt}
+\usepackage{lscape}
+\usepackage{enumitem}
+\input amssym.def
+\input amssym.tex
+%
+% please place your own definitions here and don't use \def but
+\newcommand{\mmlcpt}{$mbMML_{CPT}$ }
+\newcommand{\mbptmml}{$MBPT_{mml}$ }
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\ci}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
+\newcommand{\independent}{\perp\mkern-9.5mu\perp}
+\newcommand{\notindependent}{\centernot{\independent}}
+\newcommand{\qedwhite}{\hfill \ensuremath{\Box}}
+
+\makeatletter
+% Taken from http://ctan.org/pkg/centernot
+\newcommand*{\centernot}{%
+  \mathpalette\@centernot
+}
+\def\@centernot#1#2{%
+  \mathrel{%
+    \rlap{%
+      \settowidth\dimen@{$\m@th#1{#2}$}%
+      \kern.5\dimen@
+      \settowidth\dimen@{$\m@th#1=$}%
+      \kern-.5\dimen@
+      $\m@th#1\not$%
+    }%
+    {#2}%
+  }%
+}
+\makeatother
+
+%
+% Insert the name of "your journal" with
+% \journalname{myjournal}
+%
+% This file can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+
+\begin{document}
+
+\title{Related definitions and notations%\thanks{Grants or other notes
+%about the article that should go on the front page should be
+%placed here. General acknowledgments should be placed at the end of the article.}
+}
+%\subtitle{Do you have a subtitle?\\ If so, write it here}
+
+%\titlerunning{Short form of title}        % if too long for running head
+
+\author{First Author         \and
+        Second Author \and
+        Third Author
+}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+\institute{F. Author \at
+              first address \\
+              Tel.: +123-45-678910\\
+              Fax: +123-45-678910\\
+              \email{fauthor@example.com}           %  \\
+%             \emph{Present address:} of F. Author  %  if needed
+           \and%
+           S. Author \at
+              second address
+}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+\maketitle
+
+The graph theory definitions are adopted from \cite{diestel2000graph}. The Bayesian network definitions and notations are largely adopted from \cite{neapolitan2004learning}. 
+
+\section{Probability theory}
+\begin{itemize}
+\item marginal probability distribution
+\item joint probability distribution
+\item conditional probability distribution
+\item Bayes' Theorem
+\item independent
+\item conditional independent
+\item prior propability
+\item posterior probability
+\end{itemize}
+
+\section{Graphical model}
+\begin{itemize}
+\item graph - nodes, vertices, variables are used interchangably; edges, arcs, links are used interchangably;
+\item 
+\end{itemize}
+
+\begin{definition}
+\label{def:graph}
+A \textbf{graph} is a pair $G = (V, E)$ comprising a set $V$ of vertices (or nodes) together with a set $E$ of edges (or arcs).
+\end{definition}
+The vertex set of a graph $G$ is referred to as $V(G)$, its edge set as $E(G)$. 
+
+\begin{definition}
+\label{def:neighbour}
+Two vertices $x, y$ of $G$ are \textbf{adjacent}, or \textbf{neighbours}, if $xy$ is an edge of $G$. 
+\end{definition}
+
+\begin{definition}
+\label{def:subgraph}
+Let $G=(V,E)$ and $G'=(V',E')$ be two graphs. If $V' \subseteq V$ and $E' \subseteq E$, then $G'$ is a \textbf{subgraph} of $G$ (and $G$ is a \textbf{supergraph} of $G'$), written as $G' \subseteq G$. If $G' \subseteq G$ and $G'$ contains all the edges $xy \in E$ with $x, y \in V'$, then $G'$ is an \textbf{induced subgraph} of $G$, written as $G' = G[V']$. 
+\end{definition}
+
+\begin{definition}
+\label{def:path}
+A \textbf{path} in a graph $G$ is a non-empty graph $P = (V,E)$ of the form 
+\begin{align*}
+V = \{X_0, X_1, \dots, X_k\} \text{,    } E = \{X_0X_1, X_1X_2, \dots, X_{k-1}X_k\},
+\end{align*}
+where the $X_i$s are all distinct. If $k \ge 3$ and $X_k =X_0$, then the graph $C = (V,E)$ is called a \textbf{cycle}.
+\end{definition}
+
+\begin{definition}
+\label{def:connected}
+A non-empty graph $G$ is called \textbf{connected} if any two of its vertices are linked by a path in $G$. 
+\end{definition}
+
+\begin{definition}
+\label{def:tree}
+An acyclic graph, one not containing any cycles, is called a \textbf{forest}. A connected forest is called a \textbf{tree}. 
+\end{definition}
+
+\begin{definition}
+\label{def:digraph}
+A \textbf{directed graph} (or \textbf{digraph}) is a pair $(V,E)$, where $V$ is a finite set of vertices, and $E$ is a set of ordered pairs of distinct vertices in $V$.
+\end{definition}
+
+\begin{definition}
+\label{def:dag}
+A directed graph $G = (V, E)$ is called a directed acyclic graph (\textbf{DAG}) if it contains no directed cycles. Given nodes $X_1$ and $X_2$ in $V$, $X_1$ is called a \textbf{parent} of $X_2$ and $X_2$ is called a \textbf{child} of $X_1$ if there is a directed edge from $X_1$ to $X_2$. $X_1$ is called an \textbf{ancestor} of $X_2$ and $X_2$ is called a \textbf{descendent} of $X_1$ if there is a directed path from $X_1$ to $X_2$. $X_2$ is a \textbf{nondescendent} of $X_1$ if $X_2$ is not a descendent of $X_1$.
+\end{definition}
+
+\begin{definition}
+A \textbf{chain graph} \cite{frydenberg1990chain} is a graph which may have directed and undirected edges, but with no directed cycles.  
+\end{definition}
+Undirected graphs and DAGs are special cases of chain graphs. The definition was later extended to hybrid graphs with no directed or semi-directed cycles (i.e., no edges point the same direction). 
+
+\begin{definition}
+A \textbf{hybrid graph (a.k.a., mixed graph)} is a graph consisting of directed and undirected edges. 
+\end{definition}
+
+\begin{definition}
+A \textbf{collider} in a hybrid graph is a node with at least two parents. 
+\end{definition}
+
+\begin{definition}
+Let $G_1 = (X, E_1)$ and $G_2 = (X, E_2)$ be two DAGs containing the same set of variables $X$. Then $G_1$ and $G_2$ are \textbf{Markov equivlent} if for every three mutually disjoint subsets $A, B, C \subseteq X$, $A$ and $B$ are d-separated by $C$ in $G_1$ if and only if $A$ and $B$ are d-separated by $C$ in $G_2$.
+\end{definition}
+
+\begin{proposition}
+Let $G_1 = (X, E_1)$ and $G_2 = (X, E_2)$ be two DAGs containing the same set of variables $X$. Then the following are equivalent:
+\begin{enumerate}
+\item $G_1$ and $G_2$ are Markov equivalent. 
+\item Based on the Markov condition, they entail the same conditional independencies. 
+\item For every joint probability distribution $P$ of $X$, $<G_1, P>$ satisfies the Markov condition if and only if $<G_2, P>$ satisfies the Markov condition. 
+\item They have the same skeleton and the same set of colliders. 
+\end{enumerate}
+\end{proposition}
+
+\begin{definition}
+An edge is \textbf{compelled} in an equivalent class $\mathcal{G}$ if it exists in every DAG in $\mathcal{G}$. 
+\end{definition}
+
+\begin{definition}
+An equivalence class $\mathcal{G}$ of directed acyclic graphs over $X$ variables can be described by the \textbf{essential graph} \cite{andersson1997characterization} (or completed partially directed acyclic graph \textbf{CPDAG} \cite{chickering2002optimal}, \textbf{DAG pattern} \cite{neapolitan2004learning}) of $\mathcal{G}$ which is a hybrid graph $G^*$ over $X$ defined as follows: 
+\begin{itemize}
+\item $X_i \rightarrow X_j \in E(G^*)$ iff $X_i \rightarrow X_j \in E(G)$ for every $G \in \mathcal{G}$,
+\item $X_i - X_j \in E(G^*)$ iff there are $G_1, G_2 \in \mathcal{G}$ such that $X_i \rightarrow X_j \in E(G_1)$ and  $X_i \leftarrow X_j \in E(G_2)$.
+\end{itemize}
+\end{definition}
+This is a unique representation of an equivalent class. 
+
+\begin{definition}
+The \textbf{moral graph} of a DAG is the skeleton of the hybrid graph obtained by adding an undirected edge between each pair of non-adjacent parents that have a common child. 
+\end{definition}
+
+\bibliographystyle{named}
+\bibliography{/home/kl/Documents/causal_discovery_ref_list}
+
+\end{document}

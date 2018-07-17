@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: bn_learning_manuscript.aux
+The style file: named.bst
+Database file #1: /home/kl/Documents/causal_discovery_ref_list.bib
+Warning--I didn't find a database entry for "cooper1992"
+You've used 11 entries,
+            2439 wiz_defined-function locations,
+            620 strings with 6503 characters,
+and the built_in function-call counts, 5033 in all, are:
+= -- 551
+> -- 150
+< -- 6
++ -- 48
+- -- 48
+* -- 357
+:= -- 748
+add.period$ -- 38
+call.type$ -- 11
+change.case$ -- 68
+chr.to.int$ -- 11
+cite$ -- 11
+duplicate$ -- 230
+empty$ -- 410
+format.name$ -- 63
+if$ -- 1109
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 11
+newline$ -- 58
+num.names$ -- 33
+pop$ -- 73
+preamble$ -- 1
+purify$ -- 79
+quote$ -- 0
+skip$ -- 194
+stack$ -- 0
+substring$ -- 336
+swap$ -- 85
+text.length$ -- 6
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 88
+warning$ -- 0
+while$ -- 46
+width$ -- 15
+write$ -- 148
+(There was 1 warning)

@@ -1,0 +1,198 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Acid \bgroup \em et al.\egroup
+  }{2013}]{acid2013score}
+S.~Acid, L.~M. de~Campos, and M.~Fern{\'a}ndez.
+\newblock {Score-based methods for learning Markov boundaries by searching in
+  constrained spaces}.
+\newblock {\em Data Mining and Knowledge Discovery}, 26(1):174--212, 2013.
+
+\bibitem[\protect\citeauthoryear{Aliferis \bgroup \em et al.\egroup
+  }{2003}]{aliferis2003hiton}
+C.~F. Aliferis, I.~Tsamardinos, and A.~Statnikov.
+\newblock {HITON: a novel Markov blanket algorithm for optimal variable
+  selection.}
+\newblock In {\em AMIA Annual Symposium Proceedings}, pages 21--25. American
+  Medical Informatics Association, 2003.
+
+\bibitem[\protect\citeauthoryear{Aliferis \bgroup \em et al.\egroup
+  }{2010a}]{aliferis2010locala}
+C.~F. Aliferis, A.~R. Statnikov, I.~Tsamardinos, S.~Mani, and X.~Koutsoukos.
+\newblock {Local causal and Markov blanket induction for causal discovery and
+  feature selection for classification part I: Algorithms and empirical
+  evaluation}.
+\newblock {\em The Journal of Machine Learning Research}, 11:171--234, 2010.
+
+\bibitem[\protect\citeauthoryear{Aliferis \bgroup \em et al.\egroup
+  }{2010b}]{aliferis2010localb}
+C.~F. Aliferis, A.~R. Statnikov, I.~Tsamardinos, S.~Mani, and X.~Koutsoukos.
+\newblock {Local causal and Markov blanket induction for causal discovery and
+  feature selection for classification part II: Analysis and extensions}.
+\newblock {\em The Journal of Machine Learning Research}, 11:235--284, 2010.
+
+\bibitem[\protect\citeauthoryear{Boulton and
+  Wallace}{1969}]{boulton1969information}
+D.~M. Boulton and C.~S. Wallace.
+\newblock The information content of a multistate distribution.
+\newblock {\em Journal of Theoretical Biology}, 23(2):269--278, 1969.
+
+\bibitem[\protect\citeauthoryear{Cheng \bgroup \em et al.\egroup
+  }{2001}]{cheng2001kdd}
+J.~Cheng, C.~Hatzis, H.~Hayashi, M.~A. Krogel, S.~Morishita, D.~Page, and
+  J.~Sese.
+\newblock Kdd cup 2001 report.
+\newblock {\em ACM SIGKDD Explorations Newsletter}, 3(2):47--64, 2001.
+
+\bibitem[\protect\citeauthoryear{Chickering}{2002}]{chickering2002learning}
+D.~M. Chickering.
+\newblock {Learning equivalence classes of Bayesian-network structures}.
+\newblock {\em Journal of machine learning research}, 2(Feb):445--498, 2002.
+
+\bibitem[\protect\citeauthoryear{Cooper \bgroup \em et al.\egroup
+  }{1997}]{cooper1997evaluation}
+G.~F. Cooper, C.~F. Aliferis, R.~Ambrosino, J.~Aronis, B.~G. Buchanan,
+  R.~Caruana, M.~J. Fine, C.~Glymour, G.~Gordon, B.~H. Hanusa, J.~E. Janosky,
+  C.~Meek, T.~Mitchell, T.~Richardson, and P.~Spirtes.
+\newblock {An evaluation of machine-learning methods for predicting pneumonia
+  mortality}.
+\newblock {\em Artificial Intelligence in Medicine}, 9(2):107--138, 1997.
+
+\bibitem[\protect\citeauthoryear{de Morais and
+  Aussem}{2010}]{demorais2010novel}
+S.~R. de~Morais and A.~Aussem.
+\newblock {A novel Markov boundary based feature subset selection algorithm}.
+\newblock {\em Neurocomputing}, 73(4):578--584, 2010.
+
+\bibitem[\protect\citeauthoryear{Frey \bgroup \em et al.\egroup
+  }{2003}]{frey2003identifying}
+L.~Frey, D.~Fisher, I.~Tsamardinos, C.~F. Aliferis, and A.~Statnikov.
+\newblock {Identifying markov blankets with decision tree induction}.
+\newblock In {\em Proceedings of the 3rd IEEE International Conference on Data
+  Mining, ICDM'03}, 2003.
+
+\bibitem[\protect\citeauthoryear{Fu and Desmarais}{2008}]{fu2008fast}
+S.~Fu and M.~C. Desmarais.
+\newblock {Fast Markov blanket discovery algorithm via local learning within
+  single pass}.
+\newblock In {\em Conference of the Canadian Society for Computational Studies
+  of Intelligence}, pages 96--107. Springer, 2008.
+
+\bibitem[\protect\citeauthoryear{Gao and Ji}{2017}]{gao2017efficient}
+T.~Gao and Q.~Ji.
+\newblock {Efficient score-based Markov Blanket discovery}.
+\newblock {\em International Journal of Approximate Reasoning}, 80:277--293,
+  2017.
+
+\bibitem[\protect\citeauthoryear{Geiger \bgroup \em et al.\egroup
+  }{2001}]{geiger2001stratified}
+D.~Geiger, D.~Heckerman, H.~King, and C.~Meek.
+\newblock {Stratified exponential families: graphical models and model
+  selection}.
+\newblock {\em The Annals of Statistics}, pages 505--529, 2001.
+
+\bibitem[\protect\citeauthoryear{Haughton}{1988}]{haughton1988choice}
+D.~M.~A. Haughton.
+\newblock {On the choice of a model to fit data from an exponential family}.
+\newblock {\em The Annals of Statistics}, 16(1):342--355, 1988.
+
+\bibitem[\protect\citeauthoryear{Koller and Sahami}{1996}]{koller1996toward}
+D.~Koller and M.~Sahami.
+\newblock Toward optimal feature selection.
+\newblock In {\em Proceedings of the 13th conference in Machine Learning},
+  pages 284--292, 1996.
+
+\bibitem[\protect\citeauthoryear{Li \bgroup \em et al.\egroup }{2004}]{li2004}
+G.~Li, H.~Dai, and Y.~Tu.
+\newblock {Identifying Markov blankets using lasso estimation}.
+\newblock In {\em Advances in Knowledge Discovery and Data Mining}, number
+  2004, pages 308--318. Springer, 2004.
+
+\bibitem[\protect\citeauthoryear{Liu and Liu}{2016}]{liu2016swamping}
+X.~Liu and X.~Liu.
+\newblock {Swamping and masking in Markov boundary discovery}.
+\newblock {\em Machine Learning}, 104(1):25--54, 2016.
+
+\bibitem[\protect\citeauthoryear{Madden}{2002}]{madden2002new}
+M.~G. Madden.
+\newblock {A new Bayesian network structure for classification tasks}.
+\newblock In {\em Irish Conference on Artificial Intelligence and Cognitive
+  Science}, pages 203--208. Springer, 2002.
+
+\bibitem[\protect\citeauthoryear{Margaritis and
+  Thrun}{1999}]{margaritis1999bayesian}
+D.~Margaritis and S.~Thrun.
+\newblock {Bayesian network induction via local neighborhoods}.
+\newblock {\em In Advances in Neural Information Processing Systems},
+  12:505--511, 1999.
+
+\bibitem[\protect\citeauthoryear{Neil \bgroup \em et al.\egroup
+  }{1999}]{neil1999learning}
+J.~R. Neil, C.~S. Wallace, and K.~B. Korb.
+\newblock {Learning Bayesian networks with restricted causal interactions}.
+\newblock In {\em Proceedings of the 15th Conference on Uncertainty in
+  Artificial Intelligence}, pages 486--493. Morgan Kaufmann Publishers Inc.,
+  1999.
+
+\bibitem[\protect\citeauthoryear{Niinimaki and
+  Parviainen}{2012}]{niinimaki2012local}
+T.~Niinimaki and P.~Parviainen.
+\newblock {Local structure discovery in Bayesian networks}.
+\newblock 2012.
+
+\bibitem[\protect\citeauthoryear{Pearl}{1988}]{pearl1988probabilistic}
+J.~Pearl.
+\newblock {\em Probabilistic reasoning in intelligent systems}.
+\newblock Morgan Kaufmann San Mateo, CA, 1988.
+
+\bibitem[\protect\citeauthoryear{Pe{\~n}a \bgroup \em et al.\egroup
+  }{2007}]{pena2007towards}
+J.~M. Pe{\~n}a, R.~Nilsson, J.~Bj{\"o}rkegren, and J.~Tegn{\'e}r.
+\newblock {Towards scalable and data efficient learning of Markov boundaries}.
+\newblock {\em International Journal of Approximate Reasoning}, 45(2):211--232,
+  2007.
+
+\bibitem[\protect\citeauthoryear{Silander \bgroup \em et al.\egroup
+  }{2007}]{silander2007sensitivity}
+T.~Silander, P.~Kontkanen, and P.~Myllym{\"a}ki.
+\newblock {On sensitivity of the MAP Bayesian network structure to the
+  equivalent sample size parameter}.
+\newblock In {\em Proceedings of the 23rd Conference on Uncertainty in
+  Artificial Intelligence}, pages 360--367. AUAI Press, 2007.
+
+\bibitem[\protect\citeauthoryear{Strobl and
+  Visweswaran}{2016}]{strobl2016markov}
+E.~V. Strobl and S.~Visweswaran.
+\newblock {Markov boundary discovery with ridge regularized linear models}.
+\newblock {\em Journal of Causal Inference}, 4(1):31--48, 2016.
+
+\bibitem[\protect\citeauthoryear{Tsamardinos \bgroup \em et al.\egroup
+  }{2003a}]{tsamardinos2003time}
+I.~Tsamardinos, C.~F. Aliferis, and A.~Statnikov.
+\newblock {Time and sample efficient discovery of Markov blankets and direct
+  causal relations}.
+\newblock In {\em Proceedings of the 9th ACM SIGKDD International Conference on
+  Knowledge Discovery and Data Mining}, pages 673--678. ACM, 2003.
+
+\bibitem[\protect\citeauthoryear{Tsamardinos \bgroup \em et al.\egroup
+  }{2003b}]{tsamardinos2003algorithms}
+I.~Tsamardinos, C.~F. Aliferis, A.~R. Statnikov, and E.~Statnikov.
+\newblock {Algorithms for large scale Markov blanket discovery}.
+\newblock In {\em FLAIRS Conference}, pages 376--381, 2003.
+
+\bibitem[\protect\citeauthoryear{Wallace and Boulton}{1968}]{wallace1968}
+C.~S. Wallace and D.~M. Boulton.
+\newblock {An information measure for classification}.
+\newblock {\em The Computer Journal}, 11(2):185--194, 1968.
+
+\bibitem[\protect\citeauthoryear{Wallace and Freeman}{1987}]{wallace1987}
+C.~S. Wallace and P.~R. Freeman.
+\newblock {Estimation and inference by compact coding}.
+\newblock {\em Journal of the Royal Statistical Society}, 49(3):240--265, 1987.
+
+\bibitem[\protect\citeauthoryear{Wallace}{2005}]{wallace2005}
+C.~S. Wallace.
+\newblock {\em {Statistical and inductive inference by minimum message
+  length}}.
+\newblock Springer, 2005.
+
+\end{thebibliography}

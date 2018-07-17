@@ -1,0 +1,76 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Friedman and Koller}{2000}]{friedman2000being}
+N.~Friedman and D.~Koller.
+\newblock {Being Bayesian about network structure}.
+\newblock In {\em Proceedings of the 16th conference on Uncertainty in
+  Artificial Intelligence}, pages 201--210. Morgan Kaufmann Publishers Inc.,
+  2000.
+
+\bibitem[\protect\citeauthoryear{Friedman \bgroup \em et al.\egroup
+  }{1999}]{friedman1999application}
+N.~Friedman, M.~Goldszmidt, and A.~J. Wyner.
+\newblock {On the application of the bootstrap for computing confidence
+  measures on features of induced Bayesian networks}.
+\newblock In {\em AISTATS}, 1999.
+
+\bibitem[\protect\citeauthoryear{Gao and Ji}{2017}]{gao2017efficient}
+T.~Gao and Q.~Ji.
+\newblock {Efficient score-based Markov Blanket discovery}.
+\newblock {\em International Journal of Approximate Reasoning}, 80:277--293,
+  2017.
+
+\bibitem[\protect\citeauthoryear{Gao \bgroup \em et al.\egroup
+  }{2017}]{gao2017local}
+T.~Gao, K.~Fadnis, and M.~Campbell.
+\newblock {Local-to-Global Bayesian Network Structure Learning}.
+\newblock In {\em Proceedings of the 34th International Conference on Machine
+  Learning}, pages 1193--1202, 2017.
+
+\bibitem[\protect\citeauthoryear{Gillispie and
+  Perlman}{2001}]{gillispie2001enumerating}
+S.~B. Gillispie and M.~D. Perlman.
+\newblock {Enumerating Markov equivalence classes of acyclic digraph models}.
+\newblock In {\em Proceedings of the 17th conference on Uncertainty in
+  Artificial Intelligence}, pages 171--177. Morgan Kaufmann Publishers Inc.,
+  2001.
+
+\bibitem[\protect\citeauthoryear{N{\"a}gele \bgroup \em et al.\egroup
+  }{2007}]{nagele2007bayesian}
+A.~N{\"a}gele, M.~Dejori, and M.~Stetter.
+\newblock Bayesian substructure learning-approximate learning of very large
+  network structures.
+\newblock In {\em European Conference on Machine Learning}, pages 238--249.
+  Springer, 2007.
+
+\bibitem[\protect\citeauthoryear{Pellet and Elisseeff}{2008}]{pellet2008using}
+J.~P. Pellet and A.~Elisseeff.
+\newblock {Using Markov blankets for causal structure learning}.
+\newblock {\em Journal of Machine Learning Research}, 9(Jul):1295--1342, 2008.
+
+\bibitem[\protect\citeauthoryear{Pensar \bgroup \em et al.\egroup
+  }{2014}]{pensar2014marginal}
+J.~Pensar, H.~Nyman, J.~Niiranen, and J.~Corander.
+\newblock {Marginal pseudo-likelihood learning of Markov network structures}.
+\newblock {\em arXiv preprint arXiv:1401.4988}, 2014.
+
+\bibitem[\protect\citeauthoryear{Riggelsen}{2005}]{riggelsen2005mcmc}
+C.~Riggelsen.
+\newblock {MCMC learning of Bayesian network models by Markov blanket
+  decomposition}.
+\newblock In {\em Preceedings of the 16th European Conference on Machine
+  Learning}, pages 329--340. Springer, 2005.
+
+\bibitem[\protect\citeauthoryear{Riggelsen}{2008}]{riggelsen2008learning}
+C.~Riggelsen.
+\newblock {Learning Bayesian networks: a MAP criterion for joint selection of
+  model structure and parameter}.
+\newblock In {\em Preceedings of the 8th IEEE International Conference on Data
+  Mining}, pages 522--529. IEEE, 2008.
+
+\bibitem[\protect\citeauthoryear{Wormald}{1985}]{wormald1985counting}
+N.~C. Wormald.
+\newblock {Counting labelled chordal graphs}.
+\newblock {\em Graphs and combinatorics}, 1(1):193--200, 1985.
+
+\end{thebibliography}

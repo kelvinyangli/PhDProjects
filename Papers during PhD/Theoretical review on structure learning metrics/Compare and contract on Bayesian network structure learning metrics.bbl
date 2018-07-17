@@ -1,0 +1,195 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Acid and de Campos}{2003}]{acid2003searching}
+S.~Acid and L.~M. de~Campos.
+\newblock {Searching for Bayesian network structures in the space of restricted
+  acyclic partially directed graphs}.
+\newblock {\em Journal of Artificial Intelligence Research}, 18:445--490, 2003.
+
+\bibitem[\protect\citeauthoryear{AKAIKE}{1973}]{akaike1973information}
+H.~AKAIKE.
+\newblock {Information theory and an extension of the maximum likelihood
+  principle}.
+\newblock In {\em Proceedings of the 2nd International Symposium on Information
+  Theory}, pages 267--281. Akademiai Kiado, 1973.
+
+\bibitem[\protect\citeauthoryear{Allen and Greiner}{2000}]{allen2000model}
+T.~V. Allen and R.~Greiner.
+\newblock {Model Selection Criteria for Learning Belief Nets: An Empirical
+  Comparison}.
+\newblock In {\em Proceedings of the 17th International Conference on Machine
+  Learning}, pages 1047--1054. Morgan Kaufmann Publishers Inc., 2000.
+
+\bibitem[\protect\citeauthoryear{Baxter and Oliver}{1994}]{baxter1994mdl}
+R.~A. Baxter and J.~J. Oliver.
+\newblock {MDL and MML: similarities and differences}.
+\newblock Technical report, Monash University, Department of Computer Science,
+  1994.
+
+\bibitem[\protect\citeauthoryear{Bouckaert}{1994}]{bouckaert1994properties}
+R.~R. Bouckaert.
+\newblock {Properties of Bayesian belief network learning algorithms}.
+\newblock In {\em Proceedings of the 10th Conference on Uncertainty in
+  Artificial Intelligence}, pages 102--109. Morgan Kaufmann Publishers Inc.,
+  1994.
+
+\bibitem[\protect\citeauthoryear{Buntine}{1991a}]{buntine1991classifiers}
+W.~L. Buntine.
+\newblock Classifiers: a theoretical and empirical study.
+\newblock In {\em Proceedings of the 12th International Joint Conference on
+  Artificial Intelligence}, pages 638--644. Morgan Kaufmann Publishers Inc.,
+  1991.
+
+\bibitem[\protect\citeauthoryear{Buntine}{1991b}]{buntine1991theory}
+W.~L. Buntine.
+\newblock {Theory refinement on Bayesian networks}.
+\newblock In {\em Proceedings of the 7th Conference on Uncertainty in
+  Artificial Intelligence}, pages 52--60. Morgan Kaufmann Publishers Inc.,
+  1991.
+
+\bibitem[\protect\citeauthoryear{Burnham and
+  Anderson}{2004}]{burnham2004multimodel}
+K.~P. Burnham and D.~R. Anderson.
+\newblock {Multimodel inference: understanding AIC and BIC in model selection}.
+\newblock {\em Sociological methods \& research}, 33(2):261--304, 2004.
+
+\bibitem[\protect\citeauthoryear{Cooper and
+  Herskovits}{1992}]{cooper1992Bayesian}
+G.~F. Cooper and E.~Herskovits.
+\newblock {A Bayesian method for the induction of probabilistic networks from
+  data}.
+\newblock {\em Machine Learning}, 9(4):309--347, 1992.
+
+\bibitem[\protect\citeauthoryear{Cruz-Ram{\'\i}rez \bgroup \em et al.\egroup
+  }{2006}]{cruz2006good}
+N.~Cruz-Ram{\'\i}rez, H.~G. Acosta-Mesa, R.~E. Barrientos-Mart{\'\i}nez, and
+  L.~A. Nava-Fern{\'a}ndez.
+\newblock {How good are the Bayesian information criterion and the minimum
+  description length principle for model selection? A Bayesian network
+  analysis}.
+\newblock In {\em Proceedings of the 5th Mexican International Conference on
+  Artificial Intelligence}, pages 494--504. Springer, 2006.
+
+\bibitem[\protect\citeauthoryear{de Campos}{2006}]{campos2006scoring}
+L.~M. de~Campos.
+\newblock {A scoring function for learning Bayesian networks based on mutual
+  information and conditional independence tests}.
+\newblock {\em Journal of Machine Learning Research}, 7(Oct):2149--2187, 2006.
+
+\bibitem[\protect\citeauthoryear{Heckerman \bgroup \em et al.\egroup
+  }{1995}]{heckerman1995learning}
+D.~Heckerman, D.~Geiger, and D.~M. Chickering.
+\newblock {Learning Bayesian networks: The combination of knowledge and
+  statistical data}.
+\newblock {\em Machine learning}, 20(3):197--243, 1995.
+
+\bibitem[\protect\citeauthoryear{Herskovits and
+  Cooper}{1990}]{herskovits1990entropy}
+E.~Herskovits and G.~F. Cooper.
+\newblock {Kutat\'{o}: an entropy-driven system for construction of
+  probabilistic expert systems from databases}.
+\newblock In {\em Proceedings of the 6th Conference on Uncertainty in
+  Artificial Intelligence}, pages 117--128. Elsevier Science Inc., 1990.
+
+\bibitem[\protect\citeauthoryear{Lam and Bacchus}{1994}]{lam1994learning}
+W.~Lam and F.~Bacchus.
+\newblock {Learning Bayesian belief networks: an approach based on the MDL
+  principle}.
+\newblock {\em Computational intelligence}, 10(3):269--293, 1994.
+
+\bibitem[\protect\citeauthoryear{Li \bgroup \em et al.\egroup }{2004}]{li2004}
+G.~Li, H.~Dai, and Y.~Tu.
+\newblock {Identifying Markov blankets using lasso estimation}.
+\newblock In {\em Advances in Knowledge Discovery and Data Mining}, number
+  2004, pages 308--318. Springer, 2004.
+
+\bibitem[\protect\citeauthoryear{Liu \bgroup \em et al.\egroup
+  }{2012}]{liu2012empirical}
+Z.~Liu, B.~Malone, and C.~Yuan.
+\newblock {Empirical evaluation of scoring functions for Bayesian network model
+  selection}.
+\newblock In {\em BMC bioinformatics}, volume~13, page S14. BioMed Central,
+  2012.
+
+\bibitem[\protect\citeauthoryear{Neil \bgroup \em et al.\egroup
+  }{1999}]{neil1999learning}
+J.~R. Neil, C.~S. Wallace, and K.~B. Korb.
+\newblock {Learning Bayesian networks with restricted causal interactions}.
+\newblock In {\em Proceedings of the 15th Conference on Uncertainty in
+  Artificial Intelligence}, pages 486--493. Morgan Kaufmann Publishers Inc.,
+  1999.
+
+\bibitem[\protect\citeauthoryear{O'Donnell}{2010}]{odonnell2010flexible}
+R.~T. O'Donnell.
+\newblock {\em {Flexible Causal Discovery with MML}}.
+\newblock Monash University, 2010.
+
+\bibitem[\protect\citeauthoryear{Pearl}{1988}]{pearl1988probabilistic}
+J.~Pearl.
+\newblock {\em Probabilistic reasoning in intelligent systems}.
+\newblock Morgan Kaufmann San Mateo, CA, 1988.
+
+\bibitem[\protect\citeauthoryear{Riggelsen}{2008}]{riggelsen2008learning}
+C.~Riggelsen.
+\newblock {Learning Bayesian networks: a MAP criterion for joint selection of
+  model structure and parameter}.
+\newblock In {\em Preceedings of the 8th IEEE International Conference on Data
+  Mining}, pages 522--529. IEEE, 2008.
+
+\bibitem[\protect\citeauthoryear{Rissanen}{1978}]{rissanen1978modeling}
+J.~Rissanen.
+\newblock {Modeling by shortest data description}.
+\newblock {\em Automatica}, 14(5):465--471, 1978.
+
+\bibitem[\protect\citeauthoryear{Schwarz}{1978}]{schwarz1978estimating}
+G.~Schwarz.
+\newblock Estimating the dimension of a model.
+\newblock {\em The annals of statistics}, 6(2):461--464, 1978.
+
+\bibitem[\protect\citeauthoryear{Silander \bgroup \em et al.\egroup
+  }{2007}]{silander2007sensitivity}
+T.~Silander, P.~Kontkanen, and P.~Myllym{\"a}ki.
+\newblock {On sensitivity of the MAP Bayesian network structure to the
+  equivalent sample size parameter}.
+\newblock In {\em Proceedings of the 23rd Conference on Uncertainty in
+  Artificial Intelligence}, pages 360--367. AUAI Press, 2007.
+
+\bibitem[\protect\citeauthoryear{Silander \bgroup \em et al.\egroup
+  }{2008}]{silander2008factorized}
+T.~Silander, T.~Roos, P.~Kontkanen, and P.~Myllym{\"a}ki.
+\newblock {Factorized normalized maximum likelihood criterion for learning
+  Bayesian network structures}.
+\newblock In {\em Proceedings of the 4th European Workshop on Probabilistic
+  Graphical Models}, 2008.
+
+\bibitem[\protect\citeauthoryear{Spiegelhalter \bgroup \em et al.\egroup
+  }{1993}]{spiegelhalter1993bayesian}
+D.~J. Spiegelhalter, A.~P. Dawid, S.~L. Lauritzen, and R.~G. Cowell.
+\newblock {Bayesian analysis in expert systems}.
+\newblock {\em Statistical science}, pages 219--247, 1993.
+
+\bibitem[\protect\citeauthoryear{Steck and Jaakkola}{2003}]{steck2003dirichlet}
+H.~Steck and T.~S. Jaakkola.
+\newblock {On the Dirichlet prior and Bayesian regularization}.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  713--720, 2003.
+
+\bibitem[\protect\citeauthoryear{Steck}{2008}]{steck2008learning}
+H.~Steck.
+\newblock {Learning the Bayesian network structure: dirichlet prior versus
+  data}.
+\newblock In {\em Proceedings of the 24th Conference on Uncertainty in
+  Artificial Intelligence}, pages 511--518. AUAI Press, 2008.
+
+\bibitem[\protect\citeauthoryear{Wallace and Boulton}{1968}]{wallace1968}
+C.~S. Wallace and D.~M. Boulton.
+\newblock {An information measure for classification}.
+\newblock {\em The Computer Journal}, 11(2):185--194, 1968.
+
+\bibitem[\protect\citeauthoryear{Wallace \bgroup \em et al.\egroup
+  }{1996}]{wallace1996causal}
+C.~Wallace, K.~B Korb, and H.~Dai.
+\newblock {Causal discovery via MML}.
+\newblock In {\em ICML}, volume~96, pages 516--524, 1996.
+
+\end{thebibliography}

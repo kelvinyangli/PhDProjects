@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: manuscripts.aux
+The style file: named.bst
+Database file #1: /home/kl/Documents/causal_discovery_ref_list.bib
+Warning--there's a number but no series in li2004
+Warning--empty booktitle in niinimaki2012local
+You've used 30 entries,
+            2439 wiz_defined-function locations,
+            732 strings with 9942 characters,
+and the built_in function-call counts, 13560 in all, are:
+= -- 1435
+> -- 555
+< -- 11
++ -- 191
+- -- 188
+* -- 1095
+:= -- 2109
+add.period$ -- 97
+call.type$ -- 30
+change.case$ -- 212
+chr.to.int$ -- 28
+cite$ -- 32
+duplicate$ -- 541
+empty$ -- 1007
+format.name$ -- 229
+if$ -- 2847
+int.to.chr$ -- 3
+int.to.str$ -- 0
+missing$ -- 32
+newline$ -- 153
+num.names$ -- 90
+pop$ -- 192
+preamble$ -- 1
+purify$ -- 244
+quote$ -- 0
+skip$ -- 447
+stack$ -- 0
+substring$ -- 840
+swap$ -- 156
+text.length$ -- 11
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 232
+warning$ -- 2
+while$ -- 122
+width$ -- 33
+write$ -- 395
+(There were 2 warnings)
