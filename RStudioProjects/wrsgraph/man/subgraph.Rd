@@ -5,7 +5,7 @@
 \title{Subgraph}
 \usage{
 subgraph(graph, nodes = NULL, from = NULL, to = NULL, type = c("nodes",
-  "edges"))
+  "edges", "clique"))
 }
 \arguments{
 \item{graph}{A graph that is stored in an adjacency matrix.}
@@ -18,8 +18,8 @@ removed. Default is the empty set.}
 \item{to}{A set of nodes that correspond to the other side of the end nodes of the edges that will
 be removed. Default is the empty set.}
 
-\item{type}{An argument to specify removing either nodes or edges from the original graph. Only two
-values are taken. That is, "nodes" or "edges".}
+\item{type}{An argument to specify removing either nodes or edges from the original graph. Only three
+strings are taken. That is, "nodes", "edges" or "cliques".}
 }
 \description{
 This function outputs a subgraph of a graph by either removing nodes or edges.

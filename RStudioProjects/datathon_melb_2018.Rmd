@@ -1,0 +1,15 @@
+---
+title: "datathon_melb_2018"
+author: "Kelvin Li"
+date: "28 July 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+There are missing values in speeds, -1. 
+
+No indication of inbound/outbound traffic, but can visualize from the left or right side of the road. 
+

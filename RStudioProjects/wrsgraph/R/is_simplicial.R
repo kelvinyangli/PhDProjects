@@ -17,7 +17,7 @@ is_simplicial = function(graph, node) {
 
   } else {
 
-    clq = is_clique(graph, nbrs)
+    clq = wrsgraph::is_clique(graph, nbrs)
 
   }
 
