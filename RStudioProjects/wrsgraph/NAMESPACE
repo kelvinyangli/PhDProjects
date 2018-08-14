@@ -2,6 +2,7 @@
 
 export(calculate_cycle_length)
 export(combn_ind)
+export(common_nbrs)
 export(d_wrs)
 export(degree)
 export(find_nbr)

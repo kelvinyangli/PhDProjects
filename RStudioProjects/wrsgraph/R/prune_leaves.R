@@ -14,7 +14,7 @@ prune_leaves = function(graph) {
     nodes = colnames(graph)
     degrees = sapply(nodes, wrsgraph::degree, graph = graph)
     if (min(degrees) > 1) break
-    graph = wrsgraph::subgraph(graph, nodes[which(degrees == 1)], type = "nodes")
+    graph = wrsgraph::subgraph(graph, nodes[which(degrees < 2)], type = "nodes")
 
   }
   return(graph)
