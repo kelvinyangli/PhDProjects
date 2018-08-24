@@ -21,11 +21,20 @@ library(wrsgraph)
 
 ## randomly generating undirected graphs
 ```{r}
-# failed examples, seed 2268, 
-n = 10000000
-for (i in 1:n) {
+n = 1000000
+no_cores = 3
+registerDoParallel(no_cores)
+res = foreach(i = 1:n, .combine="c") %dopar% {
+  G = rand_bounded_deg_graph(15, 4)
+  wrs = wrs_bktr(G, G)$wrs # wrs
+  dwrs = d_wrs_deg4(G) # qrs
+  wrs == dwrs
+  #if (wrs != dwrs) break
+}
+stopImplicitCluster()
+#for (i in 1:n) {
 
-  progress(i, 1000, n)
+  #progress(i, 1000, n)
   #repeat {
     # seed = randSeed()
     # set.seed(seed)
@@ -33,7 +42,7 @@ for (i in 1:n) {
     # g = moral(dag)
     # G = dag2matrix(g)
     # vars = colnames(G)
-    G = rand_bounded_deg_graph(15, 4)
+    
     #saveRDS(G, "~/Documents/PhDProjects/RStudioProjects/wrsgraph/test.rds")
     #cat(seed, "-")
     #if (!wrsgraph::is_chordal(G)) break
@@ -43,15 +52,16 @@ for (i in 1:n) {
   # vars = colnames(G)
   # m.deg = max(sapply(sapply(vars, bnlearn::nbr, x = g), length))
   # checking chordality using wrs and quasi rs (qrs)
-  wrs = wrs_bktr(G, G)$wrs # wrs
-  dwrs = d_wrs_deg4(G) # qrs
+  
   #dwrs = d_wrs(G, G)$wrs
   #if (wrs == 1) break
   # all max.deg<=3 graphs must be both qrs and wrs
-  if (wrs != dwrs) break
   
-}
-i
+  
+  
+#}
+
+
 ```
 
 ```{r}
