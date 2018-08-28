@@ -21,11 +21,11 @@ library(wrsgraph)
 
 ## randomly generating undirected graphs
 ```{r}
-n = 1000000
+n = 100000
 no_cores = 3
 registerDoParallel(no_cores)
 res = foreach(i = 1:n, .combine="c") %dopar% {
-  G = rand_bounded_deg_graph(15, 4)
+  G = rand_bounded_deg_graph(100, 4)
   wrs = wrs_bktr(G, G)$wrs # wrs
   dwrs = d_wrs_deg4(G) # qrs
   wrs == dwrs
