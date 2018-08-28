@@ -1,11 +1,5 @@
 \begin{thebibliography}{}
 
-\bibitem[\protect\citeauthoryear{Diestel}{1987}]{diestel1987simplicial}
-R.~Diestel.
-\newblock {Simplicial decompositions of graphs—some uniqueness results}.
-\newblock {\em Journal of Combinatorial Theory, Series B}, 42(2):133--145,
-  1987.
-
 \bibitem[\protect\citeauthoryear{Dor and Tarsi}{1992}]{dor1992simple}
 D.~Dor and M.~Tarsi.
 \newblock {A simple algorithm to construct a consistent extension of a
@@ -21,23 +15,11 @@ S.~B. Gillispie and M.~D. Perlman.
   Artificial Intelligence}, pages 171--177. Morgan Kaufmann Publishers Inc.,
   2001.
 
-\bibitem[\protect\citeauthoryear{Halin}{1964}]{halin1964simpliziale}
-R.~Halin.
-\newblock {{\"U}ber simpliziale Zerf{\"a}llungen beliebiger (endlicher oder
-  unendlicher) Graphen}.
-\newblock {\em Mathematische Annalen}, 156(3):216--225, 1964.
-
-\bibitem[\protect\citeauthoryear{Verma and Pearl}{1992}]{verma1992algorithm}
-T.~Verma and J.~Pearl.
-\newblock {An algorithm for deciding if a set of observed independencies has a
-  causal explanation}.
-\newblock In {\em Uncertainty in Artificial Intelligence, 1992}, pages
-  323--330. Elsevier, 1992.
-
-\bibitem[\protect\citeauthoryear{Wagner}{1937}]{wagner1937eigenschaft}
-K.~Wagner.
-\newblock {{\"U}ber eine Eigenschaft der ebenen Komplexe}.
-\newblock {\em Mathematische Annalen}, 114(1):570--590, 1937.
+\bibitem[\protect\citeauthoryear{Verma and Pearl}{1993}]{verma1993deciding}
+T.~S. Verma and J.~Pearl.
+\newblock {Deciding morality of graphs is NP-complete}.
+\newblock In {\em Uncertainty in Artificial Intelligence, 1993}, pages
+  391--399. Elsevier, 1993.
 
 \bibitem[\protect\citeauthoryear{Wormald}{1985}]{wormald1985counting}
 N.~C. Wormald.

@@ -24,36 +24,55 @@
 \newlabel{def:moral_g}{{11}{2}{Preliminary}{definition.11}{}}
 \newlabel{prop:chordal_properties}{{1}{2}{Preliminary}{proposition.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An example of a DAG whose moral graph is non-chordal.\relax }}{2}{figure.caption.1}}
-\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fg:wrs_non_chordal}{{1}{2}{An example of a DAG whose moral graph is non-chordal.\relax }{figure.caption.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Weak recursively simplicial graphs}{3}{section.2}}
 \newlabel{def:collider}{{12}{3}{Weak recursively simplicial graphs}{definition.12}{}}
 \newlabel{def:consistent_ext}{{13}{3}{Weak recursively simplicial graphs}{definition.13}{}}
 \newlabel{def:wrs}{{14}{3}{Weak recursively simplicial graphs}{definition.14}{}}
-\newlabel{prop:moral_implies_wrs}{{3}{3}{Weak recursively simplicial graphs}{proposition.3}{}}
+\newlabel{prop:moral_implies_wrs}{{1}{3}{Weak recursively simplicial graphs}{theorem.2.1}{}}
 \citation{dor1992simple}
-\citation{verma1992algorithm}
-\newlabel{prop:wrs_implies_moral}{{4}{4}{Weak recursively simplicial graphs}{proposition.4}{}}
+\newlabel{prop:wrs_implies_moral}{{2}{4}{Weak recursively simplicial graphs}{theorem.2.2}{}}
 \newlabel{cor:wrs_equal_moral}{{1}{4}{Weak recursively simplicial graphs}{corollary.1}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Backtracking algorithm to test WRS of graphs\relax }}{4}{algorithm.1}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{alg:wrs_bktr}{{1}{4}{Backtracking algorithm to test WRS of graphs\relax }{algorithm.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Polytree}{5}{section.3}}
+\newlabel{prop:moral_of_pt_chordal}{{3}{5}{Polytree}{proposition.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces A chordal graph that comes from moralizing a non-singly connected DAG.\relax }}{5}{figure.caption.2}}
+\newlabel{fg:chordal_over_4nodes}{{2}{5}{A chordal graph that comes from moralizing a non-singly connected DAG.\relax }{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Complexity}{5}{section.4}}
+\newlabel{thm:deg3}{{3}{6}{Complexity}{theorem.4.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces The subgraph $F''$ is over $\{v_1,v_2,v_3,v_4,\dots  \}$, its supergraph $F'$ is over $\{v_1,v_2,v_3,v_4,v_5,\dots  \}$.\relax }}{6}{figure.caption.3}}
+\newlabel{fg:deg_3_dwrs}{{3}{6}{The subgraph $F''$ is over $\{v_1,v_2,v_3,v_4,\dots \}$, its supergraph $F'$ is over $\{v_1,v_2,v_3,v_4,v_5,\dots \}$.\relax }{figure.caption.3}{}}
+\newlabel{lm:long_stack}{{1}{6}{Complexity}{lemma.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces A stack of $4$ and $5$ $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }}{6}{figure.caption.4}}
+\newlabel{fg:4k3s}{{4}{6}{A stack of $4$ and $5$ $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }{figure.caption.4}{}}
+\newlabel{lm:2k3s}{{2}{7}{Complexity}{lemma.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces A stack of 2 $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }}{7}{figure.caption.5}}
+\newlabel{fg:2k3s}{{5}{7}{A stack of 2 $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }{figure.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Two graphs $G_1$ (left) and $G_2$ (right) of maximum degree $4$. The dashed line represents a path of length at least $3$.\relax }}{8}{figure.caption.6}}
+\newlabel{fg:special_graphs}{{6}{8}{Two graphs $G_1$ (left) and $G_2$ (right) of maximum degree $4$. The dashed line represents a path of length at least $3$.\relax }{figure.caption.6}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Backtracking algorithm to test WRS of graphs\relax }}{8}{algorithm.2}}
+\newlabel{alg:wrs_bktr}{{2}{8}{Backtracking algorithm to test WRS of graphs\relax }{algorithm.2}{}}
+\newlabel{thm:deg4}{{4}{8}{Complexity}{theorem.4.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces A simplicial $K_4$ over $\{v_1,v_2,v_3,v_4\}$ shares an edge $v_2v_4$ with a $K_3$ over $\{v_2,v_4,v_5\}$.\relax }}{9}{figure.caption.7}}
+\newlabel{fg:k4+k3}{{7}{9}{A simplicial $K_4$ over $\{v_1,v_2,v_3,v_4\}$ shares an edge $v_2v_4$ with a $K_3$ over $\{v_2,v_4,v_5\}$.\relax }{figure.caption.7}{}}
+\citation{verma1993deciding}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Some random notes}{10}{section.5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces A simplicial $K_3$ over $\{v_1,v_2,v_3\}$ shares an edge with a $K_3$ (top left), $K_4$ (top right), $\{K_3, C_m\}$ (bottom left) or $\{K_3,K_3\}$ (bottom right).\relax }}{10}{figure.caption.9}}
+\newlabel{fg:k3+}{{8}{10}{A simplicial $K_3$ over $\{v_1,v_2,v_3\}$ shares an edge with a $K_3$ (top left), $K_4$ (top right), $\{K_3, C_m\}$ (bottom left) or $\{K_3,K_3\}$ (bottom right).\relax }{figure.caption.9}{}}
 \citation{wormald1985counting}
 \citation{gillispie2001enumerating}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison between the number of chordal graphs , the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }}{5}{table.caption.2}}
-\newlabel{my-label}{{1}{5}{Comparison between the number of chordal graphs , the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }{table.caption.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Some random notes}{5}{section.3}}
-\newlabel{prop:leaf_is_sim}{{5}{5}{Some random notes}{proposition.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison between the number of labelled connected chordal graphs, the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }}{11}{table.caption.10}}
+\newlabel{my-label}{{1}{11}{Comparison between the number of labelled connected chordal graphs, the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }{table.caption.10}{}}
+\newlabel{prop:leaf_is_sim}{{6}{11}{Some random notes}{proposition.6}{}}
+\newlabel{cor:negation_of_leaf_is_sim}{{8}{11}{Some random notes}{corollary.8}{}}
 \bibstyle{named}
 \bibdata{/home/kl/Documents/causal_discovery_ref_list}
-\bibcite{diestel1987simplicial}{\citeauthoryear {Diestel}{1987}}
 \bibcite{dor1992simple}{\citeauthoryear {Dor and Tarsi}{1992}}
 \bibcite{gillispie2001enumerating}{\citeauthoryear {Gillispie and Perlman}{2001}}
-\newlabel{cor:negation_of_leaf_is_sim}{{6}{6}{Some random notes}{corollary.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Notations}{6}{section.4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Notations}{6}{subsection.4.1}}
-\bibcite{halin1964simpliziale}{\citeauthoryear {Halin}{1964}}
-\bibcite{verma1992algorithm}{\citeauthoryear {Verma and Pearl}{1992}}
-\bibcite{wagner1937eigenschaft}{\citeauthoryear {Wagner}{1937}}
+\bibcite{verma1993deciding}{\citeauthoryear {Verma and Pearl}{1993}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Notations\relax }}{12}{table.caption.11}}
+\newlabel{my-label}{{2}{12}{Notations\relax }{table.caption.11}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Notations}{12}{section.6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Notations}{12}{subsection.6.1}}
 \bibcite{wormald1985counting}{\citeauthoryear {Wormald}{1985}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Notations\relax }}{7}{table.caption.3}}
-\newlabel{my-label}{{2}{7}{Notations\relax }{table.caption.3}{}}

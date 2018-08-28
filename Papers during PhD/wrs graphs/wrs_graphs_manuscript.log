@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.24)  16 JUL 2018 14:32
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.7.29)  29 AUG 2018 00:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1365,7 +1365,14 @@ Package: enumitem 2011/09/28 v3.5.2 Customized lists
 \enit@inbox=\box85
 \enitdp@description=\count290
 )
-(/usr/share/texlive/texmf-dist/tex/plain/amsfonts/amssym.def
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.
+code.tex
+File: pgflibraryarrows.meta.code.tex 2015/05/13 v3.0.1a (rcs-revision 1.13)
+\pgfarrowinset=\dimen292
+\pgfarrowlength=\dimen293
+\pgfarrowwidth=\dimen294
+\pgfarrowlinewidth=\dimen295
+) (/usr/share/texlive/texmf-dist/tex/plain/amsfonts/amssym.def
 \msafam=\mathgroup11
 \msbfam=\mathgroup12
 \eufmfam=\mathgroup13
@@ -1373,72 +1380,75 @@ Package: enumitem 2011/09/28 v3.5.2 Customized lists
 (/usr/share/texlive/texmf-dist/tex/plain/amsfonts/amssym.tex)
 (./wrs_graphs_manuscript.aux
 
+LaTeX Warning: Label `alg:wrs_bktr' multiply defined.
+
+
 LaTeX Warning: Label `my-label' multiply defined.
 
 )
 \openout1 = `wrs_graphs_manuscript.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/pxmi/m/it on input line 113.
-LaTeX Font Info:    Try loading font information for OML+pxmi on input line 113
+LaTeX Font Info:    Checking defaults for OML/pxmi/m/it on input line 118.
+LaTeX Font Info:    Try loading font information for OML+pxmi on input line 118
 .
  (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/omlpxmi.fd
 File: omlpxmi.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 113.
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 113.
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for OMS/pxsy/m/n on input line 113.
-LaTeX Font Info:    Try loading font information for OMS+pxsy on input line 113
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OMS/pxsy/m/n on input line 118.
+LaTeX Font Info:    Try loading font information for OMS+pxsy on input line 118
 .
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/omspxsy.fd
 File: omspxsy.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for OMX/pxex/m/n on input line 113.
-LaTeX Font Info:    Try loading font information for OMX+pxex on input line 113
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OMX/pxex/m/n on input line 118.
+LaTeX Font Info:    Try loading font information for OMX+pxex on input line 118
 .
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/omxpxex.fd
 File: omxpxex.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for U/pxexa/m/n on input line 113.
-LaTeX Font Info:    Try loading font information for U+pxexa on input line 113.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for U/pxexa/m/n on input line 118.
+LaTeX Font Info:    Try loading font information for U+pxexa on input line 118.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/upxexa.fd
 File: upxexa.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 113.
-LaTeX Font Info:    ... okay on input line 113.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 113.
-LaTeX Font Info:    ... okay on input line 113.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
 LaTeX Font Info:    Try loading font information for OT1+LinuxLibertineT-TLF on
- input line 113.
+ input line 118.
 
 (/usr/share/texlive/texmf-dist/tex/latex/libertine/OT1LinuxLibertineT-TLF.fd
 File: OT1LinuxLibertineT-TLF.fd 2012/11/26 (autoinst) Font definitions for OT1/
 LinuxLibertineT-TLF.
 )
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 10.0pt on input line 113.
+(Font)              scaled to size 10.0pt on input line 118.
 
 Unknown journal: specify \journalname{<name of your journal>} in preambel
 
 (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count291
-\scratchdimen=\dimen292
+\scratchdimen=\dimen296
 \scratchbox=\box86
 \nofMPsegments=\count292
 \nofMParguments=\count293
 \everyMPshowfont=\toks46
 \MPscratchCnt=\count294
-\MPscratchDim=\dimen293
+\MPscratchDim=\dimen297
 \MPnumerator=\count295
 \makeMPintoPDFobject=\count296
 \everyMPtoPDFconversion=\toks47
@@ -1466,7 +1476,7 @@ Package caption Info: End \AtBeginDocument code.
 
 ABD: EveryShipout initializing macros
 \AtBeginShipoutBox=\box87
-Package hyperref Info: Link coloring OFF on input line 113.
+Package hyperref Info: Link coloring OFF on input line 118.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -1476,9 +1486,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count298
 )
-LaTeX Info: Redefining \ref on input line 113.
-LaTeX Info: Redefining \pageref on input line 113.
-LaTeX Info: Redefining \nameref on input line 113.
+LaTeX Info: Redefining \ref on input line 118.
+LaTeX Info: Redefining \pageref on input line 118.
+LaTeX Info: Redefining \nameref on input line 118.
 
 (./wrs_graphs_manuscript.out) (./wrs_graphs_manuscript.out)
 \@outlinefile=\write4
@@ -1489,129 +1499,163 @@ LaTeX Info: Redefining \nameref on input line 113.
 
 SVJour3 warning: Missing \journalname
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/b/n' will be
-(Font)              scaled to size 10.0pt on input line 146.
+(Font)              scaled to size 10.0pt on input line 151.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 8.0pt on input line 146.
+(Font)              scaled to size 8.0pt on input line 151.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 13.0pt on input line 146.
+(Font)              scaled to size 13.0pt on input line 151.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/b/n' will be
-(Font)              scaled to size 13.0pt on input line 146.
-LaTeX Font Info:    Try loading font information for OT1+pxr on input line 146.
+(Font)              scaled to size 13.0pt on input line 151.
+LaTeX Font Info:    Try loading font information for OT1+pxr on input line 151.
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/ot1pxr.fd
 File: ot1pxr.fd 2000/12/14 v1.0
 )
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <7> not available
-(Font)              Font shape `U/lasy/m/n' tried instead on input line 146.
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 151.
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <5> not available
-(Font)              Font shape `U/lasy/m/n' tried instead on input line 146.
-LaTeX Font Info:    Try loading font information for U+pxsya on input line 146.
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 151.
+LaTeX Font Info:    Try loading font information for U+pxsya on input line 151.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/upxsya.fd
 File: upxsya.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    Try loading font information for U+pxsyb on input line 146.
+LaTeX Font Info:    Try loading font information for U+pxsyb on input line 151.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/upxsyb.fd
 File: utxsyb.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    Try loading font information for U+pxmia on input line 146.
+LaTeX Font Info:    Try loading font information for U+pxmia on input line 151.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/upxmia.fd
 File: upxmia.fd 2000/12/14 v1.0
 )
-LaTeX Font Info:    Try loading font information for U+pxsyc on input line 146.
+LaTeX Font Info:    Try loading font information for U+pxsyc on input line 151.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/upxsyc.fd
 File: upxsyc.fd 2000/12/14 v1.0
 )
-Overfull \hbox (9.2486pt too wide) in paragraph at lines 171--172
+Overfull \hbox (9.2486pt too wide) in paragraph at lines 176--177
 []\OT1/LinuxLibertineT-TLF/m/n/10 An \OT1/LinuxLibertineT-TLF/b/n/10 m-cycle \O
 T1/LinuxLibertineT-TLF/m/n/10 in an undi-rected graph is a se-quence of nodes $
 \OMS/pxsy/m/n/10 f\OML/pxmi/m/it/10 v[]; [] ; v[]\OMS/pxsy/m/n/10 g$
  []
 
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 7.0pt on input line 180.
+(Font)              scaled to size 7.0pt on input line 185.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 5.0pt on input line 180.
+(Font)              scaled to size 5.0pt on input line 185.
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 10.0pt on input line 201.
+(Font)              scaled to size 10.0pt on input line 206.
 
-Overfull \hbox (3.6704pt too wide) in paragraph at lines 213--214
+Overfull \hbox (3.6704pt too wide) in paragraph at lines 218--219
 \OT1/LinuxLibertineT-TLF/m/it/10 Markov blan-ket fam-i-lies of DAGs over $\OML/
 pxmi/m/it/10 V$\OT1/LinuxLibertineT-TLF/m/it/10 . Then there ex-ists an in-jec-
 tive but non-surjective
  []
 
-<wrs_non_chordal_example.png, id=44, 528.97626pt x 329.23pt>
-File: wrs_non_chordal_example.png Graphic file (type png)
 
-<use wrs_non_chordal_example.png>
-Package pdftex.def Info: wrs_non_chordal_example.png used on input line 219.
-(pdftex.def)             Requested size: 158.69409pt x 98.76976pt.
- [2 <./wrs_non_chordal_example.png>] [3]
+LaTeX Warning: Reference `fg:wrs_non_chordal' on page 2 undefined on input line
+ 260.
+
+[2]
+
+LaTeX Warning: Reference `fg:wrs_non_chordal' on page 3 undefined on input line
+ 288.
+
+[3]
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 7.0pt on input line 275.
+(Font)              scaled to size 7.0pt on input line 320.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 5.0pt on input line 275.
+(Font)              scaled to size 5.0pt on input line 320.
 
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `htbp') on input line 282.
+               Default added (so using `htbp') on input line 327.
 
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 283.
+put line 328.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/b/n' will be
-(Font)              scaled to size 8.0pt on input line 286.
+(Font)              scaled to size 8.0pt on input line 331.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/sc' will be
-(Font)              scaled to size 8.0pt on input line 288.
+(Font)              scaled to size 8.0pt on input line 333.
 [4]
 
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 340.
-
-
-Overfull \hbox (71.40656pt too wide) in paragraph at lines 344--357
- [][] 
- []
+LaTeX Warning: Reference `fg:envelope' on page 5 undefined on input line 399.
 
 [5]
+Underfull \hbox (badness 1147) in paragraph at lines 431--431
+[]\OT1/LinuxLibertineT-TLF/m/n/10 Fig. 3: |The sub-graph $\OML/pxmi/m/it/10 F[]
+$ \OT1/LinuxLibertineT-TLF/m/n/10 is over $\OMS/pxsy/m/n/10 f\OML/pxmi/m/it/10 
+v[]; v[]; v[]; v[]; [] \OMS/pxsy/m/n/10 g$\OT1/LinuxLibertineT-TLF/m/n/10 , its
+ su-per-graph $\OML/pxmi/m/it/10 F[]$ \OT1/LinuxLibertineT-TLF/m/n/10 is over
+ []
+
+[6]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [7]
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 409.
+               Default added (so using `htbp') on input line 590.
+
+[8]
+Overfull \hbox (11.68742pt too wide) in paragraph at lines 695--721
+[]\OT1/LinuxLibertineT-TLF/m/n/10 Assuming there is a stack of even num-ber of 
+$\OML/pxmi/m/it/10 K[]$\OT1/LinuxLibertineT-TLF/m/n/10 s, then only four nodes 
+$\OMS/pxsy/m/n/10 f\OML/pxmi/m/it/10 v[]; v[]; v[]; v[]\OMS/pxsy/m/n/10 g$
+ []
+
+[9]
+Overfull \hbox (12.89952pt too wide) in paragraph at lines 732--734
+\OT1/LinuxLibertineT-TLF/m/n/10 rected graph is WRS is NP-complete. We mod-ifed
+ the prove so that the NP-completeness
+ []
+
+[10]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 918.
+
+[11]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 1080.
 
 (./wrs_graphs_manuscript.bbl
-Missing character: There is no â in font LinLibertineT-tlf-ot1!
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 8.0pt on input line 6.
- [6]) [7]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 429.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 429.
+(Font)              scaled to size 8.0pt on input line 7.
+ [12]) [13]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1100.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1100.
  (./wrs_graphs_manuscript.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 429.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 429.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1100.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1100.
+
 Package rerunfilecheck Info: File `wrs_graphs_manuscript.out' has not changed.
-(rerunfilecheck)             Checksum: 783AC2F3221F3A9198616CD762879259;211.
+(rerunfilecheck)             Checksum: D00EB977C50EF84B78AC33B519EE961B;299.
+
+
+LaTeX Warning: There were undefined references.
 
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 429.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1100.
  ) 
 Here is how much of TeX's memory you used:
- 32723 strings out of 493029
- 641773 string characters out of 6136234
- 685287 words of memory out of 5000000
- 35623 multiletter control sequences out of 15000+600000
+ 33323 strings out of 493029
+ 654282 string characters out of 6136234
+ 700379 words of memory out of 5000000
+ 36184 multiletter control sequences out of 15000+600000
  58898 words of font info for 149 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,12n,77p,10465b,488s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,12n,77p,10465b,982s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/libertine/lbtn_xogrpz.enc}{/us
 r/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texlive/texm
 f-dist/fonts/enc/dvips/libertine/lbtn_c7kyj5.enc}{/usr/share/texlive/texmf-dist
@@ -1625,10 +1669,10 @@ syc.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxmi.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxr.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/share/texlive/texmf-d
 ist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on wrs_graphs_manuscript.pdf (7 pages, 321585 bytes).
+Output written on wrs_graphs_manuscript.pdf (13 pages, 330913 bytes).
 PDF statistics:
- 186 PDF objects out of 1000 (max. 8388607)
- 159 compressed objects within 2 object streams
- 61 named destinations out of 1000 (max. 500000)
- 50 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 262 PDF objects out of 1000 (max. 8388607)
+ 230 compressed objects within 3 object streams
+ 96 named destinations out of 1000 (max. 500000)
+ 61 words of extra memory for PDF output out of 10000 (max. 10000000)
 

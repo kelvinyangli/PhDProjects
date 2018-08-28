@@ -3,44 +3,44 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: wrs_graphs_manuscript.aux
 The style file: named.bst
 Database file #1: /home/kl/Documents/causal_discovery_ref_list.bib
-You've used 7 entries,
+You've used 4 entries,
             2439 wiz_defined-function locations,
-            596 strings with 5656 characters,
-and the built_in function-call counts, 2777 in all, are:
-= -- 307
-> -- 67
+            577 strings with 5223 characters,
+and the built_in function-call counts, 1724 in all, are:
+= -- 190
+> -- 46
 < -- 2
-+ -- 20
-- -- 20
-* -- 209
-:= -- 435
-add.period$ -- 23
-call.type$ -- 7
-change.case$ -- 38
-chr.to.int$ -- 7
-cite$ -- 7
-duplicate$ -- 122
-empty$ -- 229
-format.name$ -- 30
-if$ -- 589
++ -- 14
+- -- 14
+* -- 119
+:= -- 267
+add.period$ -- 14
+call.type$ -- 4
+change.case$ -- 23
+chr.to.int$ -- 4
+cite$ -- 4
+duplicate$ -- 80
+empty$ -- 139
+format.name$ -- 21
+if$ -- 376
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 7
-newline$ -- 38
-num.names$ -- 21
-pop$ -- 29
+missing$ -- 4
+newline$ -- 23
+num.names$ -- 12
+pop$ -- 23
 preamble$ -- 1
-purify$ -- 45
+purify$ -- 27
 quote$ -- 0
-skip$ -- 101
+skip$ -- 68
 stack$ -- 0
-substring$ -- 199
-swap$ -- 33
+substring$ -- 109
+swap$ -- 27
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 56
+type$ -- 32
 warning$ -- 0
-while$ -- 28
-width$ -- 10
-write$ -- 94
+while$ -- 16
+width$ -- 7
+write$ -- 55
