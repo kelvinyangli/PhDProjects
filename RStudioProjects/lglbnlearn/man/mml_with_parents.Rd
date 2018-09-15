@@ -4,8 +4,8 @@
 \alias{mml_with_parents}
 \title{Auxiliary function to mml_cpt()}
 \usage{
-mml_with_parents(indexListPerNodePerValue, arities, sampleSize, parentsIndices,
-  targetIndex, alpha, statingPara = FALSE)
+mml_with_parents(indexListPerNodePerValue, arities, sampleSize,
+  parentsIndices, targetIndex, alpha, statingPara = FALSE)
 }
 \arguments{
 \item{indexListPerNodePerValue}{indexListPerNodePerValue}

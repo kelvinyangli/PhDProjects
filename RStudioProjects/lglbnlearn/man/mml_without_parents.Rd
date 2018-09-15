@@ -4,8 +4,8 @@
 \alias{mml_without_parents}
 \title{Auxiliary function to both mml_cpt and mml_cpt_fast}
 \usage{
-mml_without_parents(indexListPerNodePerValue, arities, sampleSize, targetIndex,
-  alpha, statingPara = FALSE)
+mml_without_parents(indexListPerNodePerValue, arities, sampleSize,
+  targetIndex, alpha, statingPara = FALSE)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained

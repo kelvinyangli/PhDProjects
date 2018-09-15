@@ -4,8 +4,8 @@
 \alias{cond_probs_adaptive}
 \title{An auxiliary function to mml_fixed_str()}
 \usage{
-cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx, curIndex,
-  curPaIndices)
+cond_probs_adaptive(data, arities, sampleSize, targetIndex, probsMtx,
+  curIndex, curPaIndices)
 }
 \arguments{
 \item{data}{A dataset whost variables are in numeric/integer format. Any categorical variables must be

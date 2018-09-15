@@ -4,8 +4,8 @@
 \alias{mml_cpt_fast}
 \title{A faster version of mml_cpt}
 \usage{
-mml_cpt_fast(indexListPerNodePerValue, cachedIndicesList, arities, sampleSize,
-  parentsIndices, targetIndex, alpha, statingPara)
+mml_cpt_fast(indexListPerNodePerValue, cachedIndicesList, arities,
+  sampleSize, parentsIndices, targetIndex, alpha, statingPara)
 }
 \arguments{
 \item{indexListPerNodePerValue}{A list of stored indices for each value of each node. It is obtained

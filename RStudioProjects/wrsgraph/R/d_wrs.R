@@ -1,10 +1,9 @@
-#' Definite-WRS
+#' Definite-WRS for maximum degree 3 graphs
 #'
-#' This function applys the definite weak recursively simplicial (d-wrs) process on undirected graphs.
-#' It is particularly used for undirected graphs with maximum degree 3, which we have proved its morality
-#' can be check in polynomial time. The d-wrs process finds a simplicial clique (i.e., a simplicial node
-#' and its neighbours), and removes the entire clique. The process has no indefinite arc removal
-#' decisions like wrs. So it takes similar time as checking recursively simplicial (i.e., chordality).
+#' This function is a polynomial time algorithm for checking the morality of
+#' undirected graphs with maximum degree 3. The algorithm has been proved to be
+#' correct. It finds a simplicial clique (i.e., a simplicial node
+#' and its neighbours), and removes the entire clique.
 #' @param G A given undirected graph stored in an adjacency matrix format.
 #' @param debug A boolean argument to show steps of the backtracking algorithm.
 #' @export

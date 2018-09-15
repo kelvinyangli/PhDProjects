@@ -4,8 +4,8 @@
 \alias{subgraph}
 \title{Subgraph}
 \usage{
-subgraph(graph, nodes = NULL, from = NULL, to = NULL, type = c("nodes",
-  "edges", "clique"))
+subgraph(graph, nodes = NULL, from = NULL, to = NULL,
+  type = c("nodes", "edges", "clique"))
 }
 \arguments{
 \item{graph}{A graph that is stored in an adjacency matrix.}

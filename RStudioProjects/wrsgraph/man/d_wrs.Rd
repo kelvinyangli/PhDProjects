@@ -2,7 +2,7 @@
 % Please edit documentation in R/d_wrs.R
 \name{d_wrs}
 \alias{d_wrs}
-\title{Definite-WRS}
+\title{Definite-WRS for maximum degree 3 graphs}
 \usage{
 d_wrs(G, debug = F)
 }
@@ -12,9 +12,8 @@ d_wrs(G, debug = F)
 \item{debug}{A boolean argument to show steps of the backtracking algorithm.}
 }
 \description{
-This function applys the definite weak recursively simplicial (d-wrs) process on undirected graphs.
-It is particularly used for undirected graphs with maximum degree 3, which we have proved its morality
-can be check in polynomial time. The d-wrs process finds a simplicial clique (i.e., a simplicial node
-and its neighbours), and removes the entire clique. The process has no indefinite arc removal
-decisions like wrs. So it takes similar time as checking recursively simplicial (i.e., chordality).
+This function is a polynomial time algorithm for checking the morality of
+undirected graphs with maximum degree 3. The algorithm has been proved to be
+correct. It finds a simplicial clique (i.e., a simplicial node
+and its neighbours), and removes the entire clique.
 }
