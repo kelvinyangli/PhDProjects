@@ -1,0 +1,117 @@
+---
+title: "ordering miss classified mb nodes by mml"
+author: "Kelvin Li"
+date: "21 September 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+#library(plyr)
+library(igraph)
+#library(svMisc)
+library(wrsgraph)
+```
+
+# functions 
+```{r}
+arc_accuracy = function(learned, true, debug = FALSE) {
+  tp = tn = fp = fn = 0
+  for (i in 1:(nrow(true) - 1)) {
+    for (j in (i + 1):ncol(true)) {
+      if ((true[i, j] == 1) && (learned[i, j] == 1)) {
+        tp = tp + 1
+      } else if ((true[i, j] == 1) && (learned[i, j] == 0)) {
+        fn = fn + 1
+      } else if ((true[i, j] == 0) && (learned[i, j] == 1)) {
+        fp = fp + 1
+      } else {
+        tn = tn + 1
+      }
+    }
+  }  
+  pre = round(tp / (tp + fp), 2)
+  rec = round(tp / (tp + fn), 2)
+  f1 = round(2 * pre * rec / (pre + rec), 2)
+  if (debug) {
+    cat("tp:", tp, "fp:", fp, "fn:", fn, "tn:", tn, "\n")
+    cat("pre:", pre, "rec:", rec, "f1:", f1, "ed:", fp + fn, "\n")
+  }
+  lst = list(tp = tp, fp = fp, tn = tn, fn = fn, pre = pre, rec = rec, 
+             f1 = f1, ed = fp + fn)
+  return(lst)
+}
+
+```
+
+
+```{r}
+# generate dag and data
+dag = randDag(15, 4)
+g = dag2matrix(moral(dag))
+cpts = randCPTs(dag, 5, 3)
+n = 2000
+data = rbn(cpts, n)
+vars = colnames(data)
+nvars = length(vars)
+data_cat = numeric2categorical(data)
+arities = sapply(data_cat, nlevels)
+di = varCnt = count_occurance(data_cat, arities)
+
+# learn mb
+no_cores = 3
+registerDoParallel(no_cores)
+mbcpt = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+      forward_greedy_fast(data, di, arities, vars, n, target)
+    }
+stopImplicitCluster()
+names(mbcpt) = vars
+
+# form a graph
+G = H = matrix(0, nvars, nvars)
+dimnames(G) = dimnames(H) = list(vars, vars)
+for (x in vars) {
+  G[x, mbcpt[[x]]] = 1
+}
+
+# since symmetry correction hasn't been applied, G may not be symmetric
+discrepancies = which(G[upper.tri(G)] != t(G)[upper.tri(G)])
+# G is the graph based on mb intersection
+G[upper.tri(G)][discrepancies] = 0
+G = t(G)
+G[upper.tri(G)][discrepancies] = 0
+# H is the graph based on mb union
+H[upper.tri(H)][discrepancies] = 1
+H = H + t(H)
+
+# list tps and fps 
+true = g
+learned = G
+fn = fp = data.frame()
+for (i in 1:(nrow(true) - 1)) {
+  for (j in (i + 1):ncol(true)) {
+    if ((true[i, j] == 1) && (learned[i, j] == 0)) {
+      fn = rbind(fn, data.frame(from = rownames(true)[i], to = colnames(true)[j]))
+    } else if ((true[i, j] == 0) && (learned[i, j] == 1)) {
+      fp = rbind(fp, data.frame(from = rownames(true)[i], to = colnames(true)[j]))
+    } 
+  }
+}  
+
+```
+
+find all fp arcs, since they've been added into the graph, just calculate the 
+difference b/w the score before and after adding these fps. 
+
+find all fn arcs, since they haven't been added into the graph, 
+
+
+

@@ -34,19 +34,20 @@ n = 1000
 # stopImplicitCluster()
 for (i in 1:n) {
   
-  G = rand_bounded_deg_graph(6, 3)
+  G = rand_bounded_deg_graph(10, 3)
   #wrs = wrs_bktr(G, G)$wrs # wrs
   #dwrs = d_wrs_deg4(G) # qrs
   wrs = wrs_bktr(G, G)$wrs
-  g = abs(G-1)
-  diag(g) = 0
-  wrs_complement = wrs_bktr(g, g)$wrs
-  #if (dwrs != 1) break
-  if (wrs != wrs_complement) break
+  if (wrs != 1) break
+  # g = abs(G-1)
+  # diag(g) = 0
+  # wrs_complement = wrs_bktr(g, g)$wrs
+  # if (wrs != wrs_complement) break
 }
-par(mfrow=c(1,2))
-graphviz.plot(matrix2dag(G))
+#par(mfrow=c(1,2))
+g=prune_leaves(G)
 graphviz.plot(matrix2dag(g))
+#graphviz.plot(matrix2dag(g))
 
 ```
 

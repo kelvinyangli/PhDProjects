@@ -13,58 +13,195 @@ if (.Platform$OS.type == "windows") {
   dir = "/home/"
 }
 source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+#library(plyr)
 library(igraph)
+#library(svMisc)
 library(wrsgraph)
 ```
 
-# random model generation
+# functions
 ```{r}
-dag = randDag(15, 5)
-cpts = randCPTs(dag, 2, 1)
-n = 10000
+# edit distance b/w two undirected graphs which are stored in adjacency matrices
+hamming_dist = function(learned, true, debug = FALSE) {
+  tp = tn = fp = fn = 0
+  for (i in 1:(nrow(true) - 1)) {
+    for (j in (i + 1):ncol(true)) {
+      if ((true[i, j] == 1) && (learned[i, j] == 1)) {
+        tp = tp + 1
+      } else if ((true[i, j] == 1) && (learned[i, j] == 0)) {
+        fn = fn + 1
+      } else if ((true[i, j] == 0) && (learned[i, j] == 1)) {
+        fp = fp + 1
+      } else {
+        tn = tn + 1
+      }
+    }
+  }  
+  pre = round(tp / (tp + fp), 2)
+  rec = round(tp / (tp + fn), 2)
+  f1 = round(2 * pre * rec / (pre + rec), 2)
+  if (debug) {
+    cat("tp:", tp, "fp:", fp, "fn:", fn, "tn:", tn, "\n")
+    cat("pre:", pre, "rec:", rec, "f1:", f1, "ed:", fp + fn, "\n")
+  }
+  lst = list(tp = tp, fp = fp, tn = tn, fn = fn, pre = pre, rec = rec, 
+             f1 = f1, ed = fp + fn)
+  return(lst)
+}
+
+powerset = function(x, num = 2 ^ (length(x)), desc = TRUE, emptyset = FALSE, fullset = FALSE) {
+  
+  x = x[order(x)] # re-order vars in x in ascending order for future reference
+  pwrset = list() 
+  n = length(x)
+  if (!fullset) n = n - 1 # remove full set
+  if (n > 1) {
+    
+    if (desc) {# subset size descending
+      indx = n:1
+    } else {
+      indx = 1:n
+    }
+    
+    for (i in indx) {# for each cardinality
+      # add subsets with cardinality i into pwrset
+      if (length(pwrset) <= num) {
+        pwrset = append(pwrset, data.frame(combn(x, i)))
+      } else {
+        break  
+      }
+    } # end for i 
+    
+  } else {
+    
+    pwrset = as.list(x)
+    
+  }
+  
+  if (emptyset) {
+    if (desc) {
+      pwrset = append(pwrset, 0) # append empty set (denoted by 0) to the end 
+    } else {
+      pwrset = append(pwrset, 0, 0) # append empty set to the head
+    }
+  }
+  # to the start of pwrset list
+  names(pwrset) = c()
+  return(pwrset)
+  
+}
+
+```
+
+
+# test symmetry condition
+```{r}
+wrs_df = c()
+for (ii in 1:100) {
+  
+dag = randDag(15, 4)
+g = dag2matrix(moral(dag))
+cpts = randCPTs(dag, 5, 3)
+n = 2000
 data = rbn(cpts, n)
 vars = colnames(data)
 nvars = length(vars)
 data_cat = numeric2categorical(data)
 arities = sapply(data_cat, nlevels)
 di = varCnt = count_occurance(data_cat, arities)
-```
 
-# mb learning with wrs testing
-```{r}
-no_cores = 4
-registerDoParallel(no_cores)
-mbcpt = foreach(target = vars,
-    .combine = list,
-    .multicombine = TRUE) %dopar% {
-  forward_greedy_fast(data, di, arities, vars, n, target)
-    }
-stopImplicitCluster()
-names(mbcpt) = vars
-mbcpt = symmetry_correction(vars, mbcpt, "AND")
-
-# form an UG
-G = matrix(0, nvars, nvars)
-colnames(G) = rownames(G) = vars
-for (x in vars) {
-  G[x, mbcpt[[x]]] = 1
+for (mblearner in c("mml", "iamb")) {
+  
+  # mb learning using parallel mmlcpt 
+  no_cores = 3
+  registerDoParallel(no_cores)
+  mbcpt = foreach(target = vars,
+      .combine = list,
+      .multicombine = TRUE) %dopar% {
+      if (mblearner == "mml") {
+        forward_greedy_fast(data, di, arities, vars, n, target)
+      } else {
+        learn.mb(data, node = target, method = "iamb")
+      }
+      }
+  stopImplicitCluster()
+  names(mbcpt) = vars
+  
+  # form an UG
+  G = H = matrix(0, nvars, nvars)
+  #colnames(G) = rownames(G) = vars
+  dimnames(G) = dimnames(H) = list(vars, vars)
+  for (x in vars) {
+    G[x, mbcpt[[x]]] = 1
+  }
+  
+  # since symmetry correction hasn't been applied, G may not be symmetric
+  discrepancies = which(G[upper.tri(G)] != t(G)[upper.tri(G)])
+  # remove discrepancies from G
+  G[upper.tri(G)][discrepancies] = 0
+  G = t(G)
+  G[upper.tri(G)][discrepancies] = 0
+  
+  #cat("method:", mblearner, "\n")
+  # check morality of G
+  wrsG = wrsgraph::wrs_bktr(G, G)$wrs
+  wrs_df = c(wrs_df, wrsG)
+  
+  #cat("G is", wrsG, "\n")
+  # accuracy of G's edges 
+  #hd = hamming_dist(G, g, T)
+  H[upper.tri(H)][discrepancies] = 1
+  H = H + t(H)
+  wrsGH = wrsgraph::wrs_bktr(G+H, G+H)$wrs
+  wrs_df = c(wrs_df, wrsGH)
+  
+  #cat("G+H is", wrsGH, "\n")
+  #hd = hamming_dist(G+H, g, T)
+  #hamming_dist(H, g, T)$dist
+  #cat("exist", sum(H) / 2, "conflict edges \n")
+  #cat("----------------------------- \n")
 }
 
-# testing wrs
-res = wrs_bktr(G, G)
-res$wrs
-dagl = res$dag
-dagl = matrix2dag(dagl)
-dagl = cextend(dagl)
-
-bnlearn::shd(dagl, dag) # pattern
-bnlearn::hamming(dagl, dag) # skeleton
-
-par(mfrow=c(1,2))
-graphviz.plot(dag)
-graphviz.plot(dagl, shape = "rectangle")
+}
+# par(mfrow=c(1,3))
+# graphviz.plot(moral(dag))
+# graphviz.plot(matrix2dag(G))
+# graphviz.plot(matrix2dag(G+H))
 ```
 
+```{r}
+# Find the maximum subset S of H, adding which to G is still moral 
+#for (mblearner in c("mml", "iamb")) {
+  if (wrsGH == 0) {
+    m = data.frame()
+    x = which(H[upper.tri(H)] == 1)
+    pwrset = powerset(x, num = 200, desc = T, emptyset = F, fullset = F)
+    h = matrix(0, nrow(H), ncol(H))
+    dimnames(h) = dimnames(H)
+    
+    for (i in 1:length(pwrset)) {
+      h[upper.tri(h)][pwrset[[i]]] = 1  
+      h = h + t(h)
+      wrsGh = wrs_bktr(G+h, G+h)$wrs
+      #if (wrsGh == 1) {
+        #break
+        #cat("add", sum(h)/2, "conflict edges \n")
+        l = hamming_dist(G+h, g, F)
+      #}
+      m = rbind(m, c(sum(h)/2, unlist(l), wrsGh))
+      h[which(h == 1)] = 0
+    }
+    
+    # if (wrsGh == 1) {
+    #   cat("add", sum(h)/2, "conflict edges \n")
+    #   hamming_dist(G+h, g, T)$dist
+    # }
+    colnames(m) = c("#edges", "tp", "fp", "tn", "fn", "pre", "rec", "f1", "ed", "wrs")
+  }
+  
+  m[which(m$wrs == 1), ]
+#}
+```
 
 
 
