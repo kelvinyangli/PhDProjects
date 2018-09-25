@@ -52,11 +52,12 @@ arc_accuracy = function(learned, true, debug = FALSE) {
 
 
 ```{r}
+#repeat {
 # generate dag and data
-dag = randDag(15, 4)
+dag = randDag(20, 5)
 g = dag2matrix(moral(dag))
-cpts = randCPTs(dag, 5, 3)
-n = 2000
+cpts = randCPTs(dag, 5, 4)
+n = 5000
 data = rbn(cpts, n)
 vars = colnames(data)
 nvars = length(vars)
@@ -70,14 +71,15 @@ registerDoParallel(no_cores)
 mbcpt = foreach(target = vars,
     .combine = list,
     .multicombine = TRUE) %dopar% {
-      forward_greedy_fast(data, di, arities, vars, n, target)
+      learn.mb(data, node = target, method = "iamb")
+      #forward_greedy_fast(data, di, arities, vars, n, target)
     }
 stopImplicitCluster()
 names(mbcpt) = vars
 
 # form a graph
-G = H = matrix(0, nvars, nvars)
-dimnames(G) = dimnames(H) = list(vars, vars)
+G = matrix(0, nvars, nvars)
+dimnames(G) = list(vars, vars)
 for (x in vars) {
   G[x, mbcpt[[x]]] = 1
 }
@@ -89,12 +91,15 @@ G[upper.tri(G)][discrepancies] = 0
 G = t(G)
 G[upper.tri(G)][discrepancies] = 0
 # H is the graph based on mb union
+H = G
 H[upper.tri(H)][discrepancies] = 1
-H = H + t(H)
+H = t(H)
+H[upper.tri(H)][discrepancies] = 1
+
 
 # list tps and fps 
 true = g
-learned = G
+learned = H
 fn = fp = data.frame()
 for (i in 1:(nrow(true) - 1)) {
   for (j in (i + 1):ncol(true)) {
@@ -104,14 +109,55 @@ for (i in 1:(nrow(true) - 1)) {
       fp = rbind(fp, data.frame(from = rownames(true)[i], to = colnames(true)[j]))
     } 
   }
-}  
+} 
 
+fmtx = rbind(fn, fp)
+#if (nrow(fmtx) > 0) {
+l = c()
+for (i in 1:nrow(fmtx)) {
+  for (j in 1:2) {
+    tIndx = which(vars == fmtx[i, j])
+    alpha = rep(1, arities[tIndx])
+    pa = mbcpt[[tIndx]]
+    paIndx = which(vars %in% pa)
+    fNode = as.character(fmtx[i, -j]) # f mb node
+    fIndx = which(vars == fNode) # f mb node indx 
+    if (fNode %in% pa) {
+      l_w_fNode = mml_with_parents(di, arities, n, paIndx, tIndx, alpha)
+      if (length(pa) == 1) {
+        l_wo_fNode = mml_without_parents(di, arities, n, tIndx, alpha)
+      } else {
+        l_wo_fNode = mml_with_parents(di, arities, n, paIndx[paIndx != fIndx], 
+                                       tIndx, alpha)
+      }
+    } else {
+      l_w_fNode = mml_with_parents(di, arities, n, c(paIndx, fIndx), tIndx, alpha)
+      if (length(pa) == 0) {
+        l_wo_fNode = mml_without_parents(di, arities, n, tIndx, alpha)
+      } else {
+        l_wo_fNode = mml_with_parents(di, arities, n, paIndx, tIndx, alpha)  
+      }
+    }
+    l = c(l, l_w_fNode - l_wo_fNode) # calculate score in favor of mml 
+  }
+}
+l = matrix(l, ncol = 2, byrow = T)
+l = cbind(l, l[,1] + l[,2])
+colnames(l) = rep("w-wo", 3)
+fmtx = cbind(fmtx, l)
+#}
+label = c(rep("fn", nrow(fn)), rep("fp", nrow(fp)))
+fmtx = cbind(fmtx, label)
+fmtx = fmtx[order(fmtx[,5]),]
+
+union = rep(0, nrow(fmtx))
+for (i in 1:nrow(fmtx)) {
+  if (H[as.character(fmtx[i, 1]), as.character(fmtx[i, 2])] == 1) union[i] = 1
+}
+fmtx = cbind(fmtx, union)
+print(fmtx)
+
+#}
 ```
-
-find all fp arcs, since they've been added into the graph, just calculate the 
-difference b/w the score before and after adding these fps. 
-
-find all fn arcs, since they haven't been added into the graph, 
-
 
 
