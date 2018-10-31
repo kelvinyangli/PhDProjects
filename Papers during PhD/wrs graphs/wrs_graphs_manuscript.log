@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.7.29)  29 AUG 2018 00:05
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.13)  31 OCT 2018 23:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1380,9 +1380,6 @@ File: pgflibraryarrows.meta.code.tex 2015/05/13 v3.0.1a (rcs-revision 1.13)
 (/usr/share/texlive/texmf-dist/tex/plain/amsfonts/amssym.tex)
 (./wrs_graphs_manuscript.aux
 
-LaTeX Warning: Label `alg:wrs_bktr' multiply defined.
-
-
 LaTeX Warning: Label `my-label' multiply defined.
 
 )
@@ -1539,106 +1536,101 @@ LaTeX Font Info:    Try loading font information for U+pxsyc on input line 151.
 (/usr/share/texlive/texmf-dist/tex/latex/pxfonts/upxsyc.fd
 File: upxsyc.fd 2000/12/14 v1.0
 )
-Overfull \hbox (9.2486pt too wide) in paragraph at lines 176--177
-[]\OT1/LinuxLibertineT-TLF/m/n/10 An \OT1/LinuxLibertineT-TLF/b/n/10 m-cycle \O
-T1/LinuxLibertineT-TLF/m/n/10 in an undi-rected graph is a se-quence of nodes $
-\OMS/pxsy/m/n/10 f\OML/pxmi/m/it/10 v[]; [] ; v[]\OMS/pxsy/m/n/10 g$
- []
-
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 7.0pt on input line 185.
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
-(Font)              scaled to size 5.0pt on input line 185.
-[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 10.0pt on input line 206.
-
-Overfull \hbox (3.6704pt too wide) in paragraph at lines 218--219
-\OT1/LinuxLibertineT-TLF/m/it/10 Markov blan-ket fam-i-lies of DAGs over $\OML/
-pxmi/m/it/10 V$\OT1/LinuxLibertineT-TLF/m/it/10 . Then there ex-ists an in-jec-
-tive but non-surjective
- []
-
-
-LaTeX Warning: Reference `fg:wrs_non_chordal' on page 2 undefined on input line
- 260.
-
-[2]
-
-LaTeX Warning: Reference `fg:wrs_non_chordal' on page 3 undefined on input line
- 288.
-
-[3]
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 7.0pt on input line 320.
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 5.0pt on input line 320.
-
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `htbp') on input line 327.
-
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 328.
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/b/n' will be
-(Font)              scaled to size 8.0pt on input line 331.
-LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/sc' will be
-(Font)              scaled to size 8.0pt on input line 333.
-[4]
-
-LaTeX Warning: Reference `fg:envelope' on page 5 undefined on input line 399.
-
-[5]
-Underfull \hbox (badness 1147) in paragraph at lines 431--431
-[]\OT1/LinuxLibertineT-TLF/m/n/10 Fig. 3: |The sub-graph $\OML/pxmi/m/it/10 F[]
-$ \OT1/LinuxLibertineT-TLF/m/n/10 is over $\OMS/pxsy/m/n/10 f\OML/pxmi/m/it/10 
-v[]; v[]; v[]; v[]; [] \OMS/pxsy/m/n/10 g$\OT1/LinuxLibertineT-TLF/m/n/10 , its
- su-per-graph $\OML/pxmi/m/it/10 F[]$ \OT1/LinuxLibertineT-TLF/m/n/10 is over
- []
-
-[6]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [7]
+ [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 10.0pt on input line 190.
+ [2]
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 7.0pt on input line 245.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 5.0pt on input line 245.
+ [3] [4] [5] [6]
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `htbp') on input line 590.
+               Default added (so using `htbp') on input line 430.
 
-[8]
-Overfull \hbox (11.68742pt too wide) in paragraph at lines 695--721
-[]\OT1/LinuxLibertineT-TLF/m/n/10 Assuming there is a stack of even num-ber of 
-$\OML/pxmi/m/it/10 K[]$\OT1/LinuxLibertineT-TLF/m/n/10 s, then only four nodes 
-$\OMS/pxsy/m/n/10 f\OML/pxmi/m/it/10 v[]; v[]; v[]; v[]\OMS/pxsy/m/n/10 g$
- []
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 431.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/b/n' will be
+(Font)              scaled to size 8.0pt on input line 434.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/sc' will be
+(Font)              scaled to size 8.0pt on input line 436.
+[7] [8]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `htbp') on input line 550.
 
 [9]
-Overfull \hbox (12.89952pt too wide) in paragraph at lines 732--734
-\OT1/LinuxLibertineT-TLF/m/n/10 rected graph is WRS is NP-complete. We mod-ifed
- the prove so that the NP-completeness
+LaTeX Font Info:    Try loading font information for TS1+LinuxLibertineT-TLF on
+ input line 688.
+
+(/usr/share/texlive/texmf-dist/tex/latex/libertine/TS1LinuxLibertineT-TLF.fd
+File: TS1LinuxLibertineT-TLF.fd 2012/11/26 (autoinst) Font definitions for TS1/
+LinuxLibertineT-TLF.
+)
+LaTeX Font Info:    Font shape `TS1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 8.0pt on input line 688.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [10]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `htbp') on input line 749.
+
+[11] [12] [13] [14]
+Overfull \hbox (24.48528pt too wide) in paragraph at lines 956--957
+[]\OT1/LinuxLibertineT-TLF/m/n/10 An \OT1/LinuxLibertineT-TLF/b/n/10 ex-cess \O
+T1/LinuxLibertineT-TLF/m/n/10 of a graph $\OML/pxmi/m/it/10 G \OT1/pxr/m/n/10 =
+ (\OML/pxmi/m/it/10 V; E\OT1/pxr/m/n/10 )$ \OT1/LinuxLibertineT-TLF/m/n/10 is a
+ bi-jec-tion $\OML/pxmi/m/it/10 ^^O[] \OT1/pxr/m/n/10 : \OML/pxmi/m/it/10  \OM
+S/pxsy/m/n/10 $ f\OML/pxmi/m/it/10 ^^O[]\OT1/pxr/m/n/10 (\OML/pxmi/m/it/10 v[]\
+OT1/pxr/m/n/10 )\OML/pxmi/m/it/10 ; [] ; ^^O[]\OT1/pxr/m/n/10 (\OML/pxmi/m/it/1
+0 v[]\OT1/pxr/m/n/10 )\OMS/pxsy/m/n/10 g$
  []
 
-[10]
+[15] [16] [17] [18] [19] [20]
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 7.0pt on input line 1233.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 5.0pt on input line 1233.
+
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 918.
+               Default added (so using `tbp') on input line 1238.
 
-[11]
+[21] [22]
+
+LaTeX Warning: Reference `prop:deg5' on page 23 undefined on input line 1400.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [23]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [24]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [25]
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 1080.
+               Default added (so using `tbp') on input line 2135.
 
 (./wrs_graphs_manuscript.bbl
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 8.0pt on input line 7.
- [12]) [13]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1100.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1100.
+(Font)              scaled to size 8.0pt on input line 6.
+ [26]) [27]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2155.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2155.
  (./wrs_graphs_manuscript.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1100.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1100.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 2155.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2155.
 
 Package rerunfilecheck Info: File `wrs_graphs_manuscript.out' has not changed.
-(rerunfilecheck)             Checksum: D00EB977C50EF84B78AC33B519EE961B;299.
+(rerunfilecheck)             Checksum: 9C4E1967763897E506B091F14EBF2097;559.
 
 
 LaTeX Warning: There were undefined references.
@@ -1646,33 +1638,35 @@ LaTeX Warning: There were undefined references.
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1100.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2155.
  ) 
 Here is how much of TeX's memory you used:
- 33323 strings out of 493029
- 654282 string characters out of 6136234
- 700379 words of memory out of 5000000
- 36184 multiletter control sequences out of 15000+600000
- 58898 words of font info for 149 fonts, out of 8000000 for 9000
+ 34269 strings out of 493029
+ 667021 string characters out of 6136233
+ 854925 words of memory out of 5000000
+ 37067 multiletter control sequences out of 15000+600000
+ 59601 words of font info for 151 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,12n,77p,10465b,982s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texlive/texmf-dist/fonts/enc/dvips/libertine/lbtn_xogrpz.enc}{/us
-r/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texlive/texm
-f-dist/fonts/enc/dvips/libertine/lbtn_c7kyj5.enc}{/usr/share/texlive/texmf-dist
-/fonts/enc/dvips/libertine/lbtn_lu7m2n.enc}</usr/share/texlive/texmf-dist/fonts
-/type1/public/libertine/LinLibertineT.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/libertine/LinLibertineTB.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/libertine/LinLibertineTI.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/pxfonts/pxbsy.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
-c/pxfonts/pxsy.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/px
-syc.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxmi.pfb></u
-sr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxr.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on wrs_graphs_manuscript.pdf (13 pages, 330913 bytes).
+ 62i,12n,77p,10465b,930s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips/libertine/lbtn_naooyc.enc}{/us
+r/share/texlive/texmf-dist/fonts/enc/dvips/libertine/lbtn_xogrpz.enc}{/usr/shar
+e/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texlive/texmf-dist
+/fonts/enc/dvips/libertine/lbtn_c7kyj5.enc}{/usr/share/texlive/texmf-dist/fonts
+/enc/dvips/libertine/lbtn_lu7m2n.enc}</usr/share/texlive/texmf-dist/fonts/type1
+/public/libertine/LinLibertineT.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/libertine/LinLibertineTB.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/libertine/LinLibertineTI.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/pxfonts/pxbsy.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/pxfon
+ts/pxsy.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/pxsyc.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxmi.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxr.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/share/texlive/texmf-dist/fon
+ts/type1/urw/palatino/uplri8a.pfb>
+Output written on wrs_graphs_manuscript.pdf (27 pages, 403860 bytes).
 PDF statistics:
- 262 PDF objects out of 1000 (max. 8388607)
- 230 compressed objects within 3 object streams
- 96 named destinations out of 1000 (max. 500000)
- 61 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 446 PDF objects out of 1000 (max. 8388607)
+ 386 compressed objects within 4 object streams
+ 153 named destinations out of 1000 (max. 500000)
+ 93 words of extra memory for PDF output out of 10000 (max. 10000000)
 

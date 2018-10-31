@@ -16,63 +16,122 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Preliminary}{1}{section.1}}
-\newlabel{def:subgraph}{{1}{1}{Preliminary}{definition.1}{}}
-\newlabel{def:mb}{{8}{2}{Preliminary}{definition.8}{}}
-\newlabel{def:hybrid_g}{{9}{2}{Preliminary}{definition.9}{}}
-\newlabel{def:skeleton}{{10}{2}{Preliminary}{definition.10}{}}
-\newlabel{def:moral_g}{{11}{2}{Preliminary}{definition.11}{}}
-\newlabel{prop:chordal_properties}{{1}{2}{Preliminary}{proposition.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An example of a DAG whose moral graph is non-chordal.\relax }}{2}{figure.caption.1}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Weak recursively simplicial graphs}{3}{section.2}}
-\newlabel{def:collider}{{12}{3}{Weak recursively simplicial graphs}{definition.12}{}}
-\newlabel{def:consistent_ext}{{13}{3}{Weak recursively simplicial graphs}{definition.13}{}}
-\newlabel{def:wrs}{{14}{3}{Weak recursively simplicial graphs}{definition.14}{}}
-\newlabel{prop:moral_implies_wrs}{{1}{3}{Weak recursively simplicial graphs}{theorem.2.1}{}}
-\citation{dor1992simple}
-\newlabel{prop:wrs_implies_moral}{{2}{4}{Weak recursively simplicial graphs}{theorem.2.2}{}}
-\newlabel{cor:wrs_equal_moral}{{1}{4}{Weak recursively simplicial graphs}{corollary.1}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Backtracking algorithm to test WRS of graphs\relax }}{4}{algorithm.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}The complexity of checking Markov blankets consistency with DAGs via morality}{1}{section.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Introduction}{1}{section.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A DAG, in which the Markov blanket of $v_3$ is $\{v_5,v_6,v_1,v_2,v_4\}$.\relax }}{2}{figure.caption.1}}
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{alg:wrs_bktr}{{1}{4}{Backtracking algorithm to test WRS of graphs\relax }{algorithm.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Polytree}{5}{section.3}}
-\newlabel{prop:moral_of_pt_chordal}{{3}{5}{Polytree}{proposition.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces A chordal graph that comes from moralizing a non-singly connected DAG.\relax }}{5}{figure.caption.2}}
-\newlabel{fg:chordal_over_4nodes}{{2}{5}{A chordal graph that comes from moralizing a non-singly connected DAG.\relax }{figure.caption.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Complexity}{5}{section.4}}
-\newlabel{thm:deg3}{{3}{6}{Complexity}{theorem.4.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces The subgraph $F''$ is over $\{v_1,v_2,v_3,v_4,\dots  \}$, its supergraph $F'$ is over $\{v_1,v_2,v_3,v_4,v_5,\dots  \}$.\relax }}{6}{figure.caption.3}}
-\newlabel{fg:deg_3_dwrs}{{3}{6}{The subgraph $F''$ is over $\{v_1,v_2,v_3,v_4,\dots \}$, its supergraph $F'$ is over $\{v_1,v_2,v_3,v_4,v_5,\dots \}$.\relax }{figure.caption.3}{}}
-\newlabel{lm:long_stack}{{1}{6}{Complexity}{lemma.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces A stack of $4$ and $5$ $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }}{6}{figure.caption.4}}
-\newlabel{fg:4k3s}{{4}{6}{A stack of $4$ and $5$ $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }{figure.caption.4}{}}
-\newlabel{lm:2k3s}{{2}{7}{Complexity}{lemma.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces A stack of 2 $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }}{7}{figure.caption.5}}
-\newlabel{fg:2k3s}{{5}{7}{A stack of 2 $K_3$s is contained in a maximum degree $4$ graph $F$.\relax }{figure.caption.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Two graphs $G_1$ (left) and $G_2$ (right) of maximum degree $4$. The dashed line represents a path of length at least $3$.\relax }}{8}{figure.caption.6}}
-\newlabel{fg:special_graphs}{{6}{8}{Two graphs $G_1$ (left) and $G_2$ (right) of maximum degree $4$. The dashed line represents a path of length at least $3$.\relax }{figure.caption.6}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Backtracking algorithm to test WRS of graphs\relax }}{8}{algorithm.2}}
-\newlabel{alg:wrs_bktr}{{2}{8}{Backtracking algorithm to test WRS of graphs\relax }{algorithm.2}{}}
-\newlabel{thm:deg4}{{4}{8}{Complexity}{theorem.4.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces A simplicial $K_4$ over $\{v_1,v_2,v_3,v_4\}$ shares an edge $v_2v_4$ with a $K_3$ over $\{v_2,v_4,v_5\}$.\relax }}{9}{figure.caption.7}}
-\newlabel{fg:k4+k3}{{7}{9}{A simplicial $K_4$ over $\{v_1,v_2,v_3,v_4\}$ shares an edge $v_2v_4$ with a $K_3$ over $\{v_2,v_4,v_5\}$.\relax }{figure.caption.7}{}}
+\newlabel{fg:mb_example}{{1}{2}{A DAG, in which the Markov blanket of $v_3$ is $\{v_5,v_6,v_1,v_2,v_4\}$.\relax }{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Preliminary}{2}{section.3}}
+\newlabel{def:graph}{{1}{2}{Preliminary}{definition.1}{}}
+\newlabel{def:digraph}{{2}{3}{Preliminary}{definition.2}{}}
+\newlabel{def:dag}{{3}{3}{Preliminary}{definition.3}{}}
+\newlabel{def:markov}{{4}{3}{Preliminary}{definition.4}{}}
+\newlabel{def:bn}{{5}{3}{Preliminary}{definition.5}{}}
+\newlabel{def:mb}{{6}{3}{Preliminary}{definition.6}{}}
+\newlabel{def:hybrid_g}{{7}{3}{Preliminary}{definition.7}{}}
+\newlabel{def:skeleton}{{8}{3}{Preliminary}{definition.8}{}}
+\newlabel{def:moral_g}{{9}{3}{Preliminary}{definition.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces A DAG $G$ and its moral graph $H$.\relax }}{4}{figure.caption.2}}
+\newlabel{fg:envelope}{{2}{4}{A DAG $G$ and its moral graph $H$.\relax }{figure.caption.2}{}}
+\newlabel{def:collider}{{10}{4}{Preliminary}{definition.10}{}}
+\newlabel{def:consistent_ext}{{11}{4}{Preliminary}{definition.11}{}}
+\newlabel{def:subgraph}{{12}{4}{Preliminary}{definition.12}{}}
+\newlabel{def:induced_subgraph}{{13}{4}{Preliminary}{definition.13}{}}
+\newlabel{def:wrs}{{22}{5}{Preliminary}{definition.22}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Weak recursively simplicial graphs}{6}{section.4}}
+\newlabel{lm:moral_implies_wrs}{{1}{6}{Weak recursively simplicial graphs}{lemma.1}{}}
+\newlabel{lm:wrs_implies_moral}{{2}{6}{Weak recursively simplicial graphs}{lemma.2}{}}
+\newlabel{thm:wrs_equal_moral}{{1}{6}{Weak recursively simplicial graphs}{theorem.4.1}{}}
+\citation{dor1992simple}
 \citation{verma1993deciding}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Some random notes}{10}{section.5}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces A simplicial $K_3$ over $\{v_1,v_2,v_3\}$ shares an edge with a $K_3$ (top left), $K_4$ (top right), $\{K_3, C_m\}$ (bottom left) or $\{K_3,K_3\}$ (bottom right).\relax }}{10}{figure.caption.9}}
-\newlabel{fg:k3+}{{8}{10}{A simplicial $K_3$ over $\{v_1,v_2,v_3\}$ shares an edge with a $K_3$ (top left), $K_4$ (top right), $\{K_3, C_m\}$ (bottom left) or $\{K_3,K_3\}$ (bottom right).\relax }{figure.caption.9}{}}
+\citation{verma1993deciding}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Checking morality using backtracking\relax }}{7}{algorithm.1}}
+\newlabel{alg:wrs_bktr}{{1}{7}{Checking morality using backtracking\relax }{algorithm.1}{}}
+\citation{verma1993deciding}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Complexity}{8}{section.5}}
+\newlabel{thm:deg5}{{3}{8}{Complexity}{theorem.5.3}{}}
+\newlabel{rmk:deg_2}{{3}{8}{Complexity}{remark.3}{}}
+\newlabel{lm:no_common_nbr}{{3}{8}{Complexity}{lemma.3}{}}
+\newlabel{lm:1kp}{{4}{8}{Complexity}{lemma.4}{}}
+\newlabel{lm:wrs_deg3}{{5}{8}{Complexity}{lemma.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces A graph $G$ with $\Delta (G)=3$ and $D_G(x)=\emptyset $.\relax }}{9}{figure.caption.3}}
+\newlabel{fg:deg3_1k3}{{3}{9}{A graph $G$ with $\Delta (G)=3$ and $D_G(x)=\emptyset $.\relax }{figure.caption.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Checking morality for maximum degree 3 graphs\relax }}{9}{algorithm.2}}
+\newlabel{alg:wrs_deg3}{{2}{9}{Checking morality for maximum degree 3 graphs\relax }{algorithm.2}{}}
+\newlabel{thm:wrs_deg3}{{4}{9}{Complexity}{theorem.5.4}{}}
+\newlabel{lm:deg1_4_3}{{6}{9}{Complexity}{lemma.6}{}}
+\newlabel{lm:1k3}{{7}{10}{Complexity}{lemma.7}{}}
+\newlabel{lm:2k3s}{{8}{10}{Complexity}{lemma.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces A graph $G$ with $\Delta (G)=4$ and $K_3^2\subset G$.\relax }}{10}{figure.caption.4}}
+\newlabel{fg:2k3s}{{4}{10}{A graph $G$ with $\Delta (G)=4$ and $K_3^2\subset G$.\relax }{figure.caption.4}{}}
+\citation{verma1993deciding}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces A list of all possible induced subgraphs $H \subset G$ with $\Delta (G)=4$, where $K_3^3\subset H$. Each dotted edge connects a node to a subgraph (possibly empty) of $G$. $H_4$ is a special case of $H_3$ when $N_{G}(v_4)\cap N_{G}(v_5)=\{v_2,v_6\}$. Without loss of generality, assume $D_G(v_1)=\emptyset $.\relax }}{11}{figure.caption.5}}
+\newlabel{fg:3k3s}{{5}{11}{A list of all possible induced subgraphs $H \subset G$ with $\Delta (G)=4$, where $K_3^3\subset H$. Each dotted edge connects a node to a subgraph (possibly empty) of $G$. $H_4$ is a special case of $H_3$ when $N_{G}(v_4)\cap N_{G}(v_5)=\{v_2,v_6\}$. Without loss of generality, assume $D_G(v_1)=\emptyset $.\relax }{figure.caption.5}{}}
+\newlabel{lm:3k3s_a}{{9}{11}{Complexity}{lemma.9}{}}
+\newlabel{thm:deg4}{{5}{11}{Complexity}{theorem.5.5}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Checking morality for maximum degree $4$ graphs\relax }}{12}{algorithm.3}}
+\newlabel{alg:d_wrs_deg4}{{3}{12}{Checking morality for maximum degree $4$ graphs\relax }{algorithm.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{12}{section.6}}
+\citation{tarjan1984simple}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Polytree}{13}{section.7}}
+\newlabel{prop:moral_of_pt_chordal}{{1}{13}{Polytree}{proposition.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces A chordal graph that comes from moralizing a non-singly connected DAG.\relax }}{13}{figure.caption.6}}
+\newlabel{fg:chordal_over_4nodes}{{6}{13}{A chordal graph that comes from moralizing a non-singly connected DAG.\relax }{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Minimal moralization}{14}{section.8}}
+\citation{fulkerson1965incidence}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Preliminary}{15}{subsection.8.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces An example of a minimal (left) and minimum (right) moralizations.\relax }}{15}{figure.caption.7}}
+\newlabel{fg:mini_moral}{{7}{15}{An example of a minimal (left) and minimum (right) moralizations.\relax }{figure.caption.7}{}}
+\citation{ohtsuki1976minimal}
+\citation{rose1976algorithmic}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Characterizations of minimal moralization}{16}{subsection.8.2}}
+\newlabel{lm:ohtsuki_lm1}{{10}{16}{Characterizations of minimal moralization}{lemma.10}{}}
+\newlabel{lm:ohtsuki_lm2}{{11}{16}{Characterizations of minimal moralization}{lemma.11}{}}
+\newlabel{thm:ohtsuki_thm1}{{6}{16}{Characterizations of minimal moralization}{theorem.8.6}{}}
+\newlabel{lm:rose_lm1}{{12}{17}{Characterizations of minimal moralization}{lemma.12}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces An example of case 3. The solid lines are in $E$. The dashed is in $D(x)$. The orange is the edge we want to prove to belong to $E\cup D(x)$.\relax }}{17}{figure.caption.8}}
+\newlabel{fg:case3}{{8}{17}{An example of case 3. The solid lines are in $E$. The dashed is in $D(x)$. The orange is the edge we want to prove to belong to $E\cup D(x)$.\relax }{figure.caption.8}{}}
+\newlabel{cor:rose_cor2}{{2}{17}{Characterizations of minimal moralization}{corollary.2}{}}
+\newlabel{cor:rose_cor1}{{3}{17}{Characterizations of minimal moralization}{corollary.3}{}}
+\newlabel{lm:rose_lm2}{{13}{18}{Characterizations of minimal moralization}{lemma.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces An example of case 2, where $F=\{v_2v_3\}$, $R=S=\{v_1,v_7\}$. Each node $x\in S$ satisfies that $F\nsubseteq D_G(x)$.\relax }}{18}{figure.caption.9}}
+\newlabel{fg:case2}{{9}{18}{An example of case 2, where $F=\{v_2v_3\}$, $R=S=\{v_1,v_7\}$. Each node $x\in S$ satisfies that $F\nsubseteq D_G(x)$.\relax }{figure.caption.9}{}}
+\citation{dirac1961rigid}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Minimal moralization algorithms}{19}{subsection.8.3}}
 \citation{wormald1985counting}
 \citation{gillispie2001enumerating}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison between the number of labelled connected chordal graphs, the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }}{11}{table.caption.10}}
-\newlabel{my-label}{{1}{11}{Comparison between the number of labelled connected chordal graphs, the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }{table.caption.10}{}}
-\newlabel{prop:leaf_is_sim}{{6}{11}{Some random notes}{proposition.6}{}}
-\newlabel{cor:negation_of_leaf_is_sim}{{8}{11}{Some random notes}{corollary.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Some random notes}{21}{section.9}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces A simplicial $K_3$ over $\{v_1,v_2,v_3\}$ shares an edge with a $K_3$ (top left), $K_4$ (top right), $\{K_3, C_m\}$ (bottom left) or $\{K_3,K_3\}$ (bottom right).\relax }}{21}{figure.caption.10}}
+\newlabel{fg:k3+}{{10}{21}{A simplicial $K_3$ over $\{v_1,v_2,v_3\}$ shares an edge with a $K_3$ (top left), $K_4$ (top right), $\{K_3, C_m\}$ (bottom left) or $\{K_3,K_3\}$ (bottom right).\relax }{figure.caption.10}{}}
+\newlabel{prop:leaf_is_sim}{{3}{21}{Some random notes}{proposition.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison between the number of labelled connected chordal graphs, the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }}{22}{table.caption.11}}
+\newlabel{my-label}{{1}{22}{Comparison between the number of labelled connected chordal graphs, the number of weak recursively simplicial graphs, the number of undirected graphs and the number of Markov equivalent classes.\relax }{table.caption.11}{}}
+\newlabel{cor:negation_of_leaf_is_sim}{{7}{22}{Some random notes}{corollary.7}{}}
+\citation{verma1993deciding}
+\citation{verma1993deciding}
+\citation{verma1993deciding}
+\citation{verma1993deciding}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Appendix}{23}{section.10}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Reduction of 3-CNF to graph morality}{23}{subsection.10.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces A variable gedget for $v_i$. It contains $32$ nodes, where the top half corresponding to the variable and the bottom half corresponding to the negation of the variable.\relax }}{24}{figure.caption.12}}
+\newlabel{fg:variable_gedget}{{11}{24}{A variable gedget for $v_i$. It contains $32$ nodes, where the top half corresponding to the variable and the bottom half corresponding to the negation of the variable.\relax }{figure.caption.12}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces A clause gedget for $F_i$. It contains $22$ nodes. Each of the three identical subgraphs corresponding to a variable in the clause $F_i$.\relax }}{24}{figure.caption.13}}
+\newlabel{fg:clause_gedget}{{12}{24}{A clause gedget for $F_i$. It contains $22$ nodes. Each of the three identical subgraphs corresponding to a variable in the clause $F_i$.\relax }{figure.caption.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces An auxiliary gedget that contains $7+t$ nodes, where $t$ is the number of clauses in the 3-CNF.\relax }}{25}{figure.caption.14}}
+\newlabel{fg:aux_gedget}{{13}{25}{An auxiliary gedget that contains $7+t$ nodes, where $t$ is the number of clauses in the 3-CNF.\relax }{figure.caption.14}{}}
 \bibstyle{named}
 \bibdata{/home/kl/Documents/causal_discovery_ref_list}
+\bibcite{dirac1961rigid}{\citeauthoryear {Dirac}{1961}}
 \bibcite{dor1992simple}{\citeauthoryear {Dor and Tarsi}{1992}}
+\bibcite{fulkerson1965incidence}{\citeauthoryear {Fulkerson and Gross}{1965}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces A polynomial time construction that reduces 3-CNF to graph morality. The 3-CNF problem is $(X \vee Y \vee Z)\wedge (\mathaccentV {bar}016{X} \vee \mathaccentV {bar}016{Y} \vee Z)\wedge (\mathaccentV {bar}016{X} \vee \mathaccentV {bar}016{Y} \vee \mathaccentV {bar}016{Z})\wedge (\mathaccentV {bar}016{X} \vee Y \vee \mathaccentV {bar}016{Z})$, where $X=1$ and $Y=Z=0$. This construction ensures that the resulting graph has maximum degree no more than $5$.\relax }}{26}{figure.caption.15}}
+\newlabel{fg:3cnf}{{14}{26}{A polynomial time construction that reduces 3-CNF to graph morality. The 3-CNF problem is $(X \vee Y \vee Z)\wedge (\bar {X} \vee \bar {Y} \vee Z)\wedge (\bar {X} \vee \bar {Y} \vee \bar {Z})\wedge (\bar {X} \vee Y \vee \bar {Z})$, where $X=1$ and $Y=Z=0$. This construction ensures that the resulting graph has maximum degree no more than $5$.\relax }{figure.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Notations}{26}{subsection.10.2}}
 \bibcite{gillispie2001enumerating}{\citeauthoryear {Gillispie and Perlman}{2001}}
+\bibcite{ohtsuki1976minimal}{\citeauthoryear {Ohtsuki \bgroup \em  et al.\egroup }{1976}}
+\bibcite{rose1976algorithmic}{\citeauthoryear {Rose \bgroup \em  et al.\egroup }{1976}}
+\bibcite{tarjan1984simple}{\citeauthoryear {Tarjan and Yannakakis}{1984}}
 \bibcite{verma1993deciding}{\citeauthoryear {Verma and Pearl}{1993}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Notations\relax }}{12}{table.caption.11}}
-\newlabel{my-label}{{2}{12}{Notations\relax }{table.caption.11}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Notations}{12}{section.6}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Notations}{12}{subsection.6.1}}
 \bibcite{wormald1985counting}{\citeauthoryear {Wormald}{1985}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Notations\relax }}{27}{table.caption.16}}
+\newlabel{my-label}{{2}{27}{Notations\relax }{table.caption.16}{}}

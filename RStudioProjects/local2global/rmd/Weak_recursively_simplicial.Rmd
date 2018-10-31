@@ -21,7 +21,7 @@ library(wrsgraph)
 
 ## randomly generating undirected graphs
 ```{r}
-n = 1000
+# n = 1000
 # no_cores = 3
 # registerDoParallel(no_cores)
 # res = foreach(i = 1:n, .combine="c") %dopar% {
@@ -32,24 +32,33 @@ n = 1000
 #   #if (wrs != dwrs) break
 # }
 # stopImplicitCluster()
-for (i in 1:n) {
-  
-  G = rand_bounded_deg_graph(10, 3)
+# for (i in 1:n) {
+repeat {  
+  G = rand_bounded_deg_graph(10, 4)
   #wrs = wrs_bktr(G, G)$wrs # wrs
   #dwrs = d_wrs_deg4(G) # qrs
   wrs = wrs_bktr(G, G)$wrs
-  if (wrs != 1) break
+  if (wrs == 1) break
   # g = abs(G-1)
   # diag(g) = 0
   # wrs_complement = wrs_bktr(g, g)$wrs
   # if (wrs != wrs_complement) break
 }
 #par(mfrow=c(1,2))
-g=prune_leaves(G)
-graphviz.plot(matrix2dag(g))
+#g=prune_leaves(G)
+#graphviz.plot(matrix2dag(g))
 #graphviz.plot(matrix2dag(g))
 
 ```
+
+add deficiency
+```{r}
+x = "V5"
+deficiency(G, x)
+
+```
+
+
 
 ```{r}
 #seed

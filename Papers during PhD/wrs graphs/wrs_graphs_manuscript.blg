@@ -3,44 +3,46 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: wrs_graphs_manuscript.aux
 The style file: named.bst
 Database file #1: /home/kl/Documents/causal_discovery_ref_list.bib
-You've used 4 entries,
+Warning--can't use both volume and number fields in dirac1961rigid
+You've used 9 entries,
             2439 wiz_defined-function locations,
-            577 strings with 5223 characters,
-and the built_in function-call counts, 1724 in all, are:
-= -- 190
-> -- 46
-< -- 2
-+ -- 14
-- -- 14
-* -- 119
-:= -- 267
-add.period$ -- 14
-call.type$ -- 4
-change.case$ -- 23
-chr.to.int$ -- 4
-cite$ -- 4
-duplicate$ -- 80
-empty$ -- 139
-format.name$ -- 21
-if$ -- 376
+            614 strings with 6101 characters,
+and the built_in function-call counts, 3811 in all, are:
+= -- 418
+> -- 115
+< -- 4
++ -- 36
+- -- 36
+* -- 300
+:= -- 594
+add.period$ -- 30
+call.type$ -- 9
+change.case$ -- 54
+chr.to.int$ -- 9
+cite$ -- 10
+duplicate$ -- 160
+empty$ -- 300
+format.name$ -- 50
+if$ -- 808
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 4
-newline$ -- 23
-num.names$ -- 12
-pop$ -- 23
+missing$ -- 9
+newline$ -- 48
+num.names$ -- 27
+pop$ -- 42
 preamble$ -- 1
-purify$ -- 27
+purify$ -- 63
 quote$ -- 0
-skip$ -- 68
+skip$ -- 132
 stack$ -- 0
-substring$ -- 109
-swap$ -- 27
-text.length$ -- 2
+substring$ -- 258
+swap$ -- 47
+text.length$ -- 4
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 32
-warning$ -- 0
-while$ -- 16
-width$ -- 7
-write$ -- 55
+type$ -- 72
+warning$ -- 1
+while$ -- 37
+width$ -- 14
+write$ -- 122
+(There was 1 warning)

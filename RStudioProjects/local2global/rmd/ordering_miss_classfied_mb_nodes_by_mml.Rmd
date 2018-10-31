@@ -71,8 +71,8 @@ registerDoParallel(no_cores)
 mbcpt = foreach(target = vars,
     .combine = list,
     .multicombine = TRUE) %dopar% {
-      learn.mb(data, node = target, method = "iamb")
-      #forward_greedy_fast(data, di, arities, vars, n, target)
+      #learn.mb(data, node = target, method = "iamb")
+      forward_greedy_fast(data, di, arities, vars, n, target)
     }
 stopImplicitCluster()
 names(mbcpt) = vars
@@ -115,6 +115,7 @@ fmtx = rbind(fn, fp)
 #if (nrow(fmtx) > 0) {
 l = c()
 for (i in 1:nrow(fmtx)) {
+  cat(i, "\n")
   for (j in 1:2) {
     tIndx = which(vars == fmtx[i, j])
     alpha = rep(1, arities[tIndx])
