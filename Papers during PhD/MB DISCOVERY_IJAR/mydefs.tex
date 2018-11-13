@@ -1,0 +1,258 @@
+
+\newcommand{\deltap}{\ensuremath{\Delta P}}
+\newcommand{\intinf}{\ensuremath{\int_{-\infty}^{\infty}}}
+\newcommand{\summ}{\ensuremath{\sum_{i=1}^m}}
+\newcommand{\summj}{\ensuremath{\sum_{j=1}^m}}
+\newcommand{\ddpi}[1]{\ensuremath{\frac{\delta {#1}}{\delta p_i}}}
+\newcommand{\DDpi}[1]{\ensuremath{\frac{\delta^2 {#1}}{\delta p_i^2}}}
+\newcommand{\Ddpidpj}[1]{\ensuremath{\frac{\delta^2 {#1}}{\delta p_i \delta p_j}}}
+
+\newcommand{\kl}{\ensuremath{\mathrm{kl}}}
+\newcommand{\AL}{\ensuremath{\mathrm{AL}}}
+\newcommand{\IR}[1]{\ensuremath{\mathrm{IR}_{#1}}}
+\newcommand{\BIR}{\ensuremath{\mathrm{BIR}}}
+\newcommand{\IROLD}{\IR{\textit{old}}}
+\newcommand{\IRG}{\IR{G}}
+\newcommand{\prior}{\ensuremath{\phi}}
+\newcommand{\ssec}[1]{\S{}\ref{#1}}
+
+\renewcommand{\cite}{\citep}
+
+\hyphenation{pre-ce-dence Final-ly}
+
+%%%%%%%%%%%%%%%
+% 1. Commands
+%%%%%%%%%%%%%%%
+\newcommand{\dsp}{\setlength{\baselineskip}{24truept}}  %double spacing
+\newcommand{\ssp}{\setlength{\baselineskip}{13.6truept}}%single spacing
+\newcommand{\hs}{\hspace{0.2in}}
+\newcommand{\vs}{\vspace{-0.5in}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bd}{\begin{description}}
+\newcommand{\ed}{\end{description}}
+\newcommand{\ben}{\begin{enumerate}}
+\newcommand{\een}{\end{enumerate}}
+\newcommand{\beq}{\begin{quote}}
+\newcommand{\eeq}{\end{quote}}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\bua}{\begin{eqnarray*}}
+\newcommand{\eua}{\end{eqnarray*}}
+\newcommand{\ov}[1]{\overline{#1}}
+\newcommand{\ul}[1]{\underline{#1}}
+\newcommand{\ba}{\begin{array}}
+\newcommand{\ea}{\end{array}}
+\newcommand{\bfig}{\begin{figure}}
+\newcommand{\efig}{\end{figure}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+\newcommand{\bt}{\begin{table}}
+\newcommand{\et}{\end{table}}
+\newcommand{\btab}{\begin{tabular}}
+\newcommand{\etab}{\end{tabular}}
+
+\newcommand{\Rarr}{\ensuremath{\Rightarrow}}
+\newcommand{\rarr}{\ensuremath{\rightarrow}}
+\newcommand{\Larr}{\ensuremath{\Leftarrow}}
+\newcommand{\larr}{\ensuremath{\leftarrow}}
+\newcommand{\lrarr}{\ensuremath{\leftrightarrow}}
+\newcommand{\LRarr}{\ensuremath{\LeftRightArrow}}
+\newcommand{\rl}{\ensuremath{\rightleftharpoons}}
+\renewcommand{\tilde}{\~{\ }\hspace*{-.7ex}}
+\newcommand{\abs}[1]{\ensuremath{~|{#1}|~}}
+\newcommand{\seq}[1]{\langle\mbox{#1}\rangle}
+
+\renewcommand{\vec}[1]{\hat{\mathbf{#1}}}  % normal \vec not working
+
+\newcommand{\boxup}[1]
+{\beq
+\fbox{
+\parbox{2in}{#1}}
+\eeq
+}
+
+\newcommand{\myitem}{\vspace*{-0.5ex} \item }
+
+%\newcounter{modulenum}
+%\setcounter{modulenum}{1}
+%\newcommand{\module}{% Define module
+%\section*{Module \arabic{modulenum}~}
+%\addtocounter{modulenum}{1}
+%}
+%
+%\newcounter{problemnum}
+%\setcounter{problemnum}{1}
+%\newcommand{\problem}{% Define problem
+%\subsubsection*{Problem \arabic{problemnum}~}
+%\addtocounter{problemnum}{1}
+%}
+%
+%\newcounter{examplenum}
+%\setcounter{examplenum}{1}
+%\newcommand{\example}{% Define example
+%\subsubsection*{Example \arabic{examplenum}~}
+%\addtocounter{examplenum}{1}
+%}
+
+\newcommand{\mc}[1]{\ensuremath{\mathcal{#1}}}
+\newcommand{\optional}[1]{\textcolor{blue}{#1}}
+\newcommand{\mmlcpt}{$mbMML_{CPT}$ }
+\newcommand{\mbptmml}{$MBPT_{mml}$ }
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\newcommand{\qedwhite}{\hfill \ensuremath{\Box}}
+
+
+\newcommand{\indep}{~\raisebox{-0.3ex}{\rotatebox{90}{\ensuremath{\models}}}}
+\newcommand{\dep}{\not \hspace*{-1.2ex}\indep}
+%\newcommand{\textunder}[1]{$_{\text{#1}}$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. Theorems & Environments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{fact}{Fact}
+\newtheorem{hyp}{Hypothesis}
+\newtheorem{lemm}{Lemma}
+%\newtheorem{exercise}{Exercise}
+\newtheorem{Example}{Example}
+\newtheorem{prop}{Property}
+\newtheorem{defn}{Definition}
+\newtheorem{result}{Result}
+\newtheorem{conject}{Conjecture}
+\newtheorem{princ}{Principle}
+
+%\newenvironment{proof}[1]{{\bf #1}\em}{\/}
+\newenvironment{prf}{\rm}{}
+
+  
+
+
+%%%%%%%%%%
+% Misc.
+%%%%%%%%%%
+
+
+%%%%%%%%%%
+% Misc.
+%%%%%%%%%%
+
+\renewcommand{\floatpagefraction}{0.7}
+
+\newcommand{\cs}[1]{\mbox{c}_{#1}}
+\newcommand{\sn}[1]{\mbox{s}_{#1}}
+\newcommand{\threevec}[3]{
+        \left[ 
+        \begin{array}{c} #1 \\ #2 \\ #3 \end{array}
+        \right]
+}
+\newcommand{\hvec}[4]{
+        \left[ 
+        \begin{array}{c} #1 \\ #2 \\ #3 \\ #4 \end{array}
+        \right]
+}
+\newcommand{\qvec}[1]{
+        \left[
+        \begin{array}{c} 0 \\ #1 \end{array}
+        \right]
+}
+
+\newcommand{\newspecial}[1]{
+        \ifnum\includefigs>0
+                \special{#1}
+        \fi
+}
+
+\newcommand{\slidehead}[2][2ex]{%
+  \slideheading{#2}\vspace{#1}
+  \small
+  }
+
+\newcommand{\sh}[1]{\slideheading{#1}}
+
+\newcommand{\subheader}[3]{\vspace{#1}\bc{\em #3}\ec\vspace{#2}}
+
+\def\makeslideheading#1{%
+  \begin{center}\Large\bf #1\end{center}}
+
+\newboolean{draftp}
+
+\newcommand{\new}[1]{
+\textcolor{red}{#1}
+}
+\newcommand{\newcomment}[1]{
+\ifthenelse{\boolean{draftp}}{#1}{}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%
+% 3. Page setup
+%%%%%%%%%%%%%%%%%%%%
+
+
+%\setlength{\parindent}{0cm}
+
+\newcommand{\standardpagesetup}{
+
+\addtolength{\textheight}{55mm}
+\addtolength{\textwidth}{25mm}
+\addtolength{\voffset}{-31mm}
+\addtolength{\marginparwidth}{30mm}
+%\setlength{\columnsep}{25mm}
+%\setlength{\columnseprule}{0.5pt}
+\oddsidemargin = 0 mm
+\topmargin = 0 mm
+
+%\textwidth = 156 mm
+%\textheight = 243 mm
+%\parindent = 6 mm
+\parskip = 2 mm
+\textfloatsep = 0 mm
+\intextsep = 0 mm
+
+  }
+\newcommand{\pdfpagesetup}{
+
+\addtolength{\textheight}{40mm}
+\addtolength{\textwidth}{25mm}
+\addtolength{\voffset}{-31mm}
+\addtolength{\marginparwidth}{30mm}
+%\setlength{\columnsep}{25mm}
+%\setlength{\columnseprule}{0.5pt}
+\oddsidemargin = 0 mm
+\topmargin = 20 mm
+
+%\textwidth = 156 mm
+%\textheight = 243 mm
+\parindent = 6 mm
+%\parskip = 0 mm
+\textfloatsep = 0 mm
+\intextsep = 0 mm
+
+  }
+
+
+% afour (a4)
+% Hopefully the a4paper option does these, but for reference:
+\newcommand{\afour}{
+  \paperheight 297mm
+  \paperwidth  210mm
+  \textheight  247mm % Pageheight - 50mm
+  \textwidth   160mm % Pagewidth - 50mm
+  \oddsidemargin -5mm
+  \topmargin     -15mm
+%  \slideheight 152mm % For seminar.sty. As per manual. But use sem-a4.sty.
+%  \slidewidth  222mm % Likewise.
+  }
+
+% Also try a4 dimensions of 167 and 225 for slideheight/width.
+
+
+%%%%%%%%%%%%%%%%%%
+% 4. Natbib Cites
+%%%%%%%%%%%%%%%%%%
+
+%\bibpunct[, ]{(}{)}{,}{a}{,}{,}
