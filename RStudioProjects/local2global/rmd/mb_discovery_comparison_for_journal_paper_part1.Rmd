@@ -542,7 +542,7 @@ for (iii in 1:length(true)) {
 ```
 
 
-## mb size ordered version 2
+## plotting edit distance vs. mb size
 ```{r}
 dir = "~/Documents/Experiments/kdd_exp/"
 nvars = 50
@@ -595,7 +595,7 @@ for (ii in 1:6) {
 
 m = round(m, 1)
 w = round(w, 1)
-colnames(m) = colnames(w) = c("nmb", "MML_CPT", "MML_NB", "MBMML_ENSEMBLE", "IAMB", "PCMB", "SLL")
+colnames(m) = colnames(w) = c("nmb", "MML_CPT", "MML_NB", "MBMML_MBP", "IAMB", "PCMB", "SLL")
 m = m[, c(1:4, 7, 5, 6)]
 m = data.frame(m)
 m_melt = melt(m, id = "nmb")
@@ -603,7 +603,7 @@ colnames(m_melt)[2] = "Algorithm"
 error = as.vector(w[, -1])
 figure = ggplot(m_melt, aes(x = nmb, y = value, group = Algorithm, colour = Algorithm)) + 
   ylab(label = "Edit distance") + xlab("Markov blanket size") + geom_line(aes(linetype = Algorithm)) + geom_point(aes(shape = Algorithm)) + scale_colour_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7")) + 
-  ylim(0, 30) + xlim(0, max(mbt_len_mtx)) + guides(linetype = guide_legend()) +
+  ylim(0, ceiling(max(m_melt$value+error))) + xlim(0, max(mbt_len_mtx)) + guides(linetype = guide_legend()) +
   theme(legend.key.width = unit(1.5, "cm")) +
   geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
 figure
@@ -613,6 +613,7 @@ ggsave(filename, device = "pdf", path = "~/Documents/Papers during PhD/Journal p
 
 }
 ```
+
 
 ## Sym enforcement using mml (no better than deterministic sym enforcement)
 ```{r}
@@ -651,9 +652,9 @@ m[k, ] = c(mean(ed), mean(ed_sym), mean(ed_sym2))
 ```
 
 
-## plotting
+## plotting edit distance vs. sample size 
 ```{r}
-model = "50_5_4_1"
+model = "30_5_4_1"
 if (model == "30_5_4_1") {
 # 30_5_4_1
 x = c(7.5,7.3,7.2,7.5,8.7,7.4,4.5,6.2,4.6,6.2,5.7,6.3,3.3,5.1,3.5,5.2,3.5,4.4,2.6,4.5,3,4.7,2.6,2.9)
@@ -687,12 +688,12 @@ error = c(.3,.2,.3,.2,.5,.3,.3,.2,.3,.2,.4,.3,.3,.2,.3,.2,.2,.3)
 if (model %in% c("30_5_4_1", "50_5_4_1")) {
 m = matrix(x, 4, 6, byrow = T)
 m = cbind((c(100, 500, 2000, 5000)), m)
-colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_ENSEMBLE", "IAMB", "PCMB", "SLL")
+colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_MBP", "IAMB", "PCMB", "SLL")
 m = m[,c(1:4,7,5,6)]
 } else {
 m = matrix(x, 3, 6, byrow = T)
 m = cbind((c(500, 1000, 5000)), m)
-colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_ENSEMBLE", "IAMB", "PCMB", "SLL")
+colnames(m) = c("nmb", "MBMML_CPT", "MBMML_NB", "MBMML_MBP", "IAMB", "PCMB", "SLL")
 m = m[,c(1:4,7,5,6)]
 }
 
@@ -701,7 +702,7 @@ m_melt = melt(m, id = "nmb")
 colnames(m_melt)[2] = "Algorithm"
 figure = ggplot(m_melt, aes(x = nmb, y = value, group = Algorithm, colour = Algorithm)) + 
 ylab(label = "Edit distance") + xlab("Sample size") + geom_line(aes(linetype = Algorithm)) + geom_point(aes(shape = Algorithm)) + scale_colour_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7")) +
-ylim(0, 13) + xlim(100, 5000) + guides(linetype = guide_legend()) +
+ylim(floor(min(m_melt$value-error)), ceiling(max(m_melt$value+error))) + xlim(100, 5000) + guides(linetype = guide_legend()) +
 theme(legend.key.width = unit(1.5, "cm")) +
 geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
 figure
