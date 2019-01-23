@@ -1,0 +1,94 @@
+---
+title: "Inconsistency vs consistency MB learners"
+author: "Kelvin Li"
+date: "14 January 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = F, eval = T)
+if (.Platform$OS.type == "windows") {
+  dir = "C:/Users/"
+} else {
+  dir = "/home/"
+}
+source(paste0(dir, "kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R"))
+#library(plyr)
+library(igraph)
+#library(svMisc)
+library(wrsgraph)
+```
+
+## generate BNs
+```{r}
+nvars = 20
+maxNPas = 3
+maxArity = 2
+beta = 1
+n = 5000
+dag = randDag(nvars, maxNPas)
+g = dag2matrix(moral(dag)) # store dag into adj mtx 
+cpts = randCPTs(dag, maxArity, beta)
+data = rbn(cpts, n)
+vars = colnames(data)
+data_cat = numeric2categorical(data)
+arities = sapply(data_cat, nlevels)
+di = varCnt = count_occurance(data_cat, arities)
+
+## learning mbs
+# mb learning using parallel mmlcpt 
+no_cores = 3
+registerDoParallel(no_cores)
+res = foreach(target = vars,
+    .combine = list,
+    .multicombine = TRUE) %dopar% {
+    forward_greedy_fast_look_ahead(data, di, arities, vars, n, target)
+    }
+stopImplicitCluster()
+mbcpt = list()
+ahead = aheadDif = rep(0, nvars)
+for (i in 1:nvars) {
+  mbcpt[[i]] = res[[i]]$mb
+  ahead[i] = res[[i]]$ahead
+  aheadDif[i] = res[[i]]$dif
+}
+names(mbcpt) = vars
+mbcpt = symmetry_correction(vars, mbcpt, "AND")
+ahead = cbind(vars, ahead)
+# order ahead vars by msg dif ascending 
+indx = order(aheadDif)
+ahead = ahead[indx, ]
+aheadDif = aheadDif[indx]
+
+# form an UG
+G = matrix(0, nvars, nvars)
+#colnames(G) = rownames(G) = vars
+dimnames(G) = list(vars, vars)
+for (x in vars) {
+  G[x, mbcpt[[x]]] = 1
+}
+H = G
+# only keep the case when G is not wrs 
+GIsWRS = wrsgraph::wrs_bktr(G, G)$wrs
+
+if (GIsWRS == 0) {
+  # find the smallest number of edges from the ahead matrix 
+  # whose addition make G moral
+  for (i in 1:nrow(ahead)) {
+    if (H[ahead[i, 1], ahead[i, 2]] == 0) {
+      # add edge 
+      H[ahead[i, 1], ahead[i, 2]] = H[ahead[i, 2], ahead[i, 1]] = 1
+      if (wrsgraph::wrs_bktr(H, H)$wrs == 1) break
+    }
+  }
+  
+  dist_G = hamming_dist(G, g) # calculate hamming dist
+  dist_H = hamming_dist(H, g) # calculate hamming dist
+}
+
+dist_G
+dist_H
+
+```
+
+
