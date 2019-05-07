@@ -1,0 +1,265 @@
+---
+title: "checking mb inconsistency frequency using sll"
+author: "Kelvin Li"
+date: "10 March 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+source("/home/kl/Documents/PhDProjects/RStudioProjects/local2global/scripts/load_libraries.R")
+```
+
+# sll has 
+# 0.96 on 100 samples 
+# 0.88 consistent mbs when learning using 500 samples on 30-5-4-1 BNs. # 0.8 using 2000 samples, 
+# 1 using 5000 on 20 datasets, the others are taking too long 
+# 0.5 using 10000 samples on 
+
+# SLL in cpp
+```{r}
+res = c()
+setwd("~/Documents/Experiments/kdd_exp/SLL/")
+dir = "~/Documents/Experiments/kdd_exp/"
+model = "30_5_4_1"
+#n = 500
+#for (model in c("alarm", "barley", "insurance")) {
+  for (n in c(500)) {
+    
+    datasets = list.files(paste0(dir, "/", model, "/data_csv/", n))
+    #file.remove("output.txt")
+    for (ii in 1:length(datasets)) {
+      
+      data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[ii]))
+      vars = colnames(data)
+      nvars = ncol(data)
+      data = factor2numeric(data) # for artificial models
+      write.table(data, paste0(model, ".dat"), row.names = F, col.names = F)
+      
+      system(paste0("./sll ", model, ".dat -a sll-mb -t all"))
+      res_sll = read.table("mb.out", sep = "\n")
+      mbl_sll = list()
+      for (i in 1:nvars) {
+        temp = strsplit(as.character(res_sll[i, 1]), ": ")[[1]][-1]
+        if (length(temp) > 0) {
+          ind = as.numeric(strsplit(temp, " ")[[1]])  
+          mbl_sll[[i]] = vars[ind + 1]
+        } else {
+          mbl_sll[[i]] = vector(length = 0)
+        }
+      }
+      
+      names(mbl_sll) = vars
+      # check consistency 
+      # form an UG
+      G = H = matrix(0, nvars, nvars)
+      #colnames(G) = rownames(G) = vars
+      dimnames(G) = dimnames(H) = list(vars, vars)
+      for (x in vars) {
+      G[x, mbl_sll[[x]]] = 1
+      }
+      
+      # since symmetry correction hasn't been applied, G may not be symmetric
+      discrepancies = which(G[upper.tri(G)] != t(G)[upper.tri(G)])
+      # remove discrepancies from G
+      G[upper.tri(G)][discrepancies] = 0
+      G = t(G)
+      G[upper.tri(G)][discrepancies] = 0
+      
+      res = c(res, wrsgraph::wrs_bktr(G, G)$wrs)
+      
+    } # done learning for each dataset 
+    
+  }
+#}
+
+sum(res) / length(res)
+```
+
+# check consistency 
+```{r}
+
+files = list.files("~/Documents/Experiments/kdd_exp/30_5_4_1/sll/",
+                   "_5000_")
+res = rep(0, length(files))
+for (i in rev(indx)) {
+#for (i in 1:length(files)) {
+  cat(i, "\n")
+  mbl_sll = readRDS(paste0("~/Documents/Experiments/kdd_exp/30_5_4_1/sll/", files[i]))
+
+data = read.csv(paste0(dir, model, "/data_csv/", n, "/", datasets[i]))
+vars = colnames(data)
+names(mbl_sll) = vars
+      
+# form an UG
+G = H = matrix(0, nvars, nvars)
+#colnames(G) = rownames(G) = vars
+dimnames(G) = dimnames(H) = list(vars, vars)
+for (x in vars) {
+  G[x, mbl_sll[[x]]] = 1
+}
+
+# since symmetry correction hasn't been applied, G may not be symmetric
+discrepancies = which(G[upper.tri(G)] != t(G)[upper.tri(G)])
+# remove discrepancies from G
+G[upper.tri(G)][discrepancies] = 0
+G = t(G)
+G[upper.tri(G)][discrepancies] = 0
+cat("checking morality... \n")
+moral = withTimeout(wrsgraph::wrs_bktr(G, G)$wrs, timeout = 300, onTimeout = "silent")
+res[i] = ifelse(is.null(moral), -1, 1)
+
+}
+indx = which(res < 0)
+length(indx)
+res = res[-indx]
+sum(res)/length(res)
+```
+
+```{r}
+# files = list.files("~/Documents/Experiments/kdd_exp/30_5_4_1/dag/")
+# for (i in 1:length(files)) {
+# dag = readRDS(paste0("~/Documents/Experiments/kdd_exp/30_5_4_1/dag/", files[i]))
+# vars = bnlearn::nodes(dag)
+# nvars = length(vars)
+# mbt = lapply(vars, bnlearn::mb, x = dag)
+# cat(max(unlist(lapply(mbt, length))), "\n")
+# }
+
+# check consistency 
+nvars = 48
+res = c()
+files = list.files("~/Documents/Experiments/kdd_exp/barley/sll/","_s5000_")
+for (i in 1:length(files)) {
+  cat(i, "\n")
+  mbl_sll = readRDS(paste0("~/Documents/Experiments/kdd_exp/barley/sll/", files[i]))
+  vars = paste0("V", 1:nvars)
+  names(mbl_sll) = vars
+  # form an UG
+  G = H = matrix(0, nvars, nvars)
+  #colnames(G) = rownames(G) = vars
+  dimnames(G) = dimnames(H) = list(vars, vars)
+  for (x in vars) {
+    G[x, mbl_sll[[x]]] = 1
+  }
+  
+  # since symmetry correction hasn't been applied, G may not be symmetric
+  discrepancies = which(G[upper.tri(G)] != t(G)[upper.tri(G)])
+  # remove discrepancies from G
+  G[upper.tri(G)][discrepancies] = 0
+  G = t(G)
+  G[upper.tri(G)][discrepancies] = 0
+  cat("checking morality... \n")
+  res = c(res, wrsgraph::wrs_bktr(G, G)$wrs)
+}
+sum(res)/length(res)
+
+```
+
+## check sll mb learning accuracy w/ and w/o morality
+```{r}
+setwd("~/Documents/Experiments/kdd_exp/SLL/")
+dir = "~/Documents/Experiments/sll_moral_graph_test_25_mar_2019/"
+nTimes = 10
+mtxImmoral = mtxMoral = matrix(0, ncol = 8, nrow = nTimes)
+nFillin = rep(0, nTimes)
+
+nvars = 50
+maxNPas = 5
+maxArity = 4
+beta = 1
+n = 1000
+partialName = paste0(nvars, "_", maxNPas, "_", maxArity, "_", beta, "_", n)
+cnt = 1
+while(cnt < (nTimes + 1)) {
+
+# generate models
+seed = randSeed()
+dag = randDag(nvars, maxNPas)
+g = dag2matrix(moral(dag)) # store dag into adj mtx 
+cpts = randCPTs(dag, maxArity, beta)
+data = rbn(cpts, n)
+vars = colnames(data)
+data = factor2numeric(data) # for artificial models
+model = paste0(partialName, "_", seed)
+write.table(data, "data.dat", row.names = F, col.names = F)
+
+# learn mbs using sll
+system(paste0("./sll data.dat -a sll-mb -t all"))
+res_sll = read.table("mb.out", sep = "\n")
+mbl_sll = list()
+for (i in 1:nvars) {
+  temp = strsplit(as.character(res_sll[i, 1]), ": ")[[1]][-1]
+  if (length(temp) > 0) {
+    ind = as.numeric(strsplit(temp, " ")[[1]])  
+    mbl_sll[[i]] = vars[ind + 1]
+  } else {
+    mbl_sll[[i]] = vector(length = 0)
+  }
+}
+names(mbl_sll) = vars
+
+# turn list of mbs into an undirected graph
+G = matrix(0, nvars, nvars)
+dimnames(G) = list(vars, vars)
+for (x in vars) {
+  G[x, mbl_sll[[x]]] = 1
+}
+      
+# only keep the case when G is not wrs 
+GIsWRS = withTimeout(wrsgraph::wrs_bktr(G, G)$wrs, timeout = 30, onTimeout = "silent")
+if (length(GIsWRS) > 0) {
+  if (GIsWRS == 0) {
+    cat(cnt)
+    
+    H = min_deg_moralization(G)
+    dist_G = unlist(edit_dist_graph(G, g)) # calculate hamming dist
+    dist_H = unlist(edit_dist_graph(H, g)) # calculate hamming dist
+    mtxImmoral[cnt, ] = dist_G
+    mtxMoral[cnt, ] = dist_H
+    nFillin[cnt] = sum(H - G) / 2
+    
+    # save data, dag, cpt, mbl 
+    # saveRDS(data, paste0(dir, "data/data_", n, "_", seed, ".rds"))
+    # saveRDS(dag, paste0(dir, "dag/dag_", n, "_", seed, ".rds"))
+    # saveRDS(cpts, paste0(dir, "cpts/cpts_", n, "_", seed, ".rds"))
+    # saveRDS(G, paste0(dir, "mbl/mb_", n, "_", seed, ".rds"))
+    
+    cnt = cnt + 1
+    
+    }
+}
+}
+
+```
+
+## analysis
+```{r}
+immoralMeans = colMeans(mtxImmoral)
+moralMeans = colMeans(mtxMoral)
+immoralSDs = apply(mtxImmoral, 2, sd)
+moralSDs = apply(mtxMoral, 2, sd)
+imLower = immoralMeans - 1.96 * immoralSDs / sqrt(100)
+imUpper = immoralMeans + 1.96 * immoralSDs / sqrt(100)
+mLower = moralMeans - 1.96 * moralSDs / sqrt(100)
+mUpper = moralMeans + 1.96 * moralSDs / sqrt(100)
+
+names = c("TP", "FP", "TN", "FN", "precision", "recall", "F1", "edit_dist")
+par(mfrow=c(4,2))
+for (k in 1:length(immoralMeans)) {
+means = c(moralMeans[k], immoralMeans[k])
+sds = c(1.96 * moralSDs[k] / sqrt(100), 1.96 * immoralSDs[k] / sqrt(100))
+plotCI(barplot(means,col="gray",ylim=c(0,max(means+sds)),width=1,ylab = names[k],xlab =""),means,sds,add = TRUE)
+axis(side=1,at=1:2,label=c("moral", "immoral"))
+}
+nFillin
+head(mtxImmoral)
+head(mtxMoral)
+```
+
+
+
+
+
+
