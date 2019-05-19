@@ -24,6 +24,7 @@ library(plotrix)
 
 ## generate BNs and learn MBs 
 ```{r}
+<<<<<<< HEAD
 dir = "~/Documents/Experiments/camml_moral_graph_test_11_apr_2019/"
 nTimes = 50 # number of random models 
 mtxImmoral = mtxMoral = matrix(0, ncol = 8, nrow = nTimes)
@@ -37,6 +38,21 @@ maxNPas = 5
 maxArity = 2
 beta = 1
 n = 100
+=======
+dir = "~/Documents/Experiments/camml_moral_graph_test_06_may_2019/"
+nTimes = 10 # number of random models 
+mtxImmoral = mtxMoral = matrix(0, ncol = 8, nrow = nTimes)
+nFillin = rep(0, nTimes)
+
+confidence = 0.6 # confidence level of arc prior
+
+# model specification
+nvars = 50
+maxNPas = 4
+maxArity = 2
+beta = 1
+n = 1000
+>>>>>>> master
 
 cnt = 1
 while(cnt < (nTimes + 1)) {
@@ -128,16 +144,27 @@ immoralMeans = colMeans(mtxImmoral)
 moralMeans = colMeans(mtxMoral)
 immoralSDs = apply(mtxImmoral, 2, sd)
 moralSDs = apply(mtxMoral, 2, sd)
+<<<<<<< HEAD
 imLower = immoralMeans - 1.96 * immoralSDs / sqrt(100)
 imUpper = immoralMeans + 1.96 * immoralSDs / sqrt(100)
 mLower = moralMeans - 1.96 * moralSDs / sqrt(100)
 mUpper = moralMeans + 1.96 * moralSDs / sqrt(100)
+=======
+imLower = immoralMeans - 1.96 * immoralSDs / sqrt(nTimes)
+imUpper = immoralMeans + 1.96 * immoralSDs / sqrt(nTimes)
+mLower = moralMeans - 1.96 * moralSDs / sqrt(nTimes)
+mUpper = moralMeans + 1.96 * moralSDs / sqrt(nTimes)
+>>>>>>> master
 
 names = c("TP", "FP", "TN", "FN", "precision", "recall", "F1", "edit_dist")
 par(mfrow=c(4,2))
 for (k in 1:length(immoralMeans)) {
 means = c(moralMeans[k], immoralMeans[k])
+<<<<<<< HEAD
 sds = c(1.96 * moralSDs[k] / sqrt(100), 1.96 * immoralSDs[k] / sqrt(100))
+=======
+sds = c(1.96 * moralSDs[k] / sqrt(nTimes), 1.96 * immoralSDs[k] / sqrt(nTimes))
+>>>>>>> master
 plotCI(barplot(means,col="gray",ylim=c(0,max(means+sds)),width=1,ylab = names[k],xlab =""),means,sds,add = TRUE)
 axis(side=1,at=1:2,label=c("moral", "immoral"))
 }
