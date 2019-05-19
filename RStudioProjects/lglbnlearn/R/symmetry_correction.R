@@ -12,19 +12,20 @@
 symmetry_correction = function(vars, mbList, rule) {
 
   for (i in 1:length(vars)) {
-
+    # indices of variables that contain vars[i]
     ind = which(sapply(mbList, is.element, el = vars[i]))
+    # indices (from ind above) of variables that are not in mb[i]
     j = ind[which(!vars[ind] %in% mbList[[i]])]
 
     if (length(j) > 0) {
 
-      if (rule == "AND") {
-
+      if (rule == "union") {
+        # if union, then include those that are not in mb[i] but containing vars[i]
         mbList[[i]] = c(mbList[[i]], vars[j])
 
-      } else if (rule == "OR") {
-
-        mbList[j] = lapply(mbList[j], function(l, x)l = l[l != x], x = vars[i])
+      } else if (rule == "intersection") {
+        # else, don't add them into mb[i] and remove var[i] from their mbs
+        mbList[j] = lapply(mbList[j], function(l, x)l = l[l!= x], x = vars[i])
 
       }
 
