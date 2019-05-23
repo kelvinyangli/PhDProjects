@@ -8,11 +8,11 @@
 #
 # 120 (-13) - 0.0332
 # 1100 (-132) - 5.154
-n = 1000
-res_time = res_max_cs_size = res_is_moral = rep(0, n)
+n = 200
+#res_time = res_max_cs_size = res_is_moral = rep(0, n)
 i = 1
-while(i < n) {
-  dag = randDag(100, 4)
+while(i < (n+1)) {
+  dag = randDag(300, 4)
   vars = nodes(dag)
   mbs = sapply(vars, mb, x=dag)
   delta = max(sapply(mbs, length))
@@ -20,30 +20,23 @@ while(i < n) {
     dag = f(dag)
   }
   g = dag2matrix(moral(dag))
-  res_max_cs_size[i] = max(components(graph_from_adjacency_matrix(g))$csize)
-  tm = system.time({isMoral = wrsgraph::d_wrs_deg4(g)})
-  res_is_moral[i] = isMoral
-  res_time[i] = tm[3]
-  cat(i, " ")
+  cs = c(cs,max(components(graph_from_adjacency_matrix(g))$csize))
+  time = system.time({isMoral = wrsgraph::d_wrs_deg4(g)})
+  #res_is_moral[i] = isMoral
+  tm = c(tm, time[3])
+  if (i %% 50 == 0) cat(i, " ")
   i = i + 1
 }
-mean(res_time)
-unique(res_is_moral)
-res_max_cs_size
 
-zz = c()
-for (i in seq(10,70,10)) zz = c(zz, mean(res_time[which(res_max_cs_size == i)]))
+table(cs)
+length(cs)
+length(tm)
 
-graphviz.plot(matrix2dag(g))
-graphviz.plot(dag)
-
-mbs = sapply(vars, mb, x = dag)
-sapply(mbs, length)
-
-
-dag = randDag(20, 6)
-graphviz.plot(dag)
-graphviz.plot(f(dag))
+meanTm = c()
+for (n in seq(5, 115, 5)) {
+  meanTm = c(meanTm, mean(tm[which(cs == n)]))
+}
+plot(meanTm)
 
 mb2moral = function(mbs) {
   vars = names(mbs)
@@ -77,21 +70,21 @@ f = function(dag) {
 
 mean(res)
 
-nvars = 20
-nreps = 100
-g_list = list()
-for (i in 1:nreps) {
-  g_list[[i]] = rand_bounded_deg_graph(nvars, 3)
+for (n in seq(5, 115, 5)) {
+  for (i in 1:20) {
+    cs = c(cs, n)
+    g = rand_bounded_deg_graph(nvars, 4)
+    time = system.time(d_wrs_deg4(g))
+    tm = c(tm, time[3])
+  }
+  
 }
 
 
 results = results2 = rep(0, nreps)
-ptm = proc.time()
+
 for (i in 1:nreps) {
   results[i] = wrs_bktr(g_list[[i]], g_list[[i]])$wrs
-  results2[i] = d_wrs_deg4(g_list[[i]])
+  #results2[i] = d_wrs_deg4(g_list[[i]])
 }
-proc.time() - ptm
-sum(results - results2)
-sum(results2)
 
