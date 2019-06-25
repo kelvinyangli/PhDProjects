@@ -20,12 +20,13 @@ forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, 
   targetIndex = which(vars == target) # get index of the target node
   nvars = ncol(data)
   mb = c()
+  # initialMML = rep(0, nvars)
   unCheckedIndices = (1:nvars)[-targetIndex]
   tempCachedIndicesList = list()
 
   if (prod(alpha == 1)) alpha = rep(1, arities[targetIndex])
   minMsgLen = mml_cpt(varCnt, arities, sampleSize, c(), targetIndex, alpha, statingPara)
-
+  # localOptimalMML = minMsgLen
   if (debug) {
     cat("Search: Forward greedy with mmlCPT \n")
     cat("0 parent:", minMsgLen, "\n")
@@ -59,6 +60,10 @@ forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, 
         index = i
         tempCachedIndicesList = res$cachedIndicesList
       } # end if
+
+      # record all initial mml scores and the vars
+      # if (length(mb) < 1) initialMML[unCheckedIndices[i]] = msgLenCurrent
+      #names(initialMML)[i] = vars[unCheckedIndices[i]]
     } # end for i
 
     if (index == 0) {
@@ -71,13 +76,17 @@ forward_greedy_fast = function(data, varCnt, arities, vars, sampleSize, target, 
       if (debug) cat("current mb is {", vars[mb], "} with msg len", minMsgLen, "\n")
       if (debug) cat("------------------------------- \n")
       unCheckedIndices = unCheckedIndices[-index]
+
+      # keep track of local optimal mml scores
+      # localOptimalMML = c(localOptimalMML, minMsgLen)
     } # end else
   } # end repeat
 
+  # lst = list("mb" = vars[mb], "initial" = initialMML[mb], "optimal" = localOptimalMML)
   return(vars[mb])
+  # return(lst)
 
 }
-
 
 
 

@@ -2,7 +2,8 @@
 #'
 #' The true and learned DAGs must be stored as adjacent matrix. The output is a
 #' list consists of false positive, false negative, precision, recall and edit
-#' distance.
+#' distance. Edit distance between two DAGs is defined as the minimum number of
+#' arc deletion and addition to turn dagL to dagT.
 #' @param dagL The learned DAG.
 #' @param dagT The true DAG.
 #' @export
