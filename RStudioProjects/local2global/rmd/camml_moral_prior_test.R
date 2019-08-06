@@ -236,7 +236,7 @@ figure
 
 # test sll's accuracy on these BNs
 files = list.files("data_sll/")
-for (i in 1:length(files)) {
+for (i in 1:5) {
   #dt = read.csv(paste0("data/", files[i]))
   #name = strsplit(files[i], ".csv")[[1]]
   #dt = factor2numeric(dt)

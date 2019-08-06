@@ -56,6 +56,6 @@ figure = ggplot(m_melt, aes(x = nmb, y = value, group = Algorithm, colour = Algo
   geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03)
 figure
 filename = paste0("ed_vs_samplesize_", model, ".pdf", collapse = "")
-ggsave(filename, device = "pdf", path = "ggplot", width = 7.29, height = 4.5, units = "in")
+# ggsave(filename, device = "pdf", path = "ggplot", width = 7.29, height = 4.5, units = "in")
 
 }

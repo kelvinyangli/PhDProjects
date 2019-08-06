@@ -1,5 +1,5 @@
-setwd("~/Documents/Experiments/mb_discovery_IJAR/80_5_4_1/")
-nvars = 80
+setwd("~/Documents/Experiments/mb_discovery_IJAR/30_5_4_1/")
+nvars = 30
 name = paste0(nvars, "_5_4_1_")
 # for (itr in 1:5) {
 #
@@ -76,7 +76,7 @@ l = 4
 #, "iamb_cpp", "iamb_bnlearn", "sll"
 for (folder in c("mml_cpt", "mml_nb", "iamb_bnlearn_0.01", "pcmb_0.01", "sll")) {
   # , 500, 2000, 5000
-  for (n in c(100, 500)) {
+  for (n in c(100, 500, 2000, 5000)) {
 
     if (n == 2000) {
       ind = 3
@@ -106,7 +106,7 @@ for (folder in c("mml_cpt", "mml_nb", "iamb_bnlearn_0.01", "pcmb_0.01", "sll")) 
         }
 
 
-        if (folder %in% c("mml_cpt", "mml_rand")) {
+        if (folder %in% c("mml_cpt", "mml_rand","iamb_bnlearn_0.01")) {
           mbl = symmetry_correction(vars, mbl, "union")
         } else if (folder %in% c("mml_nb")) {
           mbl = symmetry_correction(vars, mbl, "intersection")
@@ -133,7 +133,7 @@ for (folder in c("mml_cpt", "mml_nb", "iamb_bnlearn_0.01", "pcmb_0.01", "sll")) 
   l = l + 1
 }# end for each method
 
-
+# colnames(m)[4:8] = c("mml_cpt", "mml_nb", "iamb_bnlearn_0.01", "pcmb_0.01", "sll")
 m
 
 
