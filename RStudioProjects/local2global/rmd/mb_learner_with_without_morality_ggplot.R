@@ -46,7 +46,7 @@ m = matrix(ktd, ncol = 11, byrow = T)
 # percentage of pairwise agreements
 xaxisLables = round(1- colMeans(m) / (50*49/2), 2)
 
-# xaxisLables = seq(0, 1, 0.1) # when using synthetic orders
+xaxisLables = seq(0, 1, 0.1) # when using synthetic orders
 
 ################################################################################
 # plot, synthetic orders
@@ -72,12 +72,16 @@ figure + facet_wrap(.~n, ncol = 2) + theme(legend.position = "bottom") +
 # ggsave("random_node_orders_morality.pdf", device = "pdf", width = 7.29, height = 4.5, units = "in")
 
 # a4 paper size 
+# synthetic_orders_moralization_xlabel_ktd.pdf
+# synthetic_orders_moralization_xlabel_hold_fixed_percentage.pdf
+# synthetic_orders_triangulation_xlabel_ktd.pdf
 ggsave("synthetic_orders_triangulation_xlabel_ktd.pdf", device = "pdf", width = 8.27, height = 11.69, units = "in")
 
 ################################################################################
 # plot, learned orders
 ################################################################################
 m = read.csv("ed_mean_learned_orders_moralization.csv")
+names(m)[7] = "SLL+G"
 error = read.csv("ed_ci_learned_orders_moralization.csv")
 error = error$ci
 m_melt = melt(m, id = c("n"))
@@ -86,9 +90,9 @@ names(m_melt)[2] = "Algorithm"
 figure = ggplot(m_melt, aes(x = n, y = value, group = Algorithm, colour = Algorithm, linetype = Algorithm)) +
   ylab(label = "Edit distance") + xlab("log2(n/100)") + geom_line(aes(linetype = Algorithm)) +
   geom_point(aes(shape = Algorithm)) +
-  scale_colour_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7")) +
+  scale_colour_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "red")) +
   guides(linetype = guide_legend()) + theme(legend.key.width = unit(1.5, "cm")) +
-  ylim(50, 200) +
+  scale_y_continuous(breaks = seq(0,200,20)) + 
   geom_errorbar(aes(ymin = value - error, ymax = value + error), width = 0.03) 
 
 figure

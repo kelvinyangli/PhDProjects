@@ -6,6 +6,7 @@ library(wrsgraph)
 library(lglbnlearn)
 library(gtools)
 library(xlsx)
+library(readr)
 
 setwd("~/Documents/Experiments/mb_learner_accuracy_with_without_morality_26_july_2019/")
 nvars = 50
@@ -152,6 +153,37 @@ for (nn in c(400,800,1600,3200,6400,12800)) {
     saveRDS(x, paste0("chow_liu_", nn, "/", dts[i]))
   }
 }
+
+################################################################################
+# learn ordering using pc in bnlearn
+################################################################################
+for (nn in c(400,800,1600,3200,6400,12800)) {
+  dir.create(paste0("pc_", nn), showWarnings = F)
+  dts = list.files(paste0("data_rds_", nn))
+  for (i in 1:length(dts)) {
+    data = readRDS(paste0("data_rds_", nn, "/", dts[i]))
+    # x = pc.stable(data)
+    x = pc_algorithm(data, alpha = 0.05)
+    x = pcalg2bnlearn(x)
+    saveRDS(x, paste0("pc_", nn, "/", dts[i]))
+  }
+}
+
+################################################################################
+# converting camml dne dag format to bnlearn dag format 
+################################################################################
+for (nn in c(400,800,1600,3200,6400,12800)) {
+  files = list.files(paste0("camml_", nn), ".dne")
+  for (j in 1:length(files)) {
+    dne = readr::read_file(paste0("camml_", nn, "/", files[j]))
+    dag = dne2bnlearn(dne)  
+    name = strsplit(files[j], ".dne")[[1]][1]
+    saveRDS(dag, paste0("camml_", nn, "/", name, ".rds"))
+  }
+  
+}
+
+
 
 
 

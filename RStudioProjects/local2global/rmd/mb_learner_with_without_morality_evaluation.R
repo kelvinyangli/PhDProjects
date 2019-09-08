@@ -3,11 +3,11 @@
 ################################################################################
 dags = list.files("dag/", pattern = ".rds")
 ed_mtx = pre_mtx = rec_mtx = matrix(0, ncol = 12, nrow = 400*6)
-alg = "pcmb"
+alg = "sll"
 col_cnt = 1
 for (p in seq(0, 1, 0.1)) {
   row_cnt = 1
-  for (nn in c(400,800,1600,3200,6400,12800)) { # no morality
+  for (nn in c(400,800,1600)) { # no morality
     for (i in 1:length(dags)) {
       name = strsplit(dags[i], ".rds")[[1]]
       files = list.files(paste0("mb_", alg, "_", nn), pattern = name)
@@ -29,6 +29,7 @@ for (p in seq(0, 1, 0.1)) {
           mbcpt_sym = symmetry_correction(vars, mbcpt, "union")
         }
         G = mblist2moral(mbcpt_sym, vars)
+        # G1 = G
         # res = edit_dist_graph(G, mr)
         # ed_mtx[row_cnt, 12] = res$ed
         # pre_mtx[row_cnt, 12] = res$pre
@@ -51,18 +52,19 @@ for (p in seq(0, 1, 0.1)) {
 }
 
 
-write.xlsx(ed_mtx, paste0("random_node_order_moralization_", alg, ".xlsx"), sheetName="ed", col.names=TRUE, row.names=F, append=T)
-write.xlsx(pre_mtx, paste0("random_node_order_moralization_", alg, ".xlsx"), sheetName="pre", col.names=TRUE, row.names=F, append=T)
-write.xlsx(rec_mtx, paste0("random_node_order_moralization_", alg, ".xlsx"), sheetName="rec", col.names=TRUE, row.names=F, append=T)
+write.xlsx(ed_mtx, paste0("random_node_order_triangulation_", alg, ".xlsx"), sheetName="ed", col.names=TRUE, row.names=F, append=T)
+write.xlsx(pre_mtx, paste0("random_node_order_triangulation_", alg, ".xlsx"), sheetName="pre", col.names=TRUE, row.names=F, append=T)
+write.xlsx(rec_mtx, paste0("random_node_order_triangulation_", alg, ".xlsx"), sheetName="rec", col.names=TRUE, row.names=F, append=T)
 
 ################################################################################
 # evaluation on learned node orders
 ################################################################################
 dags = list.files("dag/", pattern = ".rds")
-ed_mtx = pre_mtx = rec_mtx = matrix(0, ncol = 5, nrow = 400*6)
-for (col_cnt in 1:4) {
+ed_mtx = pre_mtx = rec_mtx = matrix(0, ncol = 7, nrow = 400*6)
+for (col_cnt in 1:7) {
+  
   row_cnt = 1
-  for (nn in c(400,800,1600,3200,6400,12800)) { # no morality
+  for (nn in c(400,800,1600,3200,6400)) { # no morality
     for (i in 1:length(dags)) {
       dag = readRDS(paste0("dag/", dags[i]))
       root = node.ordering(dag)[1]
@@ -70,7 +72,7 @@ for (col_cnt in 1:4) {
       mr = dag2matrix(moral(dag))
       name = strsplit(dags[i], ".rds")[[1]][1]
       files = list.files(paste0("mb_mmlcpt_", nn), pattern = name)
-
+      
       for (j in 1:length(files)) {
 
         mbl = readRDS(paste0("mb_mmlcpt_", nn, "/", files[j]))
@@ -90,6 +92,24 @@ for (col_cnt in 1:4) {
           ord = node.ordering(directing_tree(tree, root))
           ord = rev(ord)
           g = moralization(g_mbl, ord, 1)
+        } else if (col_cnt == 5) {
+          ord = node.ordering(readRDS(paste0("camml_", nn, "/", files[j])))
+          ord = rev(ord)
+          g = moralization(g_mbl, ord, 1)
+        } else if (col_cnt == 6) {# sll only run for 400,800,1600 samples
+          if (nn <= 1600) {
+            dag_sll = read.table(paste0("sll_", nn, "/", strsplit(files[j], ".rds")[[1]][1]))
+            colnames(dag_sll) = rownames(dag_sll) = vars
+            ord = rev(node.ordering(matrix2dag(dag_sll)))
+            g = moralization(g_mbl, ord, 1)  
+          } else {
+            g = mr
+          }
+          
+        } else if (col_cnt == 7) {# pc
+          dag_pc = readRDS(paste0("pc_", nn, "/", files[j]))
+          ord = rev(node.ordering(dag_pc))
+          g = moralization(g_mbl, ord, 1)
         }
 
         res = edit_dist_graph(g, mr)
@@ -105,151 +125,125 @@ for (col_cnt in 1:4) {
 
 }
 
-write.xlsx(ed_mtx, paste0("learned_node_order_moralization.xlsx"), sheetName="ed", col.names=TRUE, row.names=F, append=T)
-write.xlsx(pre_mtx, paste0("learned_node_order_moralization.xlsx"), sheetName="pre", col.names=TRUE, row.names=F, append=T)
-write.xlsx(rec_mtx, paste0("learned_node_order_moralization.xlsx"), sheetName="rec", col.names=TRUE, row.names=F, append=T)
+write.xlsx(ed_mtx, paste0("learned_node_order_moralization3.xlsx"), sheetName="ed", col.names=TRUE, row.names=F, append=T)
+write.xlsx(pre_mtx, paste0("learned_node_order_moralization3.xlsx"), sheetName="pre", col.names=TRUE, row.names=F, append=T)
+write.xlsx(rec_mtx, paste0("learned_node_order_moralization3.xlsx"), sheetName="rec", col.names=TRUE, row.names=F, append=T)
 
 
 ################################################################################
-# evaluation on different approximated node ordering, eg mmhc, min deg, min def
+# measure kt distance of the learned orders
 ################################################################################
+alg = "chow_liu"
 dags = list.files("dag/", pattern = ".rds")
-for (alg in c("mmlcpt","iamb","pcmb")) {
-  for (nn in c(400,800,1600)) { # no morality
-
-    mbed = pre = rec = c()
-    mbed1 = pre1 = rec1 = c() # mini deg
-    mbed2 = pre2 = rec2 = c() # mini deficiency
-    mbed3 = pre3 = rec3 = c() # mmhc node ordering
-    mbed4 = pre4 = rec4 = c() # a true ordering from the true dag
-    mbed5 = pre5 = rec5 = c() # mmhc moral graph accuracy
-    mbed6 = pre6 = rec6 = c() # mmhc node ordering, triangulation
-    mbed7 = pre7 = rec7 = c() # a true ordering from the true dag, triangulation
-
-    for (i in 1:length(dags)) {
-      name = strsplit(dags[i], ".rds")[[1]]
-      # mmhc learnd dag and mb_mmlcpt and data have the same name
-      files = list.files(paste0("mb_", alg, "_", nn), pattern = name)
-      if (length(files) == 0) break
-      dag = readRDS(paste0("dag/", dags[i]))
-      vars = bnlearn::nodes(dag)
-      mr = dag2matrix(bnlearn::moral(dag))
-      ord = rev(bnlearn::node.ordering(dag))
-      for (j in 1:length(files)) {
-        dagMMHC = readRDS(paste0("mmhc_", nn, "/", files[j]))
-        ord2 = rev(node.ordering(dagMMHC))
-        if (alg == "sll") {
-          mbcpt = sll2list(paste0("mb_", alg, "_", nn, "/", files[j]), vars)
-        } else {
-          mbcpt = readRDS(paste0("mb_", alg, "_", nn, "/", files[j]))
-        }
-
-        if (alg == "pcmb") {
-          mbcpt_sym = symmetry_correction(vars, mbcpt, "intersection")
-        } else if (alg == "sll") {
-          mbcpt_sym = mbcpt
-        } else {
-          mbcpt_sym = symmetry_correction(vars, mbcpt, "union")
-        }
-        G = mblist2moral(mbcpt_sym, vars)
-        # enforce morality
-        G1 = wrsgraph::min_deg_moralization(G)
-        G2 = wrsgraph::min_deficiency_moralization(G)
-        G3 = wrsgraph::fixed_ordering_moralization(G, ord2)
-        G4 = wrsgraph::fixed_ordering_moralization(G, ord)
-        G5 = dag2matrix(moral(dagMMHC))
-        G6 = moralization(G, ord2, 0)
-        G7 = moralization(G, ord, 0)
-
-        # k = k + 1
-        res = edit_dist_graph(G, mr)
-        mbed = c(mbed, res$ed)
-        pre = c(pre, res$pre)
-        rec = c(rec, res$rec)
-
-        res1 = edit_dist_graph(G1, mr)
-        mbed1 = c(mbed1, res1$ed)
-        pre1 = c(pre1, res1$pre)
-        rec1 = c(rec1, res1$rec)
-
-        res2 = edit_dist_graph(G2, mr)
-        mbed2 = c(mbed2, res2$ed)
-        pre2 = c(pre2, res2$pre)
-        rec2 = c(rec2, res2$rec)
-
-        res3 = edit_dist_graph(G3, mr)
-        mbed3 = c(mbed3, res3$ed)
-        pre3 = c(pre3, res3$pre)
-        rec3 = c(rec3, res3$rec)
-
-        res4 = edit_dist_graph(G4, mr)
-        mbed4 = c(mbed4, res4$ed)
-        pre4 = c(pre4, res4$pre)
-        rec4 = c(rec4, res4$rec)
-
-        res5 = edit_dist_graph(G5, mr)
-        mbed5 = c(mbed5, res5$ed)
-        pre5 = c(pre5, res5$pre)
-        rec5 = c(rec5, res5$rec)
-
-        res6 = edit_dist_graph(G6, mr)
-        mbed6 = c(mbed6, res6$ed)
-        pre6 = c(pre6, res6$pre)
-        rec6 = c(rec6, res6$rec)
-
-        res7 = edit_dist_graph(G7, mr)
-        mbed7 = c(mbed7, res7$ed)
-        pre7 = c(pre7, res7$pre)
-        rec7 = c(rec7, res7$rec)
+ktd = rep(0, 2400)
+k = 1
+for (nn in 100*c(4,8,16,32,64,128)) {
+  for (i in 1:length(dags)) {
+    dag = readRDS(paste0("dag/", dags[i]))
+    ord_t = rev(node.ordering(dag))
+    root = node.ordering(dag)[1]
+    name = strsplit(dags[i], ".rds")[[1]][1]
+    files = list.files(paste0(alg, "_", nn), name)
+    for (j in 1:length(files)) {
+      if (alg == "chow_liu") {
+        ord_l = rev(node.ordering(directing_tree(readRDS(paste0(alg, "_", nn, "/", files[j])), root)))
+      } else {
+        ord_l = rev(node.ordering(readRDS(paste0(alg, "_", nn, "/", files[j]))))
       }
+
+      ktd[k] = kendall_tau_distance(ord_t, ord_l)
+      k = k + 1
     }
-
-    write.table(paste0(nvars, "_", maxNPas, "_2_1_", nn, "_", p), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-    # no moral
-    x = round(c(mean(mbed), 1.96*sd(mbed)/sqrt(length(mbed)), mean(pre), mean(rec)), 2)
-    write.table(matrix(x, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # mini deg
-    x1 = round(c(mean(mbed1), 1.96*sd(mbed1)/sqrt(length(mbed1)), mean(pre1), mean(rec1)), 2)
-    write.table(matrix(x1, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # mini deficiency
-    x2 = round(c(mean(mbed2), 1.96*sd(mbed2)/sqrt(length(mbed2)), mean(pre2), mean(rec2)), 2)
-    write.table(matrix(x2, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # mmhc ordering, moralization
-    x3 = round(c(mean(mbed3), 1.96*sd(mbed3)/sqrt(length(mbed3)), mean(pre3), mean(rec3)), 2)
-    write.table(matrix(x3, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # mmhc ordering, triangulation
-    x6 = round(c(mean(mbed6), 1.96*sd(mbed6)/sqrt(length(mbed6)), mean(pre6), mean(rec6)), 2)
-    write.table(matrix(x6, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # mmhc moral graph
-    x5 = round(c(mean(mbed5), 1.96*sd(mbed5)/sqrt(length(mbed5)), mean(pre5), mean(rec5)), 2)
-    write.table(matrix(x5, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # true ordering, moralization
-    x4 = round(c(mean(mbed4), 1.96*sd(mbed4)/sqrt(length(mbed4)), mean(pre4), mean(rec4)), 2)
-    write.table(matrix(x4, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    # true ordering, triangulation
-    x7 = round(c(mean(mbed7), 1.96*sd(mbed7)/sqrt(length(mbed7)), mean(pre7), mean(rec7)), 2)
-    write.table(matrix(x7, nrow = 1), paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
-    write.table("***", paste0("results_", alg, ".txt"), append = T, row.names = F, col.names = F)
-
   }
 }
 
+m = matrix(ktd, ncol = 6, byrow = F)
+1 - colMeans(m) / (49*25)
+
+# camml
+# 0.8419163 0.8982551 0.9231041 0.9423184 0.9522673 0.9610000
+# mmhc
+# 0.6677796 0.7032959 0.7508041 0.7918939 0.8303551 0.8623143
+# chow liu mwst
+# 0.5717592 0.5810408 0.5741980 0.5758367 0.5772878 0.5747816
 
 
+# min degree and min deficiency
+dags = list.files("dag/", pattern = ".rds")
+ktd1 = ktd2 = rep(0, 2400)
+k = 1
+for (nn in c(400,800,1600,3200,6400,12800)) { # no morality
+  for (i in 1:length(dags)) {
+    dag = readRDS(paste0("dag/", dags[i]))
+    vars = nodes(dag)
+    ord_t = rev(node.ordering(dag))
+    # mr = dag2matrix(moral(dag))
+    name = strsplit(dags[i], ".rds")[[1]][1]
+    files = list.files(paste0("mb_mmlcpt_", nn), pattern = name)
 
+    for (j in 1:length(files)) {
 
+      min_deg = min_dif = c()
+      mbl = readRDS(paste0("mb_mmlcpt_", nn, "/", files[j]))
+      mbl = symmetry_correction(vars, mbl, "union")
+      g_mbl = mblist2moral(mbl, vars)
 
+      graph = g_mbl
+      H = graph
+      while (length(graph) > 1) {
+        # graph = prune_leaves(graph)
+        nodes = colnames(graph)
+        if (length(nodes) > 0) {
+          # find the node with the smallest degree
+          degrees = sapply(nodes, wrsgraph::degree, graph = graph)
+          x = names(which.min(sample(degrees)))
+          min_deg = c(min_deg, x)
+          xNbrs = find_nbr(graph, x)
+          for (y in xNbrs) {
+            H[y, xNbrs[xNbrs != y]] = 1 # add deficiency
+            graph[y, xNbrs[xNbrs != y]] = 0 # remove nbr edges
+          }
+          graph = wrsgraph::subgraph(graph, nodes = x, type = "nodes")
+        }
+      }
 
+      min_deg = c(min_deg, vars[!vars %in% min_deg])
+      ktd1[k] = kendall_tau_distance(ord_t, min_deg)
 
+      graph = g_mbl
+      H = graph
+      while (length(graph) > 1) {
+        # graph = prune_leaves(graph)
+        nodes = colnames(graph)
+        if (length(nodes) > 0) {
+          # find the node with the smallest deficiency
+          deficiencies = sapply(nodes, wrsgraph::deficiency, graph = graph)
+          x = names(which.min(sample(deficiencies))) # randomize nodes
+          min_dif = c(min_dif, x)
+          xNbrs = find_nbr(graph, x)
+          for (y in xNbrs) {
+            H[y, xNbrs[xNbrs != y]] = 1 # add deficiency
+            graph[y, xNbrs[xNbrs != y]] = 0 # remove nbr edges
+          }
+          graph = wrsgraph::subgraph(graph, nodes = x, type = "nodes")
+        }
+      }
 
+      min_dif = c(min_dif, vars[!vars %in% min_dif])
+      ktd2[k] = kendall_tau_distance(ord_t, min_dif)
+      k = k + 1
 
+    }
+  }
+}
 
+m = matrix(ktd1, ncol = 6, byrow = F)
+1 - colMeans(m) / (49*25)
+# min degree
+# 0.5384857 0.5368551 0.5415837 0.5456020 0.5541224 0.5575612
+
+m = matrix(ktd2, ncol = 6, byrow = F)
+1 - colMeans(m) / (49*25)
+# min deficiency
+# 0.5335041 0.5322327 0.5369163 0.5470735 0.5575735 0.5702000
 
